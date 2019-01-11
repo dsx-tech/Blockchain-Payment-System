@@ -20,20 +20,19 @@ class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
 
         timer("BtcBlockchainListener", true, 0, frequency) {
 
-//            val lastViewedBlock = rpc.getBlock(lastBestHash, 2)
-//            if (lastViewedBlock?.confirmations == -1) {
-//
-//            }
-
-            var hash = rpc.bestBlockHash
-            if (hash != lastBestHash) {
+            val newBestHash = rpc.bestBlockHash
+            if (newBestHash != lastBestHash) {
+                var hash = newBestHash
                 while (!viewedBlocks.contains(hash)) {
-                    val block = rpc.getBlock(hash, 2) ?: throw RuntimeException("BtcBlockchainListener: could not get block by hash")
-                    setChanged()
-                    Executors.newSingleThreadExecutor().execute { notifyObservers(block) }
                     viewedBlocks.add(hash)
+                    val block = rpc.getBlock(hash, 2)
+                        ?: throw RuntimeException("BtcBlockchainListener: could not get block by hash")
                     hash = block.previousblockhash
                 }
+                setChanged()
+                val listSinceBlock = rpc.listSinceBlock(hash)
+                Executors.newSingleThreadExecutor().execute { notifyObservers(listSinceBlock.transactions) }
+                lastBestHash = newBestHash
             }
         }
     }
