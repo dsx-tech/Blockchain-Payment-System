@@ -9,26 +9,26 @@ import java.util.*
 class BtcJSON {
 
     data class BtcBlock(
-        val bits: String,
         val confirmations: Int,
         override val hash: String,
         val height: Int,
-        val mediantime: Int,
         val merkleroot: String,
         val nTx: Int,
         val nonce: Long,
         val previousblockhash: String,
-        val time: Int,
-        val tx: List<BtcTx>,
-        val version: Int
+        val bestblockhash: String,
+        val tx: List<BtcRawTx>,
 
-//        val chainwork: String,
-//        val size: Int,
-//        val strippedsize: Int,
-//        val versionHex: String,
-//        val weight: Int
-//        @Json(ignored = true)
-//        val difficulty: BigDecimal
+        val bits: String,
+        val mediantime: Int,
+        val time: Int,
+        val version: Int,
+        val chainwork: String,
+        val size: Int,
+        val strippedsize: Int,
+        val versionHex: String,
+        val weight: Int,
+        val difficulty: BigDecimal
     ): Block() {
         override fun equals(other: Any?): Boolean {
             if (other == null || other !is BtcBlock) {
@@ -38,25 +38,68 @@ class BtcJSON {
         }
     }
 
-    data class BtcTx(
+    data class BtcRawTx(
         override val txid: String,
         val hash: String,
+        val vout: List<Vout>,
         val hex: String,
+
         val locktime: Long,
         val version: Int,
-        val vout: List<Vout>
+        val vin: List<Vin>,
+        val size: Long,
+        val vsize: Long,
+        val weight: Int
+    ): Tx()
 
-//        val vin: List<Vin>,
-//        val size: Long,
-//        val vsize: Long,
-//        val weight: Int
+    data class Vin(
+        val scriptSig: ScriptSig,
+        val sequence: Long,
+        val txid: String,
+        val txinwitness: List<String>,
+        val vout: Int
+    )
+
+    data class ScriptSig(
+        val asm: String,
+        val hex: String
+    )
+
+    data class Vout(
+        val n: Int,
+        val scriptPubKey: ScriptPubKey,
+        val value: BigDecimal
+    )
+
+    data class ScriptPubKey(
+        val asm: String,
+        val hex: String,
+        val type: String,
+        val reqSigs: Int? = null,
+        val addresses: List<String>? = null
+    )
+
+    data class BtcTx(
+        override val txid: String,
+        val amount: BigDecimal,
+        val confirmations: Int,
+        val blockhash: String,
+        val details: List<BtcTxDetail>,
+        val hex: String,
+        val time: Long,
+
+        val bip125_replaceable: String,
+        val blockindex: Int,
+        val blocktime: Long,
+        val timereceived: Long,
+        val walletconflicts: List<Any>
     ): Tx(), BitcoindRpcClient.Transaction {
         override fun blockHash(): String {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return blockhash
         }
 
         override fun time(): Date {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return Date(time)
         }
 
         override fun mapBigDecimal(key: String?): BigDecimal {
@@ -64,15 +107,15 @@ class BtcJSON {
         }
 
         override fun blockIndex(): Int {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return blockindex
         }
 
         override fun blockTime(): Date {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return Date(blocktime)
         }
 
         override fun timeReceived(): Date {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return Date(timereceived)
         }
 
         override fun mapBool(key: String?): Boolean {
@@ -80,7 +123,7 @@ class BtcJSON {
         }
 
         override fun confirmations(): Int {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return confirmations
         }
 
         override fun commentTo(): String {
@@ -112,7 +155,7 @@ class BtcJSON {
         }
 
         override fun amount(): BigDecimal {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return amount
         }
 
         override fun generated(): Boolean {
@@ -140,35 +183,16 @@ class BtcJSON {
         }
 
         override fun txId(): String {
-            TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+            return txid
         }
     }
 
-//    data class Vin(
-//        val scriptSig: ScriptSig,
-//        val sequence: Long,
-//        val txid: String,
-//        val txinwitness: List<String>,
-//        val vout: Int
-//    )
-
-//    data class ScriptSig(
-//        val asm: String,
-//        val hex: String
-//    )
-
-    data class Vout(
-        val n: Int,
-        val scriptPubKey: ScriptPubKey,
-        val value: BigDecimal
-    )
-
-    data class ScriptPubKey(
-        val asm: String,
-        val hex: String,
-        val type: String,
-        val reqSigs: Int? = null,
-        val addresses: List<String>? = null
+    data class BtcTxDetail(
+        val address: String,
+        val amount: BigDecimal,
+        val category: String,
+        val label: String,
+        val vout: Int
     )
 
     data class BtcTxOutput(
@@ -189,9 +213,9 @@ class BtcJSON {
     }
 
     data class BtcListSinceBlock(
-    val transactions: List<BtcTxSinceBlock>,
-    val removed: List<Any>,
-    val lastblock: String
+        val transactions: List<BtcTxSinceBlock>,
+        val removed: List<BtcTxSinceBlock>,
+        val lastblock: String
     ): BitcoindRpcClient.TransactionsSinceBlock {
         override fun lastBlock(): String {
             return lastblock
@@ -203,20 +227,21 @@ class BtcJSON {
     }
 
     data class BtcTxSinceBlock(
-    val txid: String,
-    val address: String,
-    val amount: Double,
-    val blockhash: String,
-    val category: String
-//    val abandoned: Boolean,
-//    val bip125_replaceable: String,
-//    val blockindex: Int,
-//    val blocktime: Int,
-//    val confirmations: Int,
-//    val fee: Double,
-//    val time: Int,
-//    val timereceived: Int,
-//    val vout: Int,
-//    val walletconflicts: List<Any>
-)
+        override val txid: String,
+        val confirmations: Int,
+        val address: String,
+        val amount: BigDecimal,
+        val blockhash: String,
+        val category: String,
+
+        val abandoned: Boolean,
+        val bip125_replaceable: String,
+        val blockindex: Int,
+        val blocktime: Int,
+        val fee: BigDecimal,
+        val time: Int,
+        val timereceived: Int,
+        val vout: Int,
+        val walletconflicts: List<Any>
+): Tx()
 }
