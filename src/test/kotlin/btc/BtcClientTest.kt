@@ -1,6 +1,6 @@
-package bitcoin
+package btc
 
-import dsx.bps.kotlin.bitcoin.BtcClient
+import dsx.bps.kotlin.btc.BtcClient
 import dsx.bps.kotlin.core.InvoiceStatus
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll

@@ -1,4 +1,4 @@
-package dsx.bps.kotlin.bitcoin
+package dsx.bps.kotlin.btc
 
 import java.math.BigDecimal
 import dsx.bps.kotlin.core.Block

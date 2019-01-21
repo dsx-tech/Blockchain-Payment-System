@@ -1,4 +1,4 @@
-package dsx.bps.kotlin.bitcoin
+package dsx.bps.kotlin.btc
 
 import dsx.bps.kotlin.core.BlockchainListener
 import java.util.concurrent.Executors

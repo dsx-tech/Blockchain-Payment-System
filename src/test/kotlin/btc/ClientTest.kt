@@ -1,4 +1,4 @@
-package bitcoin
+package btc
 
 import dsx.bps.kotlin.core.CoinClient
 import org.junit.jupiter.api.Test

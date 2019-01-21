@@ -1,10 +1,9 @@
-package dsx.bps.kotlin.bitcoin
+package dsx.bps.kotlin.btc
 
 import dsx.bps.kotlin.core.InvoiceListener
 import dsx.bps.kotlin.core.InvoiceStatus
 import java.math.BigDecimal
 import java.util.*
-import kotlin.concurrent.timer
 
 class BtcInvoiceListener(var rpc: BtcRPC): InvoiceListener() {
 
