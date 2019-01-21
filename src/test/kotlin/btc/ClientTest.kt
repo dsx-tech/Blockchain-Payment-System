@@ -6,7 +6,6 @@ import java.math.BigDecimal
 
 internal abstract class ClientTest {
 
-    abstract val client: CoinClient
     abstract val alice: CoinClient
     abstract val bob: CoinClient
     abstract val carol: CoinClient
@@ -26,10 +25,10 @@ internal abstract class ClientTest {
 
     @Test
     fun sendPaymentToAddress() {
-        val balance = client.getBalance()
+        val balance = alice.getBalance()
         val amount = balance / BigDecimal(10)
-        val txid = client.sendPayment(addresses[0], amount)
-        val newBalance = client.getBalance()
+        val txid = alice.sendPayment(addresses[0], amount)
+        val newBalance = alice.getBalance()
 
         assert(balance - amount >= newBalance)
         println("old balance: $balance, new balance: $newBalance, txid: $txid")
@@ -37,12 +36,12 @@ internal abstract class ClientTest {
 
     @Test
     fun sendPaymentToAddresses() {
-        val balance = client.getBalance()
+        val balance = alice.getBalance()
         val numRecipients = BigDecimal(addresses.size)
         val amount = balance / BigDecimal(10) / numRecipients
         val outs = addresses.associate { address -> address to amount }
-        val txid = client.sendPayment(outs)
-        val newBalance = client.getBalance()
+        val txid = alice.sendPayment(outs)
+        val newBalance = alice.getBalance()
         assert(balance - (amount * numRecipients) >= newBalance)
         println("old balance: $balance, new balance: $newBalance, txid: $txid")
     }
