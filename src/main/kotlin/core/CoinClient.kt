@@ -3,22 +3,43 @@ package dsx.bps.kotlin.core
 import java.math.BigDecimal
 import java.util.*
 
-interface CoinClient {
+abstract class CoinClient {
 
-    val symbol: String
-    val currency: Currency
+    abstract val symbol: String
+    abstract val currency: Currency
 
-    fun sendInvoice(amount: BigDecimal): Invoice
+    // TODO: implement storage for invoices and payments
+    protected val invoices: HashMap<String, Invoice> = HashMap()
+    protected val payments: HashMap<String, Payment> = HashMap()
 
-    fun getInvoice(id: String): Invoice?
+    protected abstract val blockchainListener: BlockchainListener
+    protected abstract val invoiceListener: InvoiceListener
 
-    fun getInvoice(uuid: UUID): Invoice?
+    fun getInvoice(id: String): Invoice? = invoices[id]
 
-    fun sendPayment(address: String, amount: BigDecimal): String
+    fun getInvoices(): Map<String, Invoice> = invoices
 
-    fun sendPayment(outputs: Map<String, BigDecimal>): String
+    fun getPayment(id: String): Payment? = payments[id]
 
-    fun getNewAddress(): String
+    fun getPayments(): Map<String, Payment> = payments
 
-    fun getBalance(): BigDecimal
+    open fun sendInvoice(amount: BigDecimal): Invoice {
+        val address = getNewAddress()
+        val inv = Invoice(currency, amount, address)
+
+        println("please, send $amount btc to $address")
+
+        invoices.putIfAbsent(inv.id, inv)
+        invoiceListener.addInvoice(inv)
+
+        return inv
+    }
+
+    open fun sendPayment(address: String, amount: BigDecimal): Payment = sendPayment(mapOf(address to amount))
+
+    abstract fun sendPayment(outputs: Map<String, BigDecimal>): Payment
+
+    abstract fun getNewAddress(): String
+
+    abstract fun getBalance(): BigDecimal
 }

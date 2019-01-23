@@ -9,7 +9,7 @@ import java.util.*
 import kotlin.Exception
 import kotlin.collections.HashMap
 
-class BtcClient(url: String? = null): CoinClient {
+class BtcClient(url: String? = null): CoinClient() {
 
     override val symbol = "BTC"
     override val currency = Currency.BTC
@@ -19,12 +19,9 @@ class BtcClient(url: String? = null): CoinClient {
     } else {
         BtcRPC(url)
     }
-    private val blockchainListener: BtcBlockchainListener = BtcBlockchainListener(rpc)
-    private val invoiceListener: BtcInvoiceListener = BtcInvoiceListener(rpc)
 
-    // temp storage
-    private val invoices: HashMap<UUID, Invoice> = HashMap() // TODO: implement storage for invoices and payments
-    private val payments: HashMap<UUID, Payment> = HashMap()
+    override val blockchainListener: BtcBlockchainListener = BtcBlockchainListener(rpc)
+    override val invoiceListener: BtcInvoiceListener = BtcInvoiceListener(rpc)
 
     init {
         blockchainListener.addObserver(invoiceListener)
@@ -35,41 +32,7 @@ class BtcClient(url: String? = null): CoinClient {
         rpc.connect(url)
     }
 
-    override fun sendInvoice(amount: BigDecimal): Invoice {
-        val address = getNewAddress()
-        val inv = Invoice(currency, amount, address)
-
-        println("please, send $amount btc to $address")
-
-        invoices.putIfAbsent(inv.id, inv)
-        invoiceListener.addInvoice(inv)
-
-        return inv
-    }
-
-    override fun getInvoice(id: String): Invoice? {
-        try {
-            return getInvoice(UUID.fromString(id))
-        } catch (e: IllegalArgumentException) {
-            println(e.message)
-        }
-        return null
-    }
-
-    override fun getInvoice(uuid: UUID): Invoice? {
-        try {
-            return invoices[uuid]
-        } catch (e: Exception) {
-            println(e.message)
-        }
-        return null
-    }
-
-    override fun sendPayment(address: String, amount: BigDecimal): String {
-        return sendPayment(mapOf(address to amount))
-    }
-
-    override fun sendPayment(outputs: Map<String, BigDecimal>): String {
+    override fun sendPayment(outputs: Map<String, BigDecimal>): Payment {
         val outs = outputs.map { entry -> BtcJSON.BtcTxOutput(entry.key, entry.value) }
 
         var rawTx = rpc.createRawTransaction(listOf(), outs)
@@ -80,7 +43,7 @@ class BtcClient(url: String? = null): CoinClient {
         val payment = Payment(currency, outputs, txid)
         payments.putIfAbsent(payment.id, payment)
 
-        return txid
+        return payment
     }
 
     override fun getBalance(): BigDecimal {
