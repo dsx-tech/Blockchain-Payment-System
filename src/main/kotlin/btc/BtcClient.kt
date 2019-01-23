@@ -11,7 +11,6 @@ import kotlin.collections.HashMap
 
 class BtcClient(url: String? = null): CoinClient() {
 
-    override val symbol = "BTC"
     override val currency = Currency.BTC
 
     internal val rpc: BtcRPC = if (url == null) {

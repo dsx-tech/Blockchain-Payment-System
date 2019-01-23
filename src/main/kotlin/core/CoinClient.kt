@@ -5,7 +5,6 @@ import java.util.*
 
 abstract class CoinClient {
 
-    abstract val symbol: String
     abstract val currency: Currency
 
     // TODO: implement storage for invoices and payments
