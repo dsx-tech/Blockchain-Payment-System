@@ -1,4 +1,4 @@
-package dsx.bps.kotlin.core
+package dsx.bps.core
 
 enum class Currency {
     BTC

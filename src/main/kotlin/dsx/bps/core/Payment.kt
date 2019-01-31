@@ -1,7 +1,7 @@
-package dsx.bps.kotlin.core
+package dsx.bps.core
 
+import java.util.UUID
 import java.math.BigDecimal
-import java.util.*
 
 data class Payment(val currency: Currency, val outputs: Map<String, BigDecimal>) {
     val id: String = UUID.randomUUID().toString()

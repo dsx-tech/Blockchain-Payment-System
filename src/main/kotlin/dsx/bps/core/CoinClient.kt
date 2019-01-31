@@ -1,7 +1,6 @@
-package dsx.bps.kotlin.core
+package dsx.bps.core
 
 import java.math.BigDecimal
-import java.util.*
 
 abstract class CoinClient {
 
@@ -26,7 +25,7 @@ abstract class CoinClient {
         val address = getNewAddress()
         val inv = Invoice(currency, amount, address)
 
-        println("please, send $amount btc to $address")
+        println("please, send $amount dsx.bps.btc to $address")
 
         invoices.putIfAbsent(inv.id, inv)
         invoiceListener.addInvoice(inv)

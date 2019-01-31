@@ -1,8 +1,8 @@
-package btc
+package dsx.bps.btc
 
-import dsx.bps.kotlin.core.CoinClient
-import org.junit.jupiter.api.Test
 import java.math.BigDecimal
+import org.junit.jupiter.api.Test
+import dsx.bps.core.CoinClient
 
 internal abstract class ClientTest {
 

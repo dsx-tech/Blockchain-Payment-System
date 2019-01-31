@@ -1,10 +1,10 @@
-package dsx.bps.kotlin.btc
+package dsx.bps.btc
 
+import java.util.Date
 import java.math.BigDecimal
-import dsx.bps.kotlin.core.Block
-import dsx.bps.kotlin.core.Tx
+import dsx.bps.core.Tx
+import dsx.bps.core.Block
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient
-import java.util.*
 
 class BtcJSON {
 

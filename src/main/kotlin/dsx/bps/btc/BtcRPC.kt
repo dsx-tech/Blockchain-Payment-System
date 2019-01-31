@@ -1,4 +1,4 @@
-package dsx.bps.kotlin.btc
+package dsx.bps.btc
 
 import com.google.gson.Gson
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient

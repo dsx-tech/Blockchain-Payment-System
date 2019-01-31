@@ -1,13 +1,9 @@
-package dsx.bps.kotlin.btc
+package dsx.bps.btc
 
 import java.math.BigDecimal
-import dsx.bps.kotlin.core.CoinClient
-import dsx.bps.kotlin.core.Currency
-import dsx.bps.kotlin.core.Invoice
-import dsx.bps.kotlin.core.Payment
-import java.util.*
-import kotlin.Exception
-import kotlin.collections.HashMap
+import dsx.bps.core.Payment
+import dsx.bps.core.Currency
+import dsx.bps.core.CoinClient
 
 class BtcClient(url: String? = null): CoinClient() {
 

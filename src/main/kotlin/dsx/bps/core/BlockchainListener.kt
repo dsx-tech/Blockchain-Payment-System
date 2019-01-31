@@ -1,6 +1,6 @@
-package dsx.bps.kotlin.core
+package dsx.bps.core
 
-import java.util.*
+import java.util.Observable
 import kotlin.collections.HashSet
 
 abstract class BlockchainListener: Observable() {

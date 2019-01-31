@@ -1,9 +1,9 @@
-package dsx.bps.kotlin.btc
+package dsx.bps.btc
 
-import dsx.bps.kotlin.core.InvoiceListener
-import dsx.bps.kotlin.core.InvoiceStatus
 import java.math.BigDecimal
-import java.util.*
+import java.util.Observable
+import dsx.bps.core.InvoiceStatus
+import dsx.bps.core.InvoiceListener
 
 class BtcInvoiceListener(var rpc: BtcRPC): InvoiceListener() {
 

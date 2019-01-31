@@ -1,7 +1,7 @@
-package dsx.bps.kotlin.core
+package dsx.bps.core
 
+import java.util.UUID
 import java.math.BigDecimal
-import java.util.*
 
 enum class InvoiceStatus {
     PAID,

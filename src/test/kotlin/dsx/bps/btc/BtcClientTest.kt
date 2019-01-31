@@ -1,12 +1,11 @@
-package btc
+package dsx.bps.btc
 
-import dsx.bps.kotlin.btc.BtcClient
-import dsx.bps.kotlin.core.InvoiceStatus
+import java.math.BigDecimal
+import dsx.bps.core.InvoiceStatus
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.math.BigDecimal
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BtcClientTest: ClientTest() {
@@ -20,7 +19,6 @@ internal class BtcClientTest: ClientTest() {
     override val bob = BtcClient(bobURL)
 
     override val addresses = listOf(
-        alice.getNewAddress(),
         bob.getNewAddress(),
         carol.getNewAddress()
     )
