@@ -25,8 +25,7 @@ class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
                 var hash = newBestHash
                 while (!viewedBlocks.contains(hash)) {
                     viewedBlocks.add(hash)
-                    val block = rpc.getBlock(hash, 2)
-                        ?: throw RuntimeException("BtcBlockchainListener: could not get block by hash")
+                    val block = rpc.getBlock(hash)
                     hash = block.previousblockhash
                 }
                 setChanged()

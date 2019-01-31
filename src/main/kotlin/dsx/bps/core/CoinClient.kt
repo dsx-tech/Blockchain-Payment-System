@@ -25,7 +25,7 @@ abstract class CoinClient {
         val address = getNewAddress()
         val inv = Invoice(currency, amount, address)
 
-        println("please, send $amount dsx.bps.btc to $address")
+        println("please, send $amount ${currency.name} to $address")
 
         invoices.putIfAbsent(inv.id, inv)
         invoiceListener.addInvoice(inv)

@@ -19,39 +19,42 @@ class BtcRPC: BitcoinJSONRPCClient {
         query("disconnectnode", url)
     }
 
-    fun getBlock(blockHash: String?, verbosity: Int): BtcJSON.BtcBlock? {
-        if (blockHash == null)
-            return null
-        val json = gson.toJson(query("getblock", blockHash, verbosity))
+    override fun getBlock(blockHash: String): BtcJSON.BtcBlock {
+        val result = query("getblock", blockHash)
+        val json = gson.toJson(result)
         return Gson().fromJson(json, BtcJSON.BtcBlock::class.java)
     }
 
-    fun getBlock(height: Int, verbosity: Int): BtcJSON.BtcBlock? {
+    override fun getBlock(height: Int): BtcJSON.BtcBlock {
         val hash = getBlockHash(height)
-        return getBlock(hash, verbosity)
+        return getBlock(hash)
     }
 
     fun fundRawTransaction(rawTx: String): String {
-        val result = query("fundrawtransaction", rawTx) as Map<String, *>
-        return result["hex"] as String
+        val result = query("fundrawtransaction", rawTx)
+        val obj = gson.toJsonTree(result).asJsonObject
+        return obj.get("hex").asString
     }
 
     fun signRawTransactionWithWallet(rawTx: String): String {
-        val result = query("signrawtransactionwithwallet", rawTx) as Map<String, *>
-        if (result["complete"] as Boolean) {
-            return result["hex"] as String
+        val result = query("signrawtransactionwithwallet", rawTx)
+        val obj = gson.toJsonTree(result).asJsonObject
+        if (obj.get("complete").asBoolean) {
+            return obj.get("hex").asString
         } else {
             throw RuntimeException("Unable to fund raw transaction: $rawTx")
         }
     }
 
     override fun listSinceBlock(hash: String): BtcJSON.BtcListSinceBlock {
-        val json = gson.toJson(query("listsinceblock", hash))
+        val result = query("listsinceblock", hash)
+        val json = gson.toJson(result)
         return gson.fromJson(json, BtcJSON.BtcListSinceBlock::class.java)
     }
 
     override fun getTransaction(txId: String?): BtcJSON.BtcTx {
-        val json = gson.toJson(query("gettransaction", txId))
+        val result = query("gettransaction", txId)
+        val json = gson.toJson(result)
         return gson.fromJson(json, BtcJSON.BtcTx::class.java)
     }
 }
