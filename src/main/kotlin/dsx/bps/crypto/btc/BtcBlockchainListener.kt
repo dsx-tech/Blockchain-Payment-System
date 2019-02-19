@@ -3,6 +3,7 @@ package dsx.bps.crypto.btc
 import kotlin.concurrent.timer
 import java.util.concurrent.Executors
 import dsx.bps.crypto.BlockchainListener
+import java.util.concurrent.ExecutorService
 
 class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
 
@@ -14,6 +15,8 @@ class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
 
     override var height: Int = rpc.blockCount
         get() = rpc.blockCount
+
+    override val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
     init {
         viewedBlocks.add(rpc.bestBlockHash)
@@ -30,7 +33,7 @@ class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
                 }
                 setChanged()
                 val listSinceBlock = rpc.listSinceBlock(hash)
-                Executors.newSingleThreadExecutor().execute { notifyObservers(listSinceBlock.transactions) }
+                executorService.execute { notifyObservers(listSinceBlock.transactions) }
                 lastBestHash = newBestHash
             }
         }
