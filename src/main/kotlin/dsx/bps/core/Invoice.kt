@@ -3,11 +3,6 @@ package dsx.bps.core
 import java.util.UUID
 import java.math.BigDecimal
 
-enum class InvoiceStatus {
-    PAID,
-    UNPAID
-}
-
 data class Invoice(val currency: Currency, val amount: BigDecimal, val address: String) {
     val id: String = UUID.randomUUID().toString()
     val status: InvoiceStatus
