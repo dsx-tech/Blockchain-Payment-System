@@ -1,10 +1,9 @@
-package dsx.bps.btc
+package dsx.bps.crypto.btc
 
-import java.util.Date
 import java.math.BigDecimal
-import dsx.bps.primitives.Tx
-import dsx.bps.primitives.Block
-import dsx.bps.primitives.TxOut
+import dsx.bps.crypto.btc.datamodel.Tx
+import dsx.bps.crypto.btc.datamodel.Block
+import dsx.bps.crypto.btc.datamodel.TxOut
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient
 
 class BtcJSON {

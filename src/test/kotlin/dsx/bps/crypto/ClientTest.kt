@@ -1,4 +1,4 @@
-package dsx.bps.btc
+package dsx.bps.crypto
 
 import java.math.BigDecimal
 import org.junit.jupiter.api.Test

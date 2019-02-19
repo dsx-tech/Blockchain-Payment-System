@@ -1,4 +1,4 @@
-package dsx.bps.core
+package dsx.bps.crypto
 
 import java.util.Observable
 import kotlin.collections.HashSet

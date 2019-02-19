@@ -1,7 +1,8 @@
-package dsx.bps.btc
+package dsx.bps.crypto.btc
 
 import java.math.BigDecimal
 import dsx.bps.core.InvoiceStatus
+import dsx.bps.crypto.ClientTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test

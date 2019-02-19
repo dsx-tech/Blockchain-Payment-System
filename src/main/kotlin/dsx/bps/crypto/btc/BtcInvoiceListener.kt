@@ -1,9 +1,9 @@
-package dsx.bps.btc
+package dsx.bps.crypto.btc
 
 import java.math.BigDecimal
 import java.util.Observable
 import dsx.bps.core.InvoiceStatus
-import dsx.bps.core.InvoiceListener
+import dsx.bps.crypto.InvoiceListener
 
 class BtcInvoiceListener(var rpc: BtcRPC): InvoiceListener() {
 

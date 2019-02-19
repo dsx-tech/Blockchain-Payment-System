@@ -1,4 +1,4 @@
-package dsx.bps.primitives
+package dsx.bps.crypto.btc.datamodel
 
 import java.math.BigDecimal
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient

@@ -1,4 +1,4 @@
-package dsx.bps.btc
+package dsx.bps.crypto.btc
 
 import java.math.BigDecimal
 import dsx.bps.core.Payment
