@@ -13,7 +13,7 @@ class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
 
     override var lastBestHash: String? = null
 
-    override var height: Int = rpc.blockCount
+    override val height: Int
         get() = rpc.blockCount
 
     override val executorService: ExecutorService = Executors.newSingleThreadExecutor()
