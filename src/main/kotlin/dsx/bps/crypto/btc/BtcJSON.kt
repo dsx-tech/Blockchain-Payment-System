@@ -75,5 +75,10 @@ class BtcJSON {
         val timereceived: Int,
         val vout: Int,
         val walletconflicts: List<Any>
-): Tx()
+    ): Tx()
+
+    data class BtcFundedRawTx(
+    val fee: BigDecimal,
+    val hex: String
+    )
 }

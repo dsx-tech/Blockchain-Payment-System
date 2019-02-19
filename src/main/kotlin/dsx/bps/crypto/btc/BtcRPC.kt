@@ -30,10 +30,10 @@ class BtcRPC: BitcoinJSONRPCClient {
         return getBlock(hash)
     }
 
-    fun fundRawTransaction(rawTx: String): String {
+    fun fundRawTransaction(rawTx: String): BtcJSON.BtcFundedRawTx {
         val result = query("fundrawtransaction", rawTx)
-        val obj = gson.toJsonTree(result).asJsonObject
-        return obj.get("hex").asString
+        val json = gson.toJson(result)
+        return gson.fromJson(json, BtcJSON.BtcFundedRawTx::class.java)
     }
 
     fun signRawTransactionWithWallet(rawTx: String): String {
@@ -42,7 +42,7 @@ class BtcRPC: BitcoinJSONRPCClient {
         if (obj.get("complete").asBoolean) {
             return obj.get("hex").asString
         } else {
-            throw RuntimeException("Unable to fund raw transaction: $rawTx")
+            throw RuntimeException("Unable to sign raw transaction: $rawTx")
         }
     }
 

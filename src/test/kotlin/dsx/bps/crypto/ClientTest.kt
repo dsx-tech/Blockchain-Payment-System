@@ -32,21 +32,7 @@ internal abstract class ClientTest {
 
         assert(balance - amount >= newBalance)
         println("""old balance: $balance, new balance: $newBalance
-            txid: ${payment.txIds}
-            payment: $payment""")
-    }
-
-    @Test
-    fun sendPaymentToAddresses() {
-        val balance = alice.getBalance()
-        val numRecipients = BigDecimal(addresses.size)
-        val amount = balance / BigDecimal(10) / numRecipients
-        val outs = addresses.associate { address -> address to amount }
-        val payment = alice.sendPayment(outs)
-        val newBalance = alice.getBalance()
-        assert(balance - (amount * numRecipients) >= newBalance)
-        println("""old balance: $balance, new balance: $newBalance
-            txid: ${payment.txIds}
+            txid: ${payment.txId}
             payment: $payment""")
     }
 }

@@ -35,9 +35,7 @@ abstract class CoinClient {
         return inv
     }
 
-    open fun sendPayment(address: String, amount: BigDecimal): Payment = sendPayment(mapOf(address to amount))
-
-    abstract fun sendPayment(outputs: Map<String, BigDecimal>): Payment
+    abstract fun sendPayment(address: String, amount: BigDecimal): Payment
 
     abstract fun getNewAddress(): String
 

@@ -27,15 +27,18 @@ class BtcClient(url: String? = null): CoinClient() {
         rpc.connect(url)
     }
 
-    override fun sendPayment(outputs: Map<String, BigDecimal>): Payment {
-        val outs = outputs.map { entry -> BtcJSON.BtcTxOutput(entry.key, entry.value) }
+    override fun sendPayment(address: String, amount: BigDecimal): Payment {
+        val payment = Payment(currency, amount, address)
 
-        var rawTx = rpc.createRawTransaction(listOf(), outs)
-        rawTx = rpc.fundRawTransaction(rawTx)
+        val out = BtcJSON.BtcTxOutput(address, amount)
+
+        var rawTx = rpc.createRawTransaction(listOf(), listOf(out))
+        val fundedRawTx = rpc.fundRawTransaction(rawTx)
+        payment.fee = fundedRawTx.fee
         rawTx = rpc.signRawTransactionWithWallet(rawTx)
-        val txid = rpc.sendRawTransaction(rawTx)
+        payment.rawTx = rawTx
+        payment.txId = rpc.sendRawTransaction(rawTx)
 
-        val payment = Payment(currency, outputs, txid)
         payments.putIfAbsent(payment.id, payment)
 
         return payment
