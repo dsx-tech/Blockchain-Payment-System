@@ -4,69 +4,33 @@ import java.math.BigDecimal
 import dsx.bps.core.InvoiceStatus
 import dsx.bps.crypto.ClientTest
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import java.io.File
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BtcClientTest: ClientTest() {
 
-    private val aliceURL = "http://alice:password@localhost:8333/"
-    private val bobURL = "http://bob:password@localhost:8444/"
-    private val carolURL = "http://carol:password@localhost:8555/"
+    private val configDir = System.getProperty("user.home") + File.separator + "bps" + File.separator
+    private val aliceConfigPath = configDir + "alice.properties"
+    private val bobConfigPath = configDir + "bob.properties"
+    private val carolConfigPath = configDir + "carol.properties"
 
-    override val alice = BtcClient(aliceURL)
-    override val carol = BtcClient(carolURL)
-    override val bob = BtcClient(bobURL)
+    override val alice = BtcClient(aliceConfigPath)
+    override val carol = BtcClient(carolConfigPath)
+    override val bob = BtcClient(bobConfigPath)
 
     override val addresses = listOf(
         bob.getNewAddress(),
         carol.getNewAddress()
     )
 
-    @BeforeAll
     @Test
-    fun testSetup() {
-        testConnect()
-        testGenerate()
-    }
-
-    private fun testConnect() {
-        assertDoesNotThrow {
-            bob.connect("127.0.0.1:18333")
-            carol.connect("127.0.0.1:18333")
-        }
-
-        Thread.sleep(1000)
-        assertEquals(2, alice.rpc.connectionCount)
-        assertEquals(1, bob.rpc.connectionCount)
-        assertEquals(1, carol.rpc.connectionCount)
-    }
-
-    private fun testGenerate() {
-        val amount = 50
-        val blocksHashes: MutableList<String> = mutableListOf()
-        assertDoesNotThrow {
-            Thread.sleep(1000)
-            blocksHashes.addAll(alice.rpc.generate(amount))
-            Thread.sleep(1000)
-            blocksHashes.addAll(bob.rpc.generate(amount))
-            Thread.sleep(1000)
-            blocksHashes.addAll(carol.rpc.generate(amount))
-        }
-
-        Thread.sleep(2000)
-        assertEquals(amount * 3, blocksHashes.size)
-        println("nodes generated $amount blocks")
-    }
-
-    @Test
-    override fun sendInvoice() {
+    override fun createInvoice() {
         val aliceBalance = alice.getBalance()
-        val bobPrevBalance = bob.getBalance()
         val amount = aliceBalance / BigDecimal(10)
-        val inv = bob.sendInvoice(amount)
-        alice.sendPayment(inv.address, inv.amount)
+        val inv = bob.createInvoice(amount)
+        alice.sendPayment(inv.amount, inv.address)
 
         Thread.sleep(1000)
         alice.rpc.generate(1)
@@ -77,8 +41,5 @@ internal class BtcClientTest: ClientTest() {
         Thread.sleep(2000)
 
         assertEquals(InvoiceStatus.PAID, inv.status)
-
-        val bobNewBalance = bob.getBalance()
-        assert(bobPrevBalance + inv.amount >= bobNewBalance)
     }
 }

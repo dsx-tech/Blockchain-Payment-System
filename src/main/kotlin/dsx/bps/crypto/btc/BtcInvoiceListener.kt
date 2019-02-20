@@ -45,8 +45,9 @@ class BtcInvoiceListener(var rpc: BtcRPC): InvoiceListener() {
                 continue
 
             unpaidInvoices.forEach { _, inv ->
-                if (tx.address == inv.address &&
-                    tx.category == "receive") {
+                val destination = tx.address == inv.address
+                val income = tx.category == "receive"
+                if (destination && income) {
                     inv.txIds.add(tx.txid)
                     if (tx.confirmations >= confirmations) {
                         inv.received += tx.amount

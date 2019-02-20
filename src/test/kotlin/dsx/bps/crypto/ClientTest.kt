@@ -12,22 +12,13 @@ internal abstract class ClientTest {
     abstract val addresses: List<String>
 
     @Test
-    open fun sendInvoice() {
-    }
+    abstract fun createInvoice()
 
     @Test
-    fun getInvoice() {
-    }
-
-    @Test
-    fun getInvoice1() {
-    }
-
-    @Test
-    fun sendPaymentToAddress() {
+    fun sendPayment() {
         val balance = alice.getBalance()
         val amount = balance / BigDecimal(10)
-        val payment = alice.sendPayment(addresses[0], amount)
+        val payment = alice.sendPayment(amount, addresses[0])
         val newBalance = alice.getBalance()
 
         assert(balance - amount >= newBalance)

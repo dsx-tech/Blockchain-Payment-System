@@ -2,11 +2,31 @@ package dsx.bps.core
 
 import dsx.bps.crypto.BlockchainListener
 import dsx.bps.crypto.InvoiceListener
+import java.io.File
+import java.io.FileInputStream
 import java.math.BigDecimal
+import java.util.*
 
 abstract class CoinClient {
 
     abstract val currency: Currency
+    protected val config: Properties
+
+    constructor() {
+        config = Properties()
+    }
+
+    constructor(conf: Properties) {
+        config = Properties(conf)
+    }
+
+    constructor(confPath: String) {
+        val f = File(confPath)
+        config = Properties()
+        if (f.exists()) {
+            FileInputStream(f).use { config.load(it) }
+        }
+    }
 
     // TODO: implement storage for invoices and payments
     protected val invoices: HashMap<String, Invoice> = HashMap()
@@ -15,15 +35,7 @@ abstract class CoinClient {
     protected abstract val blockchainListener: BlockchainListener
     protected abstract val invoiceListener: InvoiceListener
 
-    fun getInvoice(id: String): Invoice? = invoices[id]
-
-    fun getInvoices(): Map<String, Invoice> = invoices
-
-    fun getPayment(id: String): Payment? = payments[id]
-
-    fun getPayments(): Map<String, Payment> = payments
-
-    open fun sendInvoice(amount: BigDecimal): Invoice {
+    open fun createInvoice(amount: BigDecimal): Invoice {
         val address = getNewAddress()
         val inv = Invoice(currency, amount, address)
 
@@ -35,7 +47,7 @@ abstract class CoinClient {
         return inv
     }
 
-    abstract fun sendPayment(address: String, amount: BigDecimal): Payment
+    abstract fun sendPayment(amount: BigDecimal, address: String): Payment
 
     abstract fun getNewAddress(): String
 

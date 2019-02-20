@@ -3,26 +3,14 @@ package dsx.bps.crypto.btc
 import com.google.gson.Gson
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient
 
-class BtcRPC: BitcoinJSONRPCClient {
+class BtcRPC(url: String) : BitcoinJSONRPCClient(url) {
 
     private val gson = Gson()
-
-    constructor(): super(BitcoinJSONRPCClient.DEFAULT_JSONRPC_REGTEST_URL)
-
-    constructor(url: String): super(url)
-
-    fun connect(url: String) {
-        addNode(url, "onetry")
-    }
-
-    fun disconnect(url: String) {
-        query("disconnectnode", url)
-    }
 
     override fun getBlock(blockHash: String): BtcJSON.BtcBlock {
         val result = query("getblock", blockHash)
         val json = gson.toJson(result)
-        return Gson().fromJson(json, BtcJSON.BtcBlock::class.java)
+        return gson.fromJson(json, BtcJSON.BtcBlock::class.java)
     }
 
     override fun getBlock(height: Int): BtcJSON.BtcBlock {

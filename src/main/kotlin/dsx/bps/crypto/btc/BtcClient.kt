@@ -4,38 +4,44 @@ import java.math.BigDecimal
 import dsx.bps.core.Payment
 import dsx.bps.core.Currency
 import dsx.bps.core.CoinClient
+import java.util.*
 
-class BtcClient(url: String? = null): CoinClient() {
+class BtcClient: CoinClient {
+
+    constructor(): super()
+    constructor(conf: Properties): super(conf)
+    constructor(confPath: String): super(confPath)
 
     override val currency = Currency.BTC
 
-    internal val rpc: BtcRPC = if (url == null) {
-        BtcRPC()
-    } else {
-        BtcRPC(url)
-    }
-
-    override val blockchainListener: BtcBlockchainListener = BtcBlockchainListener(rpc)
-    override val invoiceListener: BtcInvoiceListener = BtcInvoiceListener(rpc)
+    internal val rpc: BtcRPC
+    override val invoiceListener: BtcInvoiceListener
+    override val blockchainListener: BtcBlockchainListener
 
     init {
+        val user = config.getProperty("BTC.user", "user")
+        val pass = config.getProperty("BTC.password", "password")
+        val host = config.getProperty("BTC.ip", "127.0.0.1")
+        val port = config.getProperty("BTC.port", "18443")
+        val url = "http://$user:$pass@$host:$port/"
+        rpc = BtcRPC(url)
+
+        invoiceListener = BtcInvoiceListener(rpc)
+        blockchainListener = BtcBlockchainListener(rpc)
+
         blockchainListener.addObserver(invoiceListener)
-//        blockchainListener.addObserver( /* BalanceListener */ )
     }
 
-    fun connect(url: String) {
-        rpc.connect(url)
-    }
-
-    override fun sendPayment(address: String, amount: BigDecimal): Payment {
+    override fun sendPayment(amount: BigDecimal, address: String): Payment {
         val payment = Payment(currency, amount, address)
 
         val out = BtcJSON.BtcTxOutput(address, amount)
 
+        // TODO: implement a reliable payment sending
         var rawTx = rpc.createRawTransaction(listOf(), listOf(out))
         val fundedRawTx = rpc.fundRawTransaction(rawTx)
         payment.fee = fundedRawTx.fee
-        rawTx = rpc.signRawTransactionWithWallet(rawTx)
+        rawTx = rpc.signRawTransactionWithWallet(fundedRawTx.hex)
         payment.rawTx = rawTx
         payment.txId = rpc.sendRawTransaction(rawTx)
 
