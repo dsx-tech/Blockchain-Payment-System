@@ -2,8 +2,8 @@ package dsx.bps.crypto.btc
 
 import kotlin.concurrent.timer
 import java.util.concurrent.Executors
-import dsx.bps.crypto.BlockchainListener
 import java.util.concurrent.ExecutorService
+import dsx.bps.crypto.common.BlockchainListener
 
 class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
 

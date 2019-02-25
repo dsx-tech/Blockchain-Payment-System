@@ -1,27 +1,28 @@
 package dsx.bps.crypto.btc
 
 import com.google.gson.Gson
+import dsx.bps.crypto.btc.datamodel.*
 import wf.bitcoin.javabitcoindrpcclient.BitcoinJSONRPCClient
 
 class BtcRPC(url: String) : BitcoinJSONRPCClient(url) {
 
     private val gson = Gson()
 
-    override fun getBlock(blockHash: String): BtcJSON.BtcBlock {
+    override fun getBlock(blockHash: String): BtcBlock {
         val result = query("getblock", blockHash)
         val json = gson.toJson(result)
-        return gson.fromJson(json, BtcJSON.BtcBlock::class.java)
+        return gson.fromJson(json, BtcBlock::class.java)
     }
 
-    override fun getBlock(height: Int): BtcJSON.BtcBlock {
+    override fun getBlock(height: Int): BtcBlock {
         val hash = getBlockHash(height)
         return getBlock(hash)
     }
 
-    fun fundRawTransaction(rawTx: String): BtcJSON.BtcFundedRawTx {
+    fun fundRawTransaction(rawTx: String): BtcFundedRawTx {
         val result = query("fundrawtransaction", rawTx)
         val json = gson.toJson(result)
-        return gson.fromJson(json, BtcJSON.BtcFundedRawTx::class.java)
+        return gson.fromJson(json, BtcFundedRawTx::class.java)
     }
 
     fun signRawTransactionWithWallet(rawTx: String): String {
@@ -34,15 +35,15 @@ class BtcRPC(url: String) : BitcoinJSONRPCClient(url) {
         }
     }
 
-    override fun listSinceBlock(hash: String): BtcJSON.BtcListSinceBlock {
+    override fun listSinceBlock(hash: String): BtcListSinceBlock {
         val result = query("listsinceblock", hash)
         val json = gson.toJson(result)
-        return gson.fromJson(json, BtcJSON.BtcListSinceBlock::class.java)
+        return gson.fromJson(json, BtcListSinceBlock::class.java)
     }
 
-    override fun getTransaction(txId: String?): BtcJSON.BtcTx {
+    override fun getTransaction(txId: String?): BtcTx {
         val result = query("gettransaction", txId)
         val json = gson.toJson(result)
-        return gson.fromJson(json, BtcJSON.BtcTx::class.java)
+        return gson.fromJson(json, BtcTx::class.java)
     }
 }

@@ -1,10 +1,11 @@
 package dsx.bps.crypto.btc
 
+import java.util.*
 import java.math.BigDecimal
 import dsx.bps.core.Payment
 import dsx.bps.core.Currency
 import dsx.bps.core.CoinClient
-import java.util.*
+import dsx.bps.crypto.btc.datamodel.BtcTxOutput
 
 class BtcClient: CoinClient {
 
@@ -35,7 +36,7 @@ class BtcClient: CoinClient {
     override fun sendPayment(amount: BigDecimal, address: String): Payment {
         val payment = Payment(currency, amount, address)
 
-        val out = BtcJSON.BtcTxOutput(address, amount)
+        val out = BtcTxOutput(address, amount)
 
         // TODO: implement a reliable payment sending
         var rawTx = rpc.createRawTransaction(listOf(), listOf(out))

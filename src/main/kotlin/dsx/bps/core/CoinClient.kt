@@ -1,11 +1,11 @@
 package dsx.bps.core
 
-import dsx.bps.crypto.BlockchainListener
-import dsx.bps.crypto.InvoiceListener
+import java.util.*
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
-import java.util.*
+import dsx.bps.crypto.InvoiceListener
+import dsx.bps.crypto.common.BlockchainListener
 
 abstract class CoinClient {
 

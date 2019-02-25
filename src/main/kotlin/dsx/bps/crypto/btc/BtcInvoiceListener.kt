@@ -4,6 +4,7 @@ import java.math.BigDecimal
 import java.util.Observable
 import dsx.bps.core.InvoiceStatus
 import dsx.bps.crypto.InvoiceListener
+import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
 
 class BtcInvoiceListener(var rpc: BtcRPC): InvoiceListener() {
 
@@ -41,7 +42,7 @@ class BtcInvoiceListener(var rpc: BtcRPC): InvoiceListener() {
             return
 
         for (tx in arg) {
-            if (tx !is BtcJSON.BtcTxSinceBlock)
+            if (tx !is BtcTxSinceBlock)
                 continue
 
             unpaidInvoices.forEach { _, inv ->

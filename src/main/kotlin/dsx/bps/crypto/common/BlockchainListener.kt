@@ -1,4 +1,4 @@
-package dsx.bps.crypto
+package dsx.bps.crypto.common
 
 import java.util.Observable
 import java.util.concurrent.ExecutorService
