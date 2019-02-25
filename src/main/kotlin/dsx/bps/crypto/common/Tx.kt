@@ -1,8 +1,11 @@
 package dsx.bps.crypto.common
 
 import java.math.BigDecimal
+import dsx.bps.core.Currency
 
 interface Tx {
+
+    fun currency(): Currency
 
     fun destination(): String
 

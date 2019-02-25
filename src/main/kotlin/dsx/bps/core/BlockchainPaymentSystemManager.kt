@@ -16,6 +16,7 @@ class BlockchainPaymentSystemManager(confPath: String) {
 
     private val config = Properties(DEFAULT_CONFIG)
     private val coins: MutableMap<Currency, CoinClient> = mutableMapOf()
+    private val invoiceProcessor = InvoiceProcessor()
 
     init {
         try {
@@ -52,9 +53,8 @@ class BlockchainPaymentSystemManager(confPath: String) {
 
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
         val coin = getClient(currency)
-
-        // TODO: implement Payment-Processor, create Payment and send it into client
-        val invoice = coin.createInvoice(amount)
+        val address = coin.getNewAddress()
+        val invoice = invoiceProcessor.createInvoice(currency, amount, address)
         return invoice.id
     }
 

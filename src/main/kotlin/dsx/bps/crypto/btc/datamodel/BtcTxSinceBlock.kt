@@ -2,6 +2,7 @@ package dsx.bps.crypto.btc.datamodel
 
 import java.util.*
 import java.math.BigDecimal
+import dsx.bps.core.Currency
 import dsx.bps.crypto.common.Tx
 import wf.bitcoin.javabitcoindrpcclient.BitcoindRpcClient
 
@@ -14,6 +15,8 @@ data class BtcTxSinceBlock(
     val txid: String,
     val time: Long
 ): Tx, BitcoindRpcClient.Transaction {
+
+    override fun currency() = Currency.BTC
 
     override fun destination() = address
 
