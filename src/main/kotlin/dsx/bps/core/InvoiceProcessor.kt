@@ -21,6 +21,8 @@ class InvoiceProcessor: Observer<Tx> {
         return inv
     }
 
+    fun getInvoice(id: String): Invoice? = invoices[id]
+
     override fun onComplete() {}
 
     override fun onSubscribe(d: Disposable) {}

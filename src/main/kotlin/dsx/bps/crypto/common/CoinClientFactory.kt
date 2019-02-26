@@ -1,7 +1,8 @@
-package dsx.bps.core
+package dsx.bps.crypto.common
 
-import dsx.bps.crypto.btc.BtcClient
 import java.util.*
+import dsx.bps.core.Currency
+import dsx.bps.crypto.btc.BtcClient
 
 class CoinClientFactory {
 

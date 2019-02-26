@@ -4,6 +4,10 @@ import java.util.*
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
+import io.reactivex.Observable
+import dsx.bps.crypto.common.Tx
+import dsx.bps.crypto.common.CoinClient
+import dsx.bps.crypto.common.CoinClientFactory
 
 class BlockchainPaymentSystemManager(confPath: String) {
 
@@ -17,6 +21,7 @@ class BlockchainPaymentSystemManager(confPath: String) {
     private val config = Properties(DEFAULT_CONFIG)
     private val coins: MutableMap<Currency, CoinClient> = mutableMapOf()
     private val invoiceProcessor = InvoiceProcessor()
+    private val transactionEmitter: Observable<Tx>
 
     init {
         try {
@@ -38,6 +43,10 @@ class BlockchainPaymentSystemManager(confPath: String) {
                     throw RuntimeException(ex.message) // TODO: replace with logging
                 }
             }
+
+        val emitters = coins.values.map { it.getTxEmitter() }
+        transactionEmitter = Observable.merge(emitters)
+        transactionEmitter.subscribe(invoiceProcessor)
     }
 
     private fun getClient(currency: Currency): CoinClient = coins[currency]
@@ -53,10 +62,12 @@ class BlockchainPaymentSystemManager(confPath: String) {
 
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
         val coin = getClient(currency)
-        val address = coin.getNewAddress()
+        val address = coin.getAddress()
         val invoice = invoiceProcessor.createInvoice(currency, amount, address)
         return invoice.id
     }
+
+    fun getInvoice(id: String): Invoice? = invoiceProcessor.getInvoice(id)
 
     fun getBalance(currency: Currency): BigDecimal {
         val coin = getClient(currency)

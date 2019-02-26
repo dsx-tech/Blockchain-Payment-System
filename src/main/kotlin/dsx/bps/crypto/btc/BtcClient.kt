@@ -4,7 +4,7 @@ import java.util.*
 import java.math.BigDecimal
 import dsx.bps.core.Payment
 import dsx.bps.core.Currency
-import dsx.bps.core.CoinClient
+import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.btc.datamodel.BtcTxOutput
 
 class BtcClient: CoinClient {
@@ -16,7 +16,6 @@ class BtcClient: CoinClient {
     override val currency = Currency.BTC
 
     internal val rpc: BtcRPC
-    override val invoiceListener: BtcInvoiceListener
     override val blockchainListener: BtcBlockchainListener
 
     init {
@@ -27,10 +26,7 @@ class BtcClient: CoinClient {
         val url = "http://$user:$pass@$host:$port/"
         rpc = BtcRPC(url)
 
-        invoiceListener = BtcInvoiceListener(rpc)
         blockchainListener = BtcBlockchainListener(rpc)
-
-        blockchainListener.addObserver(invoiceListener)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String): Payment {
@@ -51,12 +47,8 @@ class BtcClient: CoinClient {
         return payment
     }
 
-    override fun getBalance(): BigDecimal {
-        return rpc.balance
-    }
+    override fun getBalance(): BigDecimal = rpc.balance
 
-    override fun getNewAddress(): String {
-        return rpc.newAddress
-    }
+    override fun getAddress(): String = rpc.newAddress
 
 }

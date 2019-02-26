@@ -28,13 +28,11 @@ class BlockchainPaymentSystemAPI {
         return manager.createInvoice(currency, am)
     }
 
-    fun getPayment(id: String): Payment {
+    fun getPayment(id: String): Payment? {
         TODO("not implemented")
     }
 
-    fun getInvoice(id: String): Invoice {
-        TODO("not implemented")
-    }
+    fun getInvoice(id: String): Invoice? = manager.getInvoice(id)
 
     fun getBalance(currency: Currency): String {
         val balance = manager.getBalance(currency)

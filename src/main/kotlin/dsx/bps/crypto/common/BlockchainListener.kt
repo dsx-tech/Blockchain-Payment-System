@@ -1,14 +1,14 @@
 package dsx.bps.crypto.common
 
-import java.util.Observable
-import java.util.concurrent.ExecutorService
-import kotlin.collections.HashSet
+import io.reactivex.subjects.PublishSubject
 
-abstract class BlockchainListener: Observable() {
+interface BlockchainListener {
 
-    abstract val height: Int
-    abstract var lastBestHash: String?
-    protected abstract val viewedBlocks: HashSet<String>
-    protected abstract val executorService: ExecutorService
+    var frequency: Long
 
+    val viewed: HashSet<String>
+
+    val emitter: PublishSubject<Tx>
+
+    fun explore()
 }

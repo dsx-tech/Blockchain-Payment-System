@@ -4,6 +4,7 @@ import java.math.BigDecimal
 
 data class BtcTxDetail(
     val address: String,
+    val category: String,
     val amount: BigDecimal,
-    val category: String
+    val fee: BigDecimal
 )

@@ -1,40 +1,37 @@
 package dsx.bps.crypto.btc
 
 import kotlin.concurrent.timer
-import java.util.concurrent.Executors
-import java.util.concurrent.ExecutorService
+import io.reactivex.subjects.PublishSubject
+import dsx.bps.crypto.common.Tx
 import dsx.bps.crypto.common.BlockchainListener
 
-class BtcBlockchainListener(var rpc: BtcRPC): BlockchainListener() {
+class BtcBlockchainListener(private val rpc: BtcRPC): BlockchainListener {
 
-    var frequency: Long = 5000 // 5 sec
+    override var frequency: Long = 5000
 
-    override val viewedBlocks = hashSetOf<String>()
+    override val viewed: HashSet<String> = hashSetOf()
 
-    override var lastBestHash: String? = null
-
-    override val height: Int
-        get() = rpc.blockCount
-
-    override val executorService: ExecutorService = Executors.newSingleThreadExecutor()
+    override val emitter: PublishSubject<Tx> = PublishSubject.create()
 
     init {
-        viewedBlocks.add(rpc.bestBlockHash)
+        explore()
+    }
 
-        timer("BtcBlockchainListener", true, 0, frequency) {
+    override fun explore() {
+        var last = rpc.bestBlockHash
+        viewed.add(last)
 
-            val newBestHash = rpc.bestBlockHash
-            if (newBestHash != lastBestHash) {
-                var hash = newBestHash
-                while (!viewedBlocks.contains(hash)) {
-                    viewedBlocks.add(hash)
-                    val block = rpc.getBlock(hash)
-                    hash = block.previousblockhash
+        timer(this::class.qualifiedName, true, 0, frequency) {
+            var new = rpc.bestBlockHash
+            if (new != last) {
+                last = new
+                while (!viewed.contains(new)) {
+                    viewed.add(new)
+                    val block = rpc.getBlock(new)
+                    new = block.previousblockhash
                 }
-                setChanged()
-                val listSinceBlock = rpc.listSinceBlock(hash)
-                executorService.execute { notifyObservers(listSinceBlock.transactions) }
-                lastBestHash = newBestHash
+                val listSinceBlock = rpc.listSinceBlock(new)
+                listSinceBlock.transactions.forEach(emitter::onNext)
             }
         }
     }
