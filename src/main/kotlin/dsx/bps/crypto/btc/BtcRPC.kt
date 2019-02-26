@@ -8,15 +8,8 @@ class BtcRPC(url: String) : BitcoinJSONRPCClient(url) {
 
     private val gson = Gson()
 
-    override fun getBlock(blockHash: String): BtcBlock {
-        val result = query("getblock", blockHash)
-        val json = gson.toJson(result)
-        return gson.fromJson(json, BtcBlock::class.java)
-    }
-
-    override fun getBlock(height: Int): BtcBlock {
-        val hash = getBlockHash(height)
-        return getBlock(hash)
+    fun createRawTransaction(output: BtcTxOutput): String {
+        return createRawTransaction(listOf(), listOf(output))
     }
 
     fun fundRawTransaction(rawTx: String): BtcFundedRawTx {
@@ -33,6 +26,17 @@ class BtcRPC(url: String) : BitcoinJSONRPCClient(url) {
         } else {
             throw RuntimeException("Unable to sign raw transaction: $rawTx")
         }
+    }
+
+    override fun getBlock(blockHash: String): BtcBlock {
+        val result = query("getblock", blockHash)
+        val json = gson.toJson(result)
+        return gson.fromJson(json, BtcBlock::class.java)
+    }
+
+    override fun getBlock(height: Int): BtcBlock {
+        val hash = getBlockHash(height)
+        return getBlock(hash)
     }
 
     override fun listSinceBlock(hash: String): BtcListSinceBlock {

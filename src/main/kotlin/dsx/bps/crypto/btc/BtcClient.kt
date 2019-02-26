@@ -29,26 +29,23 @@ class BtcClient: CoinClient {
         blockchainListener = BtcBlockchainListener(rpc)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String): Payment {
-        val payment = Payment(currency, amount, address)
-
-        val out = BtcTxOutput(address, amount)
-
-        // TODO: implement a reliable payment sending
-        var rawTx = rpc.createRawTransaction(listOf(), listOf(out))
-        val fundedRawTx = rpc.fundRawTransaction(rawTx)
-        payment.fee = fundedRawTx.fee
-        rawTx = rpc.signRawTransactionWithWallet(fundedRawTx.hex)
-        payment.rawTx = rawTx
-        payment.txId = rpc.sendRawTransaction(rawTx)
-
-        payments.putIfAbsent(payment.id, payment)
-
-        return payment
-    }
-
     override fun getBalance(): BigDecimal = rpc.balance
 
     override fun getAddress(): String = rpc.newAddress
 
+    override fun sendPayment(payment: Payment) {
+        if (payment.currency != currency)
+            throw IllegalArgumentException("CoinClient is $currency, but provided payment is ${payment.currency}")
+
+        val output = BtcTxOutput(payment.address, payment.amount)
+
+        // TODO: implement a reliable payment sending
+        var rawTx = rpc.createRawTransaction(output)
+        val fundedRawTx = rpc.fundRawTransaction(rawTx)
+        rawTx = fundedRawTx.hex
+        rawTx = rpc.signRawTransactionWithWallet(rawTx)
+        payment.fee = fundedRawTx.fee
+        payment.rawTx = rawTx
+        payment.txId = rpc.sendRawTransaction(rawTx)
+    }
 }

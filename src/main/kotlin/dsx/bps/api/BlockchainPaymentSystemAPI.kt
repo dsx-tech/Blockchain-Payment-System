@@ -28,9 +28,7 @@ class BlockchainPaymentSystemAPI {
         return manager.createInvoice(currency, am)
     }
 
-    fun getPayment(id: String): Payment? {
-        TODO("not implemented")
-    }
+    fun getPayment(id: String): Payment? = manager.getPayment(id)
 
     fun getInvoice(id: String): Invoice? = manager.getInvoice(id)
 

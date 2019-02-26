@@ -10,7 +10,7 @@ class InvoiceProcessor: Observer<Tx> {
     // Default value for now
     private var confirmations = 1
 
-    // TODO: implement db-storage for invoices
+    // TODO: Implement db-storage for invoices
     private val invoices: HashMap<String, Invoice> = hashMapOf()
     private val unpaidInvoices: HashSet<String> = hashSetOf()
 
@@ -38,6 +38,7 @@ class InvoiceProcessor: Observer<Tx> {
             .filter { inv -> inv.currency == tx.currency() && inv.address == tx.destination() }
             .forEach {inv ->
                 inv.txIds.add(tx.hash())
+
                 if (tx.confirmations() >= confirmations)
                     inv.received += tx.amount()
 

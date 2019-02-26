@@ -12,6 +12,7 @@ abstract class CoinClient {
 
     abstract val currency: Currency
     protected val config: Properties
+    protected abstract val blockchainListener: BlockchainListener
 
     constructor() {
         config = Properties()
@@ -28,16 +29,11 @@ abstract class CoinClient {
         }
     }
 
-    // TODO: implement storage for payments
-    protected val payments: HashMap<String, Payment> = HashMap()
-
-    protected abstract val blockchainListener: BlockchainListener
-
     fun getTxEmitter(): PublishSubject<Tx> = blockchainListener.emitter
 
-    abstract fun sendPayment(amount: BigDecimal, address: String): Payment
+    abstract fun getBalance(): BigDecimal
 
     abstract fun getAddress(): String
 
-    abstract fun getBalance(): BigDecimal
+    abstract fun sendPayment(payment: Payment)
 }

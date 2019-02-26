@@ -52,12 +52,12 @@ internal class BlockchainPaymentSystemAPITest {
         val inv = aliceAPI.getInvoice(invId)
 
         assertNotNull(inv)
-
         bobAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
         Thread.sleep(2000)
-        assertEquals(InvoiceStatus.UNPAID, inv.status)
         carolGen.rpc.generate(1)
-        Thread.sleep(4000)
+        Thread.sleep(2000)
+        carolGen.rpc.generate(1)
+        Thread.sleep(2000)
         assertEquals(InvoiceStatus.PAID, inv.status)
     }
 }
