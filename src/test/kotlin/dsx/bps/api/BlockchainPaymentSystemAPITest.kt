@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
+import java.time.Duration
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BlockchainPaymentSystemAPITest {
@@ -19,11 +20,10 @@ internal class BlockchainPaymentSystemAPITest {
 
     private val aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath)
     private val bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
-    private val carolGen = BtcClient(carolConfigPath)
+    private val generator = BtcClient(carolConfigPath).rpc
 
     private val aliceBtcAddress = "2MtYy1RGY2msh9WbRBf5VwUAE4xtGNJ9GQc"
     private val bobBtcAddress = "2NETNm86ug9drkCJ7N4U5crA9B9681HidzX"
-
 
     @Test
     @BeforeAll
@@ -39,10 +39,10 @@ internal class BlockchainPaymentSystemAPITest {
         assertDoesNotThrow {
             aliceAPI.sendPayment(Currency.BTC, 50.05, bobBtcAddress)
             Thread.sleep(1000)
-            carolGen.rpc.generate(1)
+            generator.generate(1)
             Thread.sleep(1000)
             bobAPI.sendPayment(Currency.BTC, 25.52, aliceBtcAddress)
-            carolGen.rpc.generate(1)
+            generator.generate(1)
         }
     }
 
@@ -54,10 +54,12 @@ internal class BlockchainPaymentSystemAPITest {
         assertNotNull(inv)
         bobAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
         Thread.sleep(2000)
-        carolGen.rpc.generate(1)
-        Thread.sleep(2000)
-        carolGen.rpc.generate(1)
-        Thread.sleep(2000)
-        assertEquals(InvoiceStatus.PAID, inv.status)
+
+        assertTimeout(Duration.ofSeconds(10)) {
+            while (inv.status != InvoiceStatus.PAID) {
+                generator.generate(1)
+                Thread.sleep(100)
+            }
+        }
     }
 }
