@@ -5,7 +5,7 @@ import io.reactivex.subjects.PublishSubject
 import dsx.bps.crypto.common.Tx
 import dsx.bps.crypto.common.BlockchainListener
 
-class BtcBlockchainListener(private val rpc: BtcRPC): BlockchainListener {
+class BtcBlockchainListener(private val rpc: BtcRpc): BlockchainListener {
 
     override var frequency: Long = 5000
 
@@ -18,11 +18,11 @@ class BtcBlockchainListener(private val rpc: BtcRPC): BlockchainListener {
     }
 
     override fun explore() {
-        var last = rpc.bestBlockHash
+        var last = rpc.getBestBlockHash()
         viewed.add(last)
 
         timer(this::class.qualifiedName, true, 0, frequency) {
-            var new = rpc.bestBlockHash
+            var new = rpc.getBestBlockHash()
             if (new != last) {
                 last = new
                 while (!viewed.contains(new)) {
