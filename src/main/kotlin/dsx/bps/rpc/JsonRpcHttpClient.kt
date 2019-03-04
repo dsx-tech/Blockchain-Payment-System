@@ -22,7 +22,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
     protected val headers = mutableMapOf<String, String>()
 
     protected val gson = Gson()
-    private val charset = Charsets.ISO_8859_1
+    protected val charset = Charsets.ISO_8859_1
 
     constructor(url: String): this(URL(url))
 
@@ -44,7 +44,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
             throw RuntimeException("RPC query ${r.toString(charset)} failed\n" +
                     "Code: ${conn.responseCode}\n" +
                     "Message: ${conn.responseMessage}\n" +
-                    "Response: ${errorStream.use { it.readBytes() }}")
+                    "Response: ${errorStream.use { it.readBytes().toString(charset) }}")
         }
 
         return parseResponse(conn.inputStream, id)
@@ -74,7 +74,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
         )).toByteArray(Charset.forName("ISO8859-1"))
     }
 
-    private fun parseResponse(input: InputStream, id: String): Any? {
+    protected open fun parseResponse(input: InputStream, id: String): Any? {
         val r = input.use { it.readBytes().toString(charset) }
         val json = gson.fromJson(r, Map::class.java)
 

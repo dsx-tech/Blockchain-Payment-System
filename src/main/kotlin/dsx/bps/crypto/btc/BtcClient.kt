@@ -15,7 +15,7 @@ class BtcClient: CoinClient {
 
     override val currency = Currency.BTC
 
-    internal val rpc: BtcRpc
+    override val rpc: BtcRpc
     override val blockchainListener: BtcBlockchainListener
 
     init {

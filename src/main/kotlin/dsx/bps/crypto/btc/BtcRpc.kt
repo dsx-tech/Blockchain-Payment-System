@@ -42,8 +42,8 @@ class BtcRpc(url: String): JsonRpcHttpClient(url) {
     fun signRawTransactionWithWallet(rawTx: String): String {
         val result = query("signrawtransactionwithwallet", rawTx)
         val obj = gson.toJsonTree(result).asJsonObject
-        if (obj.get("complete").asBoolean) {
-            return obj.get("hex").asString
+        if (obj["complete"].asBoolean) {
+            return obj["hex"].asString
         } else {
             throw RuntimeException("Unable to sign raw transaction: $rawTx")
         }

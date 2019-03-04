@@ -7,11 +7,14 @@ import java.math.BigDecimal
 import io.reactivex.subjects.PublishSubject
 import dsx.bps.core.Payment
 import dsx.bps.core.Currency
+import dsx.bps.rpc.JsonRpcHttpClient
 
 abstract class CoinClient {
 
     abstract val currency: Currency
     protected val config: Properties
+
+    protected abstract val rpc: JsonRpcHttpClient
     protected abstract val blockchainListener: BlockchainListener
 
     constructor() {
