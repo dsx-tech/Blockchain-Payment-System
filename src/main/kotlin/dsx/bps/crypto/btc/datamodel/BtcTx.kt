@@ -8,7 +8,6 @@ data class BtcTx(
     val confirmations: Int,
     val blockhash: String,
     val txid: String,
-    val time: Long,
     val details: List<BtcTxDetail>,
     val hex: String
 )

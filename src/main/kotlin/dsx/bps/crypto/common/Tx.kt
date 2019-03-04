@@ -17,7 +17,5 @@ interface Tx {
 
     fun hash(): String
 
-    fun timestamp(): Long
-
     fun tag(): String
 }

@@ -10,8 +10,7 @@ data class BtcTxSinceBlock(
     val amount: BigDecimal,
     val fee: BigDecimal,
     val confirmations: Int,
-    val txid: String,
-    val time: Long
+    val txid: String
 ): Tx {
 
     override fun currency() = Currency.BTC
@@ -25,8 +24,6 @@ data class BtcTxSinceBlock(
     override fun confirmations() = confirmations
 
     override fun hash() = txid
-
-    override fun timestamp() = time
 
     override fun tag() = ""
 }
