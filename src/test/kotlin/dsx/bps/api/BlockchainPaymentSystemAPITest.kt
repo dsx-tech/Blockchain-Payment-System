@@ -58,7 +58,7 @@ internal class BlockchainPaymentSystemAPITest {
         assertTimeout(Duration.ofSeconds(10)) {
             while (inv.status != InvoiceStatus.PAID) {
                 generator.generate(1)
-                Thread.sleep(100)
+                Thread.sleep(1000)
             }
         }
     }

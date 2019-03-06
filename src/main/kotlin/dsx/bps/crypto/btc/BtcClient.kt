@@ -15,7 +15,7 @@ class BtcClient: CoinClient {
 
     override val currency = Currency.BTC
 
-    internal val rpc: BtcRPC
+    internal val rpc: BtcRpc
     override val blockchainListener: BtcBlockchainListener
 
     init {
@@ -24,14 +24,14 @@ class BtcClient: CoinClient {
         val host = config.getProperty("BTC.ip", "127.0.0.1")
         val port = config.getProperty("BTC.port", "18443")
         val url = "http://$user:$pass@$host:$port/"
-        rpc = BtcRPC(url)
+        rpc = BtcRpc(url)
 
         blockchainListener = BtcBlockchainListener(rpc)
     }
 
-    override fun getBalance(): BigDecimal = rpc.balance
+    override fun getBalance(): BigDecimal = rpc.getBalance()
 
-    override fun getAddress(): String = rpc.newAddress
+    override fun getAddress(): String = rpc.getNewAddress()
 
     override fun sendPayment(payment: Payment) {
         if (payment.currency != currency)
