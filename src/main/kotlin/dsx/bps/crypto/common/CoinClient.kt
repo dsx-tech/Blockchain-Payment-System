@@ -5,8 +5,9 @@ import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
 import io.reactivex.subjects.PublishSubject
-import dsx.bps.core.Payment
-import dsx.bps.core.Currency
+import dsx.bps.core.datamodel.Payment
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Tx
 import dsx.bps.rpc.JsonRpcHttpClient
 
 abstract class CoinClient {

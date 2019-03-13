@@ -1,6 +1,9 @@
 package dsx.bps.core
 
-import java.math.BigDecimal
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Invoice
+import dsx.bps.core.datamodel.InvoiceStatus
+import dsx.bps.core.datamodel.Tx
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import dsx.bps.crypto.common.Tx

@@ -1,8 +1,8 @@
 package dsx.bps.crypto.btc.datamodel
 
 import java.math.BigDecimal
-import dsx.bps.core.Currency
-import dsx.bps.crypto.common.Tx
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Tx
 
 data class BtcTxSinceBlock(
     val address: String,

@@ -1,7 +1,7 @@
 package dsx.bps.api
 
-import dsx.bps.core.Currency
-import dsx.bps.core.InvoiceStatus
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.crypto.btc.BtcRpc
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

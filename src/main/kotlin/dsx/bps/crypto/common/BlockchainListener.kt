@@ -1,5 +1,6 @@
 package dsx.bps.crypto.common
 
+import dsx.bps.core.datamodel.Tx
 import io.reactivex.subjects.PublishSubject
 
 interface BlockchainListener {

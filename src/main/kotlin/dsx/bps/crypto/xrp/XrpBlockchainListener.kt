@@ -1,7 +1,7 @@
 package dsx.bps.crypto.xrp
 
 import dsx.bps.crypto.common.BlockchainListener
-import dsx.bps.crypto.common.Tx
+import dsx.bps.core.datamodel.Tx
 import io.reactivex.subjects.PublishSubject
 import kotlin.concurrent.timer
 

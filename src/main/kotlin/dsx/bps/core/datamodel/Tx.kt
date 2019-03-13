@@ -1,4 +1,4 @@
-package dsx.bps.crypto.common
+package dsx.bps.core.datamodel
 
 import java.math.BigDecimal
 import dsx.bps.core.Currency

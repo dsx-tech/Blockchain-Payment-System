@@ -1,4 +1,4 @@
-package dsx.bps.core
+package dsx.bps.core.datamodel
 
 enum class InvoiceStatus {
     PAID,

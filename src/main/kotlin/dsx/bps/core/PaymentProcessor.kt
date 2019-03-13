@@ -1,5 +1,8 @@
 package dsx.bps.core
 
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Payment
+import dsx.bps.core.datamodel.Tx
 import java.math.BigDecimal
 
 class PaymentProcessor {

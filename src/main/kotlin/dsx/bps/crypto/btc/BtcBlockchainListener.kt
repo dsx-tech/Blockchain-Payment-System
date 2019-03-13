@@ -2,7 +2,7 @@ package dsx.bps.crypto.btc
 
 import kotlin.concurrent.timer
 import io.reactivex.subjects.PublishSubject
-import dsx.bps.crypto.common.Tx
+import dsx.bps.core.datamodel.Tx
 import dsx.bps.crypto.common.BlockchainListener
 
 class BtcBlockchainListener(private val rpc: BtcRpc): BlockchainListener {

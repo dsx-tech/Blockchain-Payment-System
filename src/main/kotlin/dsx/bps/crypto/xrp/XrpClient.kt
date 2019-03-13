@@ -1,7 +1,8 @@
 package dsx.bps.crypto.xrp
 
-import dsx.bps.core.Currency
-import dsx.bps.core.Payment
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Payment
+import dsx.bps.core.datamodel.Tx
 import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
 import java.math.BigDecimal

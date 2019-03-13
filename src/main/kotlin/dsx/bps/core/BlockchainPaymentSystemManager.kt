@@ -1,5 +1,8 @@
 package dsx.bps.core
 
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Invoice
+import dsx.bps.core.datamodel.Payment
 import java.util.*
 import java.io.File
 import java.io.FileInputStream

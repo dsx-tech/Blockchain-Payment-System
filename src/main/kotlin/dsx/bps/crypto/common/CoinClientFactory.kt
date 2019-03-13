@@ -1,7 +1,7 @@
 package dsx.bps.crypto.common
 
 import java.util.*
-import dsx.bps.core.Currency
+import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.btc.BtcClient
 import dsx.bps.crypto.xrp.XrpClient
 

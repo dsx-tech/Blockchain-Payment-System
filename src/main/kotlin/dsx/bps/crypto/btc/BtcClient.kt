@@ -1,11 +1,12 @@
 package dsx.bps.crypto.btc
 
-import java.util.*
-import java.math.BigDecimal
-import dsx.bps.core.Payment
-import dsx.bps.core.Currency
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Payment
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.crypto.btc.datamodel.BtcTxDetail
 import dsx.bps.crypto.common.CoinClient
-import dsx.bps.crypto.btc.datamodel.BtcTxOutput
+import java.math.BigDecimal
+import java.util.*
 
 class BtcClient: CoinClient {
 
