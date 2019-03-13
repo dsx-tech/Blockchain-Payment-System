@@ -40,7 +40,9 @@ class XrpBlockchainListener(private val rpc: XrpRpc, private val account: String
                 val accountTxs = rpc.getAccountTx(account, lastIndex+1, newIndex)
                 println("${Thread.currentThread().name}: received txs from ${lastIndex+1} to $newIndex ledgers:\n" +
                         "${accountTxs.map { it.hash }}")
-                accountTxs.forEach(emitter::onNext)
+                accountTxs
+                    .filter { it.type == "Payment" }
+                    .forEach(emitter::onNext)
                 lastIndex = newIndex
             }
         }

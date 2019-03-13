@@ -6,6 +6,8 @@ import dsx.bps.core.Currency
 import dsx.bps.crypto.common.Tx
 
 data class XrpTx(
+    val hash: String,
+    var validated: Boolean,
     @SerializedName("Account")
     val account: String,
     @SerializedName("Amount")
@@ -17,11 +19,9 @@ data class XrpTx(
     @SerializedName("Sequence")
     val sequence: Long,
     @SerializedName("TransactionType")
-    val type: String = "Payment",
+    val type: String,
     @SerializedName("DestinationTag")
-    val destinationTag: Long? = null,
-    val hash: String? = null,
-    var validated: Boolean? = null
+    val destinationTag: Long? = null
 ): Tx {
 
     override fun currency() = Currency.XRP
@@ -32,9 +32,9 @@ data class XrpTx(
 
     override fun fee() = BigDecimal(fee)
 
-    override fun confirmations() = if (validated == true) 1 else 0
+    override fun confirmations() = if (validated) 1 else 0
 
-    override fun hash() = hash ?: ""
+    override fun hash() = hash
 
     override fun tag() = destinationTag?.toString() ?: ""
 }

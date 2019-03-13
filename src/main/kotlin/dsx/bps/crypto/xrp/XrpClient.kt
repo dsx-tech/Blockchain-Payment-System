@@ -3,7 +3,7 @@ package dsx.bps.crypto.xrp
 import dsx.bps.core.Currency
 import dsx.bps.core.Payment
 import dsx.bps.crypto.common.CoinClient
-import dsx.bps.crypto.xrp.datamodel.XrpTx
+import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
 import java.math.BigDecimal
 import java.util.*
 
@@ -42,7 +42,7 @@ class XrpClient: CoinClient {
     override fun sendPayment(payment: Payment) {
         val fee = rpc.getTxCost()
         val seq = rpc.getSequence(account)
-        val tx = XrpTx(
+        val tx = XrpTxPayment(
             account,
             payment.amount,
             payment.address,

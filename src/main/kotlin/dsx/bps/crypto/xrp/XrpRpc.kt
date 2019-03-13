@@ -1,10 +1,7 @@
 package dsx.bps.crypto.xrp
 
 import com.google.gson.JsonElement
-import dsx.bps.crypto.xrp.datamodel.XrpAccountData
-import dsx.bps.crypto.xrp.datamodel.XrpLedger
-import dsx.bps.crypto.xrp.datamodel.XrpServerInfo
-import dsx.bps.crypto.xrp.datamodel.XrpTx
+import dsx.bps.crypto.xrp.datamodel.*
 import dsx.bps.rpc.JsonRpcHttpClient
 import java.io.InputStream
 import java.math.BigDecimal
@@ -69,8 +66,8 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         }
     }
 
-    fun sign(privateKey: String, tx: XrpTx, offline: Boolean = true): String {
-        return sign(privateKey, gson.toJsonTree(tx, XrpTx::class.java), offline)
+    fun sign(privateKey: String, tx: XrpTxPayment, offline: Boolean = true): String {
+        return sign(privateKey, gson.toJsonTree(tx, XrpTxPayment::class.java), offline)
     }
 
     private fun sign(privateKey: String, txJson: JsonElement, offline: Boolean = true): String {
@@ -88,11 +85,13 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         val params = mapOf("tx_blob" to txBlob)
         val result = query("submit", params)
         val obj = gson.toJsonTree(result).asJsonObject
-        val tx: XrpTx = gson.fromJson(obj["tx_json"], XrpTx::class.java)
-        if (tx.hash == null)
+
+        if (obj["engine_result"].asString != "tesSUCCESS")
             throw RuntimeException("engine_result: ${obj["engine_result"].asString}\n" +
                     "engine_result_code: ${obj["engine_result_code"].asInt}\n" +
                     "engine_result_message: ${obj["engine_result_message"].asString}")
+
+        val tx: XrpTx = gson.fromJson(obj["tx_json"], XrpTx::class.java)
         return tx.hash
     }
 
