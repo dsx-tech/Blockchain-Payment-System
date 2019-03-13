@@ -8,6 +8,7 @@ import io.reactivex.subjects.PublishSubject
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
 import dsx.bps.rpc.JsonRpcHttpClient
 
 abstract class CoinClient {
@@ -39,10 +40,10 @@ abstract class CoinClient {
 
     abstract fun getAddress(): String
 
-    abstract fun getTx(hash: String, index: Int): Tx
+    abstract fun getTx(txid: TxId): Tx
 
-    fun getTxs(hashes: Map<String, Int>): List<Tx> =
-        hashes.map { (hash, index) -> getTx(hash, index) }
+    fun getTxs(txids: List<TxId>): List<Tx> =
+        txids.map(::getTx)
 
     abstract fun sendPayment(payment: Payment)
 }

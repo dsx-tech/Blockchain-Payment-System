@@ -3,6 +3,7 @@ package dsx.bps.crypto.xrp
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
 import java.math.BigDecimal
@@ -40,8 +41,8 @@ class XrpClient: CoinClient {
 
     override fun getAddress(): String = account
 
-    override fun getTx(hash: String, index: Int): Tx =
-        rpc.getTransaction(hash)
+    override fun getTx(txid: TxId): Tx =
+        rpc.getTransaction(txid.hash)
 
     override fun sendPayment(payment: Payment) {
         val tx = payment
@@ -49,10 +50,11 @@ class XrpClient: CoinClient {
             .let { rpc.sign(privateKey, it) }
             .let { rpc.submit(it) }
 
-        payment.tx = tx.hash
-        payment.hex = tx.hex
-        payment.fee = tx.fee()
-        payment.index = tx.sequence
+        with(payment) {
+            txid = TxId(tx.hash(), tx.sequence)
+            hex = tx.hex
+            fee = tx.fee()
+        }
     }
 
     private fun createTransaction(amount: BigDecimal, address: String, tag: Int?): XrpTxPayment {

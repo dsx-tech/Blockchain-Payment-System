@@ -3,6 +3,7 @@ package dsx.bps.crypto.btc
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.btc.datamodel.BtcTxDetail
 import dsx.bps.crypto.common.CoinClient
 import java.math.BigDecimal
@@ -34,16 +35,16 @@ class BtcClient: CoinClient {
 
     override fun getAddress(): String = rpc.getNewAddress()
 
-    override fun getTx(hash: String, index: Int): Tx {
-        val tx = rpc.getTransaction(hash)
+    override fun getTx(txid: TxId): Tx {
+        val tx = rpc.getTransaction(txid.hash)
         val detail = tx
             .details
-            .single { detail -> detail.vout == index }
+            .single { detail -> detail.vout == txid.index }
 
         return object: Tx {
             override fun currency() = Currency.BTC
 
-            override fun hash() = tx.txid
+            override fun hash() = tx.hash
 
             override fun index() = detail.vout
 
@@ -69,10 +70,11 @@ class BtcClient: CoinClient {
             .details
             .single { detail -> match(detail, payment) }
 
-        payment.tx = tx.txid
-        payment.fee = tx.fee
-        payment.hex = tx.hex
-        payment.index = detail.vout
+        with(payment) {
+            txid = TxId(tx.hash, detail.vout)
+            hex = tx.hex
+            fee = tx.fee.abs()
+        }
     }
 
     private fun match(detail: BtcTxDetail, payment: Payment): Boolean =

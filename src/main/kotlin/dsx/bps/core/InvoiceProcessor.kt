@@ -40,10 +40,10 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
     private fun recalculate(inv: Invoice) {
         var received = BigDecimal.ZERO
         manager
-            .getTxs(inv.currency, inv.txs)
+            .getTxs(inv.currency, inv.txids)
             .forEach {tx ->
                 if (tx.confirmations() < 0)
-                    inv.txs.remove(tx.hash())
+                    inv.txids.remove(tx.txid())
                 if (tx.confirmations() >= confirmations)
                     received += tx.amount()
             }
@@ -66,7 +66,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
             .forEach { inv ->
                 recalculate(inv)
 
-                inv.txs[tx.hash()] = tx.index()
+                inv.txids.add(tx.txid())
 
                 if (tx.confirmations() >= confirmations)
                     inv.received += tx.amount()

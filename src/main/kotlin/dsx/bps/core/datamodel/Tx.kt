@@ -6,6 +6,8 @@ interface Tx {
 
     fun currency(): Currency
 
+    fun txid(): TxId = TxId(hash(), index())
+
     fun hash(): String
 
     fun index(): Int

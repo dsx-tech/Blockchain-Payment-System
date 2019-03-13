@@ -1,9 +1,7 @@
 package dsx.bps.core
 
+import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.datamodel.Tx
 import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.common.CoinClientFactory
 import io.reactivex.Observable
@@ -84,14 +82,14 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
 
     fun getInvoice(id: String): Invoice? = invoiceProcessor.getInvoice(id)
 
-    fun getTx(currency: Currency, hash: String, index: Int): Tx {
+    fun getTx(currency: Currency, txid: TxId): Tx {
         val coin = getClient(currency)
-        return coin.getTx(hash, index)
+        return coin.getTx(txid)
     }
 
-    fun getTxs(currency: Currency, hashes: Map<String, Int>): List<Tx> {
+    fun getTxs(currency: Currency, txids: List<TxId>): List<Tx> {
         val coin = getClient(currency)
-        return coin.getTxs(hashes)
+        return coin.getTxs(txids)
     }
 
     fun subscribe(observer: Observer<Tx>) {

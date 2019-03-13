@@ -11,5 +11,5 @@ data class Invoice(val currency: Currency, val amount: BigDecimal, val address: 
         else
             InvoiceStatus.UNPAID
     var received: BigDecimal = BigDecimal.ZERO
-    val txs: HashMap<String, Int> = hashMapOf()
+    val txids: MutableList<TxId> = mutableListOf()
 }

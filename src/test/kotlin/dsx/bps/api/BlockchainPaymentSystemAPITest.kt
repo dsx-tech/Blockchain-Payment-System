@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
-import java.time.Duration
+import java.math.BigDecimal
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BlockchainPaymentSystemAPITest {
@@ -26,20 +26,31 @@ internal class BlockchainPaymentSystemAPITest {
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            aliceAPI.getBalance(Currency.BTC)
-            bobAPI.getBalance(Currency.BTC)
+            println("alice balance: ${aliceAPI.getBalance(Currency.BTC)}")
+            println("bob balance: ${bobAPI.getBalance(Currency.BTC)}")
         }
     }
 
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
-            aliceAPI.sendPayment(Currency.BTC, 50.05, bobBtcAddress)
+            val id1 = aliceAPI.sendPayment(Currency.BTC, 50.05, bobBtcAddress)
             Thread.sleep(1000)
             generator.generate(1)
             Thread.sleep(1000)
-            bobAPI.sendPayment(Currency.BTC, 25.52, aliceBtcAddress)
+            val id2 = bobAPI.sendPayment(Currency.BTC, 25.52, aliceBtcAddress)
             generator.generate(1)
+
+            val pay1 = aliceAPI.getPayment(id1)
+            val pay2 = bobAPI.getPayment(id2)
+            assertNotNull(pay1)
+            assertNotNull(pay2)
+            println("alice's payment:\n" +
+                    "   $pay1\n" +
+                    "   [ ${pay1!!.txid }]")
+            println("bob's payment:\n" +
+                    "$pay2\n" +
+                    "   [ ${pay2!!.txid} ]")
         }
     }
 
@@ -52,11 +63,39 @@ internal class BlockchainPaymentSystemAPITest {
         bobAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
         Thread.sleep(2000)
 
-        assertTimeout(Duration.ofSeconds(10)) {
-            while (inv.status != InvoiceStatus.PAID) {
-                generator.generate(1)
-                Thread.sleep(1000)
-            }
+        var count = 0
+        while (inv.status != InvoiceStatus.PAID) {
+            generator.generate(1)
+            count += 1
+            Thread.sleep(1000)
+            assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
         }
     }
+
+    @Test
+    fun createInvoice1() {
+        val invId = aliceAPI.createInvoice(Currency.BTC, 100.2)
+        val inv = aliceAPI.getInvoice(invId)
+        assertNotNull(inv)
+
+        val half = inv!!.amount / BigDecimal(2)
+        bobAPI.sendPayment(inv.currency, half, inv.address)
+        Thread.sleep(2000)
+        generator.generate(1)
+        Thread.sleep(2000)
+        println("Received funds: ${inv.received} / ${inv.amount} in tx ${inv.txids}")
+
+        bobAPI.sendPayment(inv.currency, half, inv.address)
+        Thread.sleep(2000)
+        var count = 0
+        while (inv.status != InvoiceStatus.PAID) {
+            generator.generate(1)
+            count += 1
+            Thread.sleep(1000)
+            assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
+        }
+        println("$inv :")
+        println("   txs ${inv.txids}")
+    }
+
 }
