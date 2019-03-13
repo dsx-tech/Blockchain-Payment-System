@@ -13,9 +13,9 @@ data class XrpTxPayment(
     @SerializedName("Fee")
     val fee: String,
     @SerializedName("Sequence")
-    val sequence: Long,
-    @SerializedName("TransactionType")
-    val type: String = "Payment",
+    val sequence: Int,
     @SerializedName("DestinationTag")
-    val destinationTag: Long? = null
+    val destinationTag: Int? = null,
+    @SerializedName("TransactionType")
+    val type: String = "Payment"
 )

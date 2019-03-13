@@ -39,5 +39,10 @@ abstract class CoinClient {
 
     abstract fun getAddress(): String
 
+    abstract fun getTx(hash: String, index: Int): Tx
+
+    fun getTxs(hashes: Map<String, Int>): List<Tx> =
+        hashes.map { (hash, index) -> getTx(hash, index) }
+
     abstract fun sendPayment(payment: Payment)
 }

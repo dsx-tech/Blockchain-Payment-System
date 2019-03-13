@@ -10,20 +10,21 @@ data class BtcTxSinceBlock(
     val amount: BigDecimal,
     val fee: BigDecimal,
     val confirmations: Int,
-    val txid: String
+    val txid: String,
+    val vout: Int
 ): Tx {
 
     override fun currency() = Currency.BTC
 
-    override fun destination() = address
+    override fun hash() = txid
+
+    override fun index() = vout
 
     override fun amount() = amount
+
+    override fun destination() = address
 
     override fun fee() = fee
 
     override fun confirmations() = confirmations
-
-    override fun hash() = txid
-
-    override fun tag() = ""
 }

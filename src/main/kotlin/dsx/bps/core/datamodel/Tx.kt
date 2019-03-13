@@ -1,21 +1,22 @@
 package dsx.bps.core.datamodel
 
 import java.math.BigDecimal
-import dsx.bps.core.Currency
 
 interface Tx {
 
     fun currency(): Currency
 
-    fun destination(): String
+    fun hash(): String
+
+    fun index(): Int
 
     fun amount(): BigDecimal
+
+    fun destination(): String
+
+    fun tag(): Int? = null
 
     fun fee(): BigDecimal
 
     fun confirmations(): Int
-
-    fun hash(): String
-
-    fun tag(): String
 }

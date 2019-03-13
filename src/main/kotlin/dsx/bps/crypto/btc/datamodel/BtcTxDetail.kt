@@ -6,5 +6,6 @@ data class BtcTxDetail(
     val address: String,
     val category: String,
     val amount: BigDecimal,
-    val fee: BigDecimal
+    val vout: Int,
+    val fee: BigDecimal?
 )

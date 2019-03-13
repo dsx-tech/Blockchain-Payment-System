@@ -17,24 +17,28 @@ data class XrpTx(
     @SerializedName("Fee")
     val fee: String,
     @SerializedName("Sequence")
-    val sequence: Long,
+    val sequence: Int,
     @SerializedName("TransactionType")
     val type: String,
     @SerializedName("DestinationTag")
-    val destinationTag: Long? = null
+    val destinationTag: Int? = null
 ): Tx {
+
+    lateinit var hex: String
 
     override fun currency() = Currency.XRP
 
-    override fun destination() = destination
+    override fun hash() = hash
+
+    override fun index() = sequence
 
     override fun amount() = amount
+
+    override fun destination() = destination
+
+    override fun tag() = destinationTag
 
     override fun fee() = BigDecimal(fee)
 
     override fun confirmations() = if (validated) 1 else 0
-
-    override fun hash() = hash
-
-    override fun tag() = destinationTag?.toString() ?: ""
 }

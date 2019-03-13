@@ -40,18 +40,24 @@ class XrpClient: CoinClient {
 
     override fun getAddress(): String = account
 
+    override fun getTx(hash: String, index: Int): Tx =
+        rpc.getTransaction(hash)
+
     override fun sendPayment(payment: Payment) {
+        val tx = payment
+            .let { createTransaction(it.amount, it.address, it.tag) }
+            .let { rpc.sign(privateKey, it) }
+            .let { rpc.submit(it) }
+
+        payment.tx = tx.hash
+        payment.hex = tx.hex
+        payment.fee = tx.fee()
+        payment.index = tx.sequence
+    }
+
+    private fun createTransaction(amount: BigDecimal, address: String, tag: Int?): XrpTxPayment {
         val fee = rpc.getTxCost()
         val seq = rpc.getSequence(account)
-        val tx = XrpTxPayment(
-            account,
-            payment.amount,
-            payment.address,
-            fee, seq
-        )
-        val rawTx = rpc.sign(privateKey, tx)
-        payment.fee = BigDecimal(fee)
-        payment.rawTx = rawTx
-        payment.txId = rpc.submit(rawTx)
+        return XrpTxPayment(account, amount, address, fee.toPlainString(), seq, tag)
     }
 }

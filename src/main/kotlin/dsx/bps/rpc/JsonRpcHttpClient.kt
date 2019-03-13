@@ -36,7 +36,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
     override fun query(method: String, vararg params: Any): Any? {
         val conn = connect()
         val id = Random.nextInt().toString()
-        val r= constructRequest(method, id, *params)
+        val r = constructRequest(method, id, *params)
 
         conn.outputStream.use {  it.write(r) }
         if (conn.responseCode != 200) {

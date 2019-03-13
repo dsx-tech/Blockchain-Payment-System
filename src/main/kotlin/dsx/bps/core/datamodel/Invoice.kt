@@ -3,7 +3,7 @@ package dsx.bps.core.datamodel
 import java.util.UUID
 import java.math.BigDecimal
 
-data class Invoice(val currency: Currency, val amount: BigDecimal, val address: String) {
+data class Invoice(val currency: Currency, val amount: BigDecimal, val address: String, val tag: Int? = null) {
     val id: String = UUID.randomUUID().toString()
     val status: InvoiceStatus
         get() = if (received >= amount)
@@ -11,5 +11,5 @@ data class Invoice(val currency: Currency, val amount: BigDecimal, val address: 
         else
             InvoiceStatus.UNPAID
     var received: BigDecimal = BigDecimal.ZERO
-    val txIds: MutableList<String> = mutableListOf()
+    val txs: HashMap<String, Int> = hashMapOf()
 }

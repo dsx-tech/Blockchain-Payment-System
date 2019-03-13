@@ -34,19 +34,49 @@ class BtcClient: CoinClient {
 
     override fun getAddress(): String = rpc.getNewAddress()
 
-    override fun sendPayment(payment: Payment) {
-        if (payment.currency != currency)
-            throw IllegalArgumentException("CoinClient is $currency, but provided payment is ${payment.currency}")
+    override fun getTx(hash: String, index: Int): Tx {
+        val tx = rpc.getTransaction(hash)
+        val detail = tx
+            .details
+            .single { detail -> detail.vout == index }
 
-        val output = BtcTxOutput(payment.address, payment.amount)
+        return object: Tx {
+            override fun currency() = Currency.BTC
 
-        // TODO: implement a reliable payment sending
-        var rawTx = rpc.createRawTransaction(output)
-        val fundedRawTx = rpc.fundRawTransaction(rawTx)
-        rawTx = fundedRawTx.hex
-        rawTx = rpc.signRawTransactionWithWallet(rawTx)
-        payment.fee = fundedRawTx.fee
-        payment.rawTx = rawTx
-        payment.txId = rpc.sendRawTransaction(rawTx)
+            override fun hash() = tx.txid
+
+            override fun index() = detail.vout
+
+            override fun amount() = detail.amount
+
+            override fun destination() = detail.address
+
+            override fun fee() = detail.fee?.abs() ?: BigDecimal.ZERO
+
+            override fun confirmations() = tx.confirmations
+        }
     }
+
+    override fun sendPayment(payment: Payment) {
+        val tx = payment
+            .let { rpc.createRawTransaction(it.amount, it.address) }
+            .let { rpc.fundRawTransaction(it) }
+            .let { rpc.signRawTransactionWithWallet(it) }
+            .let { rpc.sendRawTransaction(it) }
+            .let { rpc.getTransaction(it) }
+
+        val detail = tx
+            .details
+            .single { detail -> match(detail, payment) }
+
+        payment.tx = tx.txid
+        payment.fee = tx.fee
+        payment.hex = tx.hex
+        payment.index = detail.vout
+    }
+
+    private fun match(detail: BtcTxDetail, payment: Payment): Boolean =
+            detail.address == payment.address &&
+            detail.category == "send" &&
+            detail.amount == payment.amount.negate()
 }

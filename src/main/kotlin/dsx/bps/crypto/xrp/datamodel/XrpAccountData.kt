@@ -8,5 +8,5 @@ data class XrpAccountData(
     @SerializedName("Balance")
     val balance: String,
     @SerializedName("Sequence")
-    val sequence: Long
+    val sequence: Int
 )

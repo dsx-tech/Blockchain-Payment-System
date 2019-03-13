@@ -13,6 +13,13 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         return BigDecimal(accountData.balance)
     }
 
+    fun getTransaction(hash: String): XrpTx {
+        val params = mapOf("transaction" to hash)
+        val result = query("tx", params)
+        val json = gson.toJson(result)
+        return gson.fromJson(json, XrpTx::class.java)
+    }
+
     fun getLastLedger(tx: Boolean = false, validated: Boolean = true): XrpLedger {
         val params = mutableMapOf<String, Any>("transactions" to tx)
         if (validated)
@@ -81,8 +88,8 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         return obj["tx_blob"].asString
     }
 
-    fun submit(txBlob: String): String {
-        val params = mapOf("tx_blob" to txBlob)
+    fun submit(hex: String): XrpTx {
+        val params = mapOf("tx_blob" to hex)
         val result = query("submit", params)
         val obj = gson.toJsonTree(result).asJsonObject
 
@@ -92,20 +99,21 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
                     "engine_result_message: ${obj["engine_result_message"].asString}")
 
         val tx: XrpTx = gson.fromJson(obj["tx_json"], XrpTx::class.java)
-        return tx.hash
+        tx.hex = obj["tx_blob"].asString
+        return tx
     }
 
-    fun getSequence(account: String): Long {
+    fun getSequence(account: String): Int {
         val accountData = getAccountInfo(account)
         return accountData.sequence
     }
 
-    fun getTxCost(): String {
+    fun getTxCost(): BigDecimal {
         val info = getServerInfo()
         val loadFactor = BigDecimal(info.loadFactor)
         val baseFee = info.validatedLedger.baseFeeXrp
         val drops = (baseFee * loadFactor * BigDecimal(1e6)).longValueExact()
-        return drops.toString()
+        return BigDecimal(drops)
     }
 
     fun ledgerAccept(): Long {
