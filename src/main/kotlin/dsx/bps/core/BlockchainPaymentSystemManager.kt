@@ -56,23 +56,23 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
         paymentProcessor = PaymentProcessor(this)
     }
 
-    private fun getClient(currency: Currency): CoinClient = coins[currency]
+    private fun getCoin(currency: Currency): CoinClient = coins[currency]
         ?: throw Exception("Currency ${currency.name} isn't specified in configuration file or isn't supported.")
 
     fun getBalance(currency: Currency): BigDecimal {
-        val coin = getClient(currency)
+        val coin = getCoin(currency)
         return coin.getBalance()
     }
 
     fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): String {
-        val coin = getClient(currency)
+        val coin = getCoin(currency)
         val payment = paymentProcessor.createPayment(currency, amount, address, tag)
         coin.sendPayment(payment)
         return payment.id
     }
 
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
-        val coin = getClient(currency)
+        val coin = getCoin(currency)
         val address = coin.getAddress()
         val invoice = invoiceProcessor.createInvoice(currency, amount, address)
         return invoice.id
@@ -83,12 +83,12 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
     fun getInvoice(id: String): Invoice? = invoiceProcessor.getInvoice(id)
 
     fun getTx(currency: Currency, txid: TxId): Tx {
-        val coin = getClient(currency)
+        val coin = getCoin(currency)
         return coin.getTx(txid)
     }
 
     fun getTxs(currency: Currency, txids: List<TxId>): List<Tx> {
-        val coin = getClient(currency)
+        val coin = getCoin(currency)
         return coin.getTxs(txids)
     }
 

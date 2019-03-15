@@ -1,11 +1,9 @@
 package dsx.bps.crypto.xrp
 
+import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.common.CoinClient
-import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
+import dsx.bps.crypto.xrp.datamodel.*
 import java.math.BigDecimal
 import java.util.*
 
@@ -34,15 +32,18 @@ class XrpClient: CoinClient {
         val url = "http://$host:$port/"
         rpc = XrpRpc(url)
 
-        blockchainListener  = XrpBlockchainListener(rpc, account)
+        val frequency = config.getProperty("XRP.frequency", "5000").toLong()
+        blockchainListener = XrpBlockchainListener(this, frequency)
     }
 
     override fun getBalance(): BigDecimal = rpc.getBalance(account)
 
     override fun getAddress(): String = account
 
-    override fun getTx(txid: TxId): Tx =
-        rpc.getTransaction(txid.hash)
+    override fun getTx(txid: TxId): Tx {
+        val xrtTx = rpc.getTransaction(txid.hash)
+        return constructTx(xrtTx)
+    }
 
     override fun sendPayment(payment: Payment) {
         val tx = payment
@@ -51,9 +52,9 @@ class XrpClient: CoinClient {
             .let { rpc.submit(it) }
 
         with(payment) {
-            txid = TxId(tx.hash(), tx.sequence)
+            txid = TxId(tx.hash, tx.sequence)
+            fee = BigDecimal(tx.fee)
             hex = tx.hex
-            fee = tx.fee()
         }
     }
 
@@ -61,5 +62,51 @@ class XrpClient: CoinClient {
         val fee = rpc.getTxCost()
         val seq = rpc.getSequence(account)
         return XrpTxPayment(account, amount, address, fee.toPlainString(), seq, tag)
+    }
+
+    fun getLastLedger(): XrpLedger = rpc.getLastLedger()
+
+    fun getLedger(hash: String): XrpLedger = rpc.getLedger(hash)
+
+    fun getAccountTxs(indexMin: Long, indexMax: Long): XrpAccountTxs = rpc.getAccountTxs(account, indexMin, indexMax)
+
+    fun constructTx(xrpAccountTx: XrpAccountTx): Tx {
+        val tx = xrpAccountTx.tx
+
+        return object: Tx {
+
+            override fun currency() = Currency.XRP
+
+            override fun hash() = tx.hash
+
+            override fun index() = tx.sequence
+
+            override fun amount() = tx.amount
+
+            override fun destination() = tx.destination
+
+            override fun fee() = BigDecimal(tx.fee)
+
+            override fun status() = if (xrpAccountTx.validated) TxStatus.CONFIRMED else TxStatus.VALIDATING
+        }
+    }
+
+    fun constructTx(xrtTx: XrpTx): Tx = object: Tx {
+
+        override fun currency() = Currency.XRP
+
+        override fun hash() = xrtTx.hash
+
+        override fun index() = xrtTx.sequence
+
+        override fun amount() = xrtTx.amount
+
+        override fun destination() = xrtTx.destination
+
+        override fun tag() = xrtTx.destinationTag
+
+        override fun fee() = BigDecimal(xrtTx.fee)
+
+        override fun status() = if (xrtTx.validated) TxStatus.CONFIRMED else TxStatus.VALIDATING
     }
 }

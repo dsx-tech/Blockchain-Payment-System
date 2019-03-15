@@ -1,9 +1,6 @@
 package dsx.bps.core
 
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.InvoiceStatus
-import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
@@ -32,6 +29,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
         return inv
     }
 
+    // TODO: move to CoinClient
     private fun generateTag(currency: Currency): Int? = when (currency) {
         Currency.BTC -> null
         Currency.XRP -> Random.nextInt(Int.MAX_VALUE)
@@ -42,10 +40,13 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
         manager
             .getTxs(inv.currency, inv.txids)
             .forEach {tx ->
-                if (tx.confirmations() < 0)
-                    inv.txids.remove(tx.txid())
-                if (tx.confirmations() >= confirmations)
-                    received += tx.amount()
+                when (tx.status()) {
+                    TxStatus.REJECTED ->
+                        inv.txids.remove(tx.txid())
+                    TxStatus.CONFIRMED ->
+                        received += tx.amount()
+                    else -> {}
+                }
             }
         inv.received = received
     }
@@ -68,7 +69,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
 
                 inv.txids.add(tx.txid())
 
-                if (tx.confirmations() >= confirmations)
+                if (tx.status() == TxStatus.CONFIRMED)
                     inv.received += tx.amount()
 
                 if (inv.status == InvoiceStatus.PAID)

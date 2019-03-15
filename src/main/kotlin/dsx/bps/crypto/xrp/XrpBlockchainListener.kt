@@ -1,43 +1,38 @@
 package dsx.bps.crypto.xrp
 
 import dsx.bps.crypto.common.BlockchainListener
-import dsx.bps.core.datamodel.Tx
-import io.reactivex.subjects.PublishSubject
 import kotlin.concurrent.timer
 
-class XrpBlockchainListener(private val rpc: XrpRpc, private val account: String): BlockchainListener {
-
-    override var frequency: Long = 5000
-
-    override val viewed: HashSet<String> = hashSetOf()
-
-    override val emitter: PublishSubject<Tx> = PublishSubject.create()
+class XrpBlockchainListener(override val coin: XrpClient, frequency: Long): BlockchainListener(frequency) {
 
     init {
         explore()
     }
 
     override fun explore() {
-        val lastLedger = rpc.getLastLedger()
+        val lastLedger = coin.getLastLedger()
         var lastIndex = lastLedger.index
         var lastHash = lastLedger.hash
         viewed.add(lastHash)
 
         timer(this::class.toString(), true, 0, frequency) {
-            var ledger = rpc.getLastLedger()
+            var ledger = coin.getLastLedger()
             val newIndex = ledger.index
             var newHash = ledger.hash
-            if (newHash != lastHash) {
+            if (lastHash != newHash) {
                 lastHash = newHash
                 while (!viewed.contains(newHash)) {
                     viewed.add(newHash)
-                    ledger = rpc.getLedger(ledger.previousHash)
+                    ledger = coin.getLedger(ledger.previousHash)
                     newHash = ledger.hash
                 }
-                val accountTxs = rpc.getAccountTx(account, lastIndex+1, newIndex)
-                accountTxs
+                coin.getAccountTxs(lastIndex+1, newIndex)
+                    .transactions
                     .filter { it.type == "Payment" }
-                    .forEach(emitter::onNext)
+                    .forEach {
+                        val tx = coin.constructTx(it)
+                        emitter.onNext(tx)
+                    }
                 lastIndex = newIndex
             }
         }

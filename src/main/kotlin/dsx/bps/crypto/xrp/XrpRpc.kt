@@ -54,23 +54,15 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         return gson.fromJson(obj["info"], XrpServerInfo::class.java)
     }
 
-    fun getAccountTx(account: String, indexMin: Long, indexMax: Long): List<XrpTx> {
+    fun getAccountTxs(account: String, indexMin: Long, indexMax: Long): XrpAccountTxs {
         val params =  mapOf(
             "account" to account,
             "ledger_index_min" to indexMin,
             "ledger_index_max" to indexMax
         )
         val result = query("account_tx", params)
-        val obj = gson.toJsonTree(result).asJsonObject
-        val txs = obj["transactions"].asJsonArray
-        
-        return txs.map { tx ->
-            tx
-                .let { tx.asJsonObject }
-                .let { gson.fromJson(it["tx"], XrpTx::class.java)
-                    .also { xrpTx -> xrpTx.validated = it["validated"].asBoolean }
-                }
-        }
+        val json = gson.toJson(result)
+        return gson.fromJson(json, XrpAccountTxs::class.java)
     }
 
     fun sign(privateKey: String, tx: XrpTxPayment, offline: Boolean = true): String {
@@ -93,7 +85,8 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         val result = query("submit", params)
         val obj = gson.toJsonTree(result).asJsonObject
 
-        if (obj["engine_result"].asString != "tesSUCCESS")
+        val engineResult = obj["engine_result"].asString
+        if (engineResult != "tesSUCCESS" && !engineResult.startsWith("tec"))
             throw RuntimeException("engine_result: ${obj["engine_result"].asString}\n" +
                     "engine_result_code: ${obj["engine_result_code"].asInt}\n" +
                     "engine_result_message: ${obj["engine_result_message"].asString}")

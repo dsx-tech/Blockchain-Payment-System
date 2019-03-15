@@ -42,8 +42,7 @@ abstract class CoinClient {
 
     abstract fun getTx(txid: TxId): Tx
 
-    fun getTxs(txids: List<TxId>): List<Tx> =
-        txids.map(::getTx)
+    fun getTxs(txids: List<TxId>): List<Tx> = txids.map(::getTx)
 
     abstract fun sendPayment(payment: Payment)
 }

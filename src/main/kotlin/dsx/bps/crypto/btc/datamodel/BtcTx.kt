@@ -5,7 +5,7 @@ import java.math.BigDecimal
 
 data class BtcTx(
     val amount: BigDecimal,
-    val fee: BigDecimal,
+    val fee: BigDecimal = BigDecimal.ZERO,
     val confirmations: Int,
     val blockhash: String,
     @SerializedName("txid")

@@ -20,5 +20,5 @@ interface Tx {
 
     fun fee(): BigDecimal
 
-    fun confirmations(): Int
+    fun status(): TxStatus
 }

@@ -7,5 +7,5 @@ data class BtcTxDetail(
     val category: String,
     val amount: BigDecimal,
     val vout: Int,
-    val fee: BigDecimal?
+    val fee: BigDecimal = BigDecimal.ZERO
 )
