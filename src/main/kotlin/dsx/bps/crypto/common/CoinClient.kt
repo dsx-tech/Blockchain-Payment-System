@@ -40,6 +40,8 @@ abstract class CoinClient {
 
     abstract fun getAddress(): String
 
+    abstract fun getTag(): Int?
+
     abstract fun getTx(txid: TxId): Tx
 
     fun getTxs(txids: List<TxId>): List<Tx> = txids.map(::getTx)

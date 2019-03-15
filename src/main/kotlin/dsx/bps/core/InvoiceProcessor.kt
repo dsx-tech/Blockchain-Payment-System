@@ -4,7 +4,7 @@ import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
-import kotlin.random.Random
+import java.util.UUID
 
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Observer<Tx> {
 
@@ -18,18 +18,12 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
 
     fun getInvoice(id: String): Invoice? = invoices[id]
 
-    fun createInvoice(currency: Currency, amount: BigDecimal, address: String): Invoice {
-        val tag = generateTag(currency)
-        val inv = Invoice(currency, amount, address, tag)
+    fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
+        val id = UUID.randomUUID().toString()
+        val inv = Invoice(id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
         return inv
-    }
-
-    // TODO: move to CoinClient
-    private fun generateTag(currency: Currency): Int? = when (currency) {
-        Currency.BTC -> null
-        Currency.XRP -> Random.nextInt(Int.MAX_VALUE)
     }
 
     private fun recalculate(inv: Invoice) {

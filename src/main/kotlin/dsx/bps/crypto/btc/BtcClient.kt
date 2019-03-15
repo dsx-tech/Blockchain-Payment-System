@@ -38,6 +38,8 @@ class BtcClient: CoinClient {
 
     override fun getAddress(): String = rpc.getNewAddress()
 
+    override fun getTag(): Int? = null
+
     override fun getTx(txid: TxId): Tx {
         val btcTx = rpc.getTransaction(txid.hash)
         return constructTx(btcTx, txid)

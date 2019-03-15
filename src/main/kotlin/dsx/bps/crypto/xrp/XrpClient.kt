@@ -6,6 +6,7 @@ import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.xrp.datamodel.*
 import java.math.BigDecimal
 import java.util.*
+import kotlin.random.Random
 
 class XrpClient: CoinClient {
 
@@ -39,6 +40,8 @@ class XrpClient: CoinClient {
     override fun getBalance(): BigDecimal = rpc.getBalance(account)
 
     override fun getAddress(): String = account
+
+    override fun getTag(): Int? = Random.nextInt(Int.MAX_VALUE)
 
     override fun getTx(txid: TxId): Tx {
         val xrtTx = rpc.getTransaction(txid.hash)

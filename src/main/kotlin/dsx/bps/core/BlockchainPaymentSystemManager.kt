@@ -1,7 +1,6 @@
 package dsx.bps.core
 
 import dsx.bps.core.datamodel.*
-import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.common.CoinClientFactory
 import io.reactivex.Observable
@@ -10,7 +9,7 @@ import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
-import java.util.*
+import java.util.Properties
 
 class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
 
@@ -73,8 +72,9 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
 
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
         val coin = getCoin(currency)
+        val tag = coin.getTag()
         val address = coin.getAddress()
-        val invoice = invoiceProcessor.createInvoice(currency, amount, address)
+        val invoice = invoiceProcessor.createInvoice(currency, amount, address, tag)
         return invoice.id
     }
 
