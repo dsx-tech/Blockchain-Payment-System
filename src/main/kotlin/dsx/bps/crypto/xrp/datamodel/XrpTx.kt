@@ -5,7 +5,6 @@ import java.math.BigDecimal
 
 data class XrpTx(
     val hash: String,
-    var validated: Boolean = false,
     @SerializedName("Account")
     val account: String,
     @SerializedName("Amount")
@@ -19,7 +18,11 @@ data class XrpTx(
     @SerializedName("TransactionType")
     val type: String,
     @SerializedName("DestinationTag")
-    val destinationTag: Int? = null
+    val destinationTag: Int? = null,
+    @SerializedName("ledger_index")
+    val ledgerIndex: Long,
+    val meta: XrpTxMeta? = null,
+    val validated: Boolean = false
 ) {
     lateinit var hex: String
 }

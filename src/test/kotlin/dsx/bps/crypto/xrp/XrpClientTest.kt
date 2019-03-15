@@ -3,6 +3,7 @@ package dsx.bps.crypto.xrp
 import dsx.bps.api.BlockchainPaymentSystemAPI
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
+import dsx.bps.core.datamodel.PaymentStatus
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
@@ -38,10 +39,13 @@ internal class XrpClientTest {
         Thread.sleep(1000)
         val payment = alice.getPayment(id)
         assertNotNull(payment)
-        println("$payment:\n" +
-                "${payment!!.txid};\n" +
-                "${payment.fee}"
-        )
+        var count = 0
+        while (payment!!.status != PaymentStatus.SUCCEED) {
+            rpc.ledgerAccept()
+            count += 1
+            Thread.sleep(2000)
+            assertNotEquals(5, count, "Payment wasn't confirmed or found in 10 blocks")
+        }
     }
 
     @Test

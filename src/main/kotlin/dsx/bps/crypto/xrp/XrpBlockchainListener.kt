@@ -28,7 +28,7 @@ class XrpBlockchainListener(override val coin: XrpClient, frequency: Long): Bloc
                 }
                 coin.getAccountTxs(lastIndex+1, newIndex)
                     .transactions
-                    .filter { it.type == "Payment" }
+                    .filter { it.tx.type == "Payment" }
                     .forEach {
                         val tx = coin.constructTx(it)
                         emitter.onNext(tx)

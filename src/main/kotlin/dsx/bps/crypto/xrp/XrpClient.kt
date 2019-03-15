@@ -72,6 +72,7 @@ class XrpClient: CoinClient {
 
     fun constructTx(xrpAccountTx: XrpAccountTx): Tx {
         val tx = xrpAccountTx.tx
+        val meta = xrpAccountTx.meta
 
         return object: Tx {
 
@@ -81,7 +82,9 @@ class XrpClient: CoinClient {
 
             override fun index() = tx.sequence
 
-            override fun amount() = tx.amount
+            override fun amount() = meta.deliveredAmount
+
+            override fun tag() = tx.destinationTag
 
             override fun destination() = tx.destination
 
@@ -99,7 +102,7 @@ class XrpClient: CoinClient {
 
         override fun index() = xrtTx.sequence
 
-        override fun amount() = xrtTx.amount
+        override fun amount() = xrtTx.meta?.deliveredAmount ?: xrtTx.amount
 
         override fun destination() = xrtTx.destination
 

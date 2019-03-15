@@ -8,9 +8,6 @@ import kotlin.random.Random
 
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Observer<Tx> {
 
-    // Default value for now
-    private var confirmations = 1
-
     // TODO: Implement db-storage for invoices
     private val unpaid: HashSet<String> = hashSetOf()
     private val invoices: HashMap<String, Invoice> = hashMapOf()
@@ -39,7 +36,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
         var received = BigDecimal.ZERO
         manager
             .getTxs(inv.currency, inv.txids)
-            .forEach {tx ->
+            .forEach { tx ->
                 when (tx.status()) {
                     TxStatus.REJECTED ->
                         inv.txids.remove(tx.txid())
