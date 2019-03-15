@@ -2,6 +2,7 @@ package dsx.bps.api
 
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
+import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.btc.BtcRpc
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -45,12 +46,18 @@ internal class BlockchainPaymentSystemAPITest {
             val pay2 = bobAPI.getPayment(id2)
             assertNotNull(pay1)
             assertNotNull(pay2)
-            println("alice's payment:\n" +
-                    "   $pay1\n" +
-                    "   [ ${pay1!!.txid }]")
-            println("bob's payment:\n" +
-                    "$pay2\n" +
-                    "   [ ${pay2!!.txid} ]")
+            println("alice's payment was sent in ${pay1!!.txid}")
+            println("bob's payment was sent in ${pay2!!.txid}")
+            var count = 0
+            while (pay1.status != PaymentStatus.SUCCEED ||
+                    pay2.status != PaymentStatus.SUCCEED) {
+                generator.generate(1)
+                count += 1
+                Thread.sleep(2000)
+                println("alice's payment status: ${pay1.status}")
+                println("bob's payment status: ${pay2.status}")
+                assertNotEquals(5, count, "Payment wasn't confirmed or found in 10 blocks")
+            }
         }
     }
 
