@@ -1,9 +1,9 @@
 package dsx.bps.api
 
 import java.math.BigDecimal
-import dsx.bps.core.Currency
-import dsx.bps.core.Invoice
-import dsx.bps.core.Payment
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Invoice
+import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.BlockchainPaymentSystemManager
 
 class BlockchainPaymentSystemAPI {
@@ -18,9 +18,9 @@ class BlockchainPaymentSystemAPI {
         manager = BlockchainPaymentSystemManager(confPath)
     }
 
-    fun sendPayment(currency: Currency, amount: Number, address: String): String {
+    fun sendPayment(currency: Currency, amount: Number, address: String, tag: Int? = null): String {
         val am = BigDecimal(amount.toString())
-        return manager.sendPayment(currency, am, address)
+        return manager.sendPayment(currency, am, address, tag)
     }
 
     fun createInvoice(currency: Currency, amount: Number): String {

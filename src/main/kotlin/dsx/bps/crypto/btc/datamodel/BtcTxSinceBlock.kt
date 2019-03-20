@@ -1,8 +1,7 @@
 package dsx.bps.crypto.btc.datamodel
 
+import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
-import dsx.bps.core.Currency
-import dsx.bps.crypto.common.Tx
 
 data class BtcTxSinceBlock(
     val address: String,
@@ -10,23 +9,7 @@ data class BtcTxSinceBlock(
     val amount: BigDecimal,
     val fee: BigDecimal,
     val confirmations: Int,
-    val txid: String,
-    val time: Long
-): Tx {
-
-    override fun currency() = Currency.BTC
-
-    override fun destination() = address
-
-    override fun amount() = amount
-
-    override fun fee() = fee
-
-    override fun confirmations() = confirmations
-
-    override fun hash() = txid
-
-    override fun timestamp() = time
-
-    override fun tag() = ""
-}
+    @SerializedName("txid")
+    val hash: String,
+    val vout: Int
+)

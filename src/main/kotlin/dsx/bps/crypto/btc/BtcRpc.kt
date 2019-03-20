@@ -27,25 +27,25 @@ class BtcRpc(url: String): JsonRpcHttpClient(url) {
         return result as String
     }
 
-    fun createRawTransaction(output: BtcTxOutput): String {
-        val outs = mapOf(output.address to output.amount)
+    fun createRawTransaction(amount: BigDecimal, address: String): String {
+        val outs = mapOf(address to amount)
         val result = query("createrawtransaction", listOf<Any>(), listOf(outs))
         return result as String
     }
 
-    fun fundRawTransaction(rawTx: String): BtcFundedRawTx {
-        val result = query("fundrawtransaction", rawTx)
-        val json = gson.toJson(result)
-        return gson.fromJson(json, BtcFundedRawTx::class.java)
+    fun fundRawTransaction(hex: String): String {
+        val result = query("fundrawtransaction", hex)
+        val obj = gson.toJsonTree(result).asJsonObject
+        return obj["hex"].asString
     }
 
-    fun signRawTransactionWithWallet(rawTx: String): String {
-        val result = query("signrawtransactionwithwallet", rawTx)
+    fun signRawTransactionWithWallet(hex: String): String {
+        val result = query("signrawtransactionwithwallet", hex)
         val obj = gson.toJsonTree(result).asJsonObject
-        if (obj.get("complete").asBoolean) {
-            return obj.get("hex").asString
+        if (obj["complete"].asBoolean) {
+            return obj["hex"].asString
         } else {
-            throw RuntimeException("Unable to sign raw transaction: $rawTx")
+            throw RuntimeException("Unable to sign raw transaction: $hex")
         }
     }
 
@@ -54,8 +54,8 @@ class BtcRpc(url: String): JsonRpcHttpClient(url) {
         return result as String
     }
 
-    fun getBlock(blockHash: String): BtcBlock {
-        val result = query("getblock", blockHash)
+    fun getBlock(hash: String): BtcBlock {
+        val result = query("getblock", hash)
         val json = gson.toJson(result)
         return gson.fromJson(json, BtcBlock::class.java)
     }
@@ -66,8 +66,8 @@ class BtcRpc(url: String): JsonRpcHttpClient(url) {
         return gson.fromJson(json, BtcListSinceBlock::class.java)
     }
 
-    fun getTransaction(txId: String): BtcTx {
-        val result = query("gettransaction", txId)
+    fun getTransaction(hash: String): BtcTx {
+        val result = query("gettransaction", hash)
         val json = gson.toJson(result)
         return gson.fromJson(json, BtcTx::class.java)
     }

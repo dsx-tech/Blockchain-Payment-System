@@ -1,14 +1,13 @@
 package dsx.bps.crypto.common
 
+import dsx.bps.core.datamodel.Tx
 import io.reactivex.subjects.PublishSubject
 
-interface BlockchainListener {
+abstract class BlockchainListener(protected val frequency: Long) {
 
-    var frequency: Long
+    protected abstract val coin: CoinClient
+    protected val viewed: HashSet<String> = hashSetOf()
+    val emitter: PublishSubject<Tx> = PublishSubject.create()
 
-    val viewed: HashSet<String>
-
-    val emitter: PublishSubject<Tx>
-
-    fun explore()
+    abstract fun explore()
 }

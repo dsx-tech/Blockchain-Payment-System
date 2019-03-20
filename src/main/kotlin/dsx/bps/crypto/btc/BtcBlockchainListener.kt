@@ -1,37 +1,33 @@
 package dsx.bps.crypto.btc
 
-import kotlin.concurrent.timer
-import io.reactivex.subjects.PublishSubject
-import dsx.bps.crypto.common.Tx
 import dsx.bps.crypto.common.BlockchainListener
+import kotlin.concurrent.timer
 
-class BtcBlockchainListener(private val rpc: BtcRpc): BlockchainListener {
-
-    override var frequency: Long = 5000
-
-    override val viewed: HashSet<String> = hashSetOf()
-
-    override val emitter: PublishSubject<Tx> = PublishSubject.create()
+class BtcBlockchainListener(override val coin: BtcClient, frequency: Long): BlockchainListener(frequency) {
 
     init {
         explore()
     }
 
     override fun explore() {
-        var last = rpc.getBestBlockHash()
+        var last = coin.getBestBlockHash()
         viewed.add(last)
 
-        timer(this::class.qualifiedName, true, 0, frequency) {
-            var new = rpc.getBestBlockHash()
-            if (new != last) {
+        timer(this::class.toString(), true, 0, frequency) {
+            var new = coin.getBestBlockHash()
+            if (last != new) {
                 last = new
                 while (!viewed.contains(new)) {
                     viewed.add(new)
-                    val block = rpc.getBlock(new)
+                    val block = coin.getBlock(new)
                     new = block.previousblockhash
                 }
-                val listSinceBlock = rpc.listSinceBlock(new)
-                listSinceBlock.transactions.forEach(emitter::onNext)
+                coin.listSinceBlock(new)
+                    .transactions
+                    .forEach {
+                        val tx = coin.constructTx(it)
+                        emitter.onNext(tx)
+                    }
             }
         }
     }
