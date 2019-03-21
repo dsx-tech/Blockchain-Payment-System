@@ -1,7 +1,9 @@
 package dsx.bps.core
 
 import dsx.bps.core.datamodel.*
+import dsx.bps.core.datamodel.Currency
 import java.math.BigDecimal
+import java.util.*
 import kotlin.concurrent.timer
 
 class PaymentProcessor(private val manager: BlockchainPaymentSystemManager) {
@@ -17,7 +19,8 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager) {
     }
 
     fun createPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Payment {
-        val pay = Payment(currency, amount, address, tag)
+        val id = UUID.randomUUID().toString().replace("-", "")
+        val pay = Payment(id, currency, amount, address, tag)
         payments[pay.id] = pay
         unconfirmed.add(pay.id)
         return pay

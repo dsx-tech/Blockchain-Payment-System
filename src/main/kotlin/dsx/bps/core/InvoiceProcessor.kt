@@ -19,7 +19,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
     fun getInvoice(id: String): Invoice? = invoices[id]
 
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
-        val id = UUID.randomUUID().toString()
+        val id = UUID.randomUUID().toString().replace("-", "")
         val inv = Invoice(id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
