@@ -5,6 +5,8 @@ import kotlin.concurrent.timer
 
 class BtcBlockchainListener(override val coin: BtcClient, frequency: Long): BlockchainListener(frequency) {
 
+    override val currency = coin.currency
+
     init {
         explore()
     }

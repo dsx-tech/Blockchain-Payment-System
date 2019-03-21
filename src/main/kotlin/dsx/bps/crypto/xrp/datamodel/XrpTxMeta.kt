@@ -1,7 +1,6 @@
 package dsx.bps.crypto.xrp.datamodel
 
 import com.google.gson.annotations.SerializedName
-import java.math.BigDecimal
 
 data class XrpTxMeta(
     @SerializedName("TransactionIndex")
@@ -9,5 +8,5 @@ data class XrpTxMeta(
     @SerializedName("TransactionResult")
     val transactionResult: String,
     @SerializedName("delivered_amount")
-    val deliveredAmount: BigDecimal
+    val deliveredAmount: XrpAmount?
 )

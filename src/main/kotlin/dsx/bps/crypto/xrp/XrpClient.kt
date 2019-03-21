@@ -75,7 +75,10 @@ class XrpClient: CoinClient {
 
     fun constructTx(xrpAccountTx: XrpAccountTx): Tx {
         val tx = xrpAccountTx.tx
-        val meta = xrpAccountTx.meta
+        val delivered = xrpAccountTx.meta.deliveredAmount
+        var amount = BigDecimal.ZERO
+        if (delivered?.currency == currency.name)
+            amount = delivered.value
 
         return object: Tx {
 
@@ -85,7 +88,7 @@ class XrpClient: CoinClient {
 
             override fun index() = tx.sequence
 
-            override fun amount() = meta.deliveredAmount
+            override fun amount() = amount
 
             override fun tag() = tx.destinationTag
 
@@ -97,22 +100,29 @@ class XrpClient: CoinClient {
         }
     }
 
-    fun constructTx(xrtTx: XrpTx): Tx = object: Tx {
+    fun constructTx(xrpTx: XrpTx): Tx {
+        val delivered = xrpTx.meta?.deliveredAmount
+        var amount = BigDecimal.ZERO
+        if (delivered?.currency == currency.name)
+            amount = delivered.value
 
-        override fun currency() = Currency.XRP
+        return object: Tx {
 
-        override fun hash() = xrtTx.hash
+            override fun currency() = Currency.XRP
 
-        override fun index() = xrtTx.sequence
+            override fun hash() = xrpTx.hash
 
-        override fun amount() = xrtTx.meta?.deliveredAmount ?: xrtTx.amount
+            override fun index() = xrpTx.sequence
 
-        override fun destination() = xrtTx.destination
+            override fun amount() = amount
 
-        override fun tag() = xrtTx.destinationTag
+            override fun destination() = xrpTx.destination
 
-        override fun fee() = BigDecimal(xrtTx.fee)
+            override fun tag() = xrpTx.destinationTag
 
-        override fun status() = if (xrtTx.validated) TxStatus.CONFIRMED else TxStatus.VALIDATING
+            override fun fee() = BigDecimal(xrpTx.fee)
+
+            override fun status() = if (xrpTx.validated) TxStatus.CONFIRMED else TxStatus.VALIDATING
+        }
     }
 }

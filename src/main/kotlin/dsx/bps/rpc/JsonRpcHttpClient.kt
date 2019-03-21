@@ -21,7 +21,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
     var sslSocketFactory: SSLSocketFactory? = null
     protected val headers = mutableMapOf<String, String>()
 
-    protected val gson = Gson()
+    protected open val gson: Gson = Gson()
     protected val charset = Charsets.ISO_8859_1
 
     constructor(url: String): this(URL(url))

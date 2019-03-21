@@ -1,12 +1,21 @@
 package dsx.bps.crypto.xrp
 
+import com.google.gson.Gson
 import com.google.gson.JsonElement
 import dsx.bps.crypto.xrp.datamodel.*
 import dsx.bps.rpc.JsonRpcHttpClient
 import java.io.InputStream
 import java.math.BigDecimal
+import com.google.gson.GsonBuilder
 
 class XrpRpc(url: String): JsonRpcHttpClient(url) {
+
+    override val gson: Gson = GsonBuilder()
+        .registerTypeAdapter(
+            XrpAmount::class.java,
+            XrpAmount.Companion.XrpAmountDeserializer()
+        )
+        .create()
 
     fun getBalance(account: String): BigDecimal {
         val accountData = getAccountInfo(account)
@@ -97,7 +106,7 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
     }
 
     fun getSequence(account: String): Int {
-        val accountData = getAccountInfo(account)
+        val accountData = getAccountInfo(account, false)
         return accountData.sequence
     }
 
@@ -126,8 +135,7 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
             val code = json["error_code"].asInt
             val error = json["error"].asString
             val message = json["error_message"].asString
-            val request = json["request"].asString
-            throw RuntimeException("RPC error \"$error\": code $code, message: \"$message\", request: $request")
+            throw RuntimeException("RPC error \"$error\": code $code, message: \"$message\",\n for response: $r")
         }
 
         return json

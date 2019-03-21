@@ -5,6 +5,8 @@ import kotlin.concurrent.timer
 
 class XrpBlockchainListener(override val coin: XrpClient, frequency: Long): BlockchainListener(frequency) {
 
+    override val currency = coin.currency
+
     init {
         explore()
     }
@@ -28,7 +30,10 @@ class XrpBlockchainListener(override val coin: XrpClient, frequency: Long): Bloc
                 }
                 coin.getAccountTxs(lastIndex+1, newIndex)
                     .transactions
-                    .filter { it.tx.type == "Payment" }
+                    .filter {
+                        it.tx.type == "Payment" &&
+                        it.tx.amount?.currency == currency.name
+                    }
                     .forEach {
                         val tx = coin.constructTx(it)
                         emitter.onNext(tx)
