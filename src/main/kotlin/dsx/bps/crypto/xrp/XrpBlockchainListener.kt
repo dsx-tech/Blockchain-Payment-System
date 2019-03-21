@@ -12,22 +12,11 @@ class XrpBlockchainListener(override val coin: XrpClient, frequency: Long): Bloc
     }
 
     override fun explore() {
-        val lastLedger = coin.getLastLedger()
-        var lastIndex = lastLedger.index
-        var lastHash = lastLedger.hash
-        viewed.add(lastHash)
+        var lastIndex = coin.getLastLedger().index
 
         timer(this::class.toString(), true, 0, frequency) {
-            var ledger = coin.getLastLedger()
-            val newIndex = ledger.index
-            var newHash = ledger.hash
-            if (lastHash != newHash) {
-                lastHash = newHash
-                while (!viewed.contains(newHash)) {
-                    viewed.add(newHash)
-                    ledger = coin.getLedger(ledger.previousHash)
-                    newHash = ledger.hash
-                }
+            val newIndex = coin.getLastLedger().index
+            if (lastIndex != newIndex) {
                 coin.getAccountTxs(lastIndex+1, newIndex)
                     .transactions
                     .filter {
