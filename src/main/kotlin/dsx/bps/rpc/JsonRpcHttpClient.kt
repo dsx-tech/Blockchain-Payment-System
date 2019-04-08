@@ -12,8 +12,8 @@ import kotlin.random.Random
 
 open class JsonRpcHttpClient: JsonRpcClient {
 
-    private val rpcURL: URL
-    protected val auth: String?
+    protected var rpcURL: URL
+    protected var auth: String?
 
     var hostnameVerifier: HostnameVerifier? = null
     var sslSocketFactory: SSLSocketFactory? = null
@@ -39,7 +39,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
 
     protected open fun constructRequest(method: String, vararg params: Any): RpcRequest {
         val id = Random.nextInt().toString()
-        val json = gson.toJson( mapOf(
+        val json = gson.toJson(mapOf(
             "method" to method,
             "params" to params,
             "id"     to id
