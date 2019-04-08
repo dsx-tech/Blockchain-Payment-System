@@ -1,12 +1,12 @@
 package dsx.bps.crypto.xrp
 
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.google.gson.JsonElement
 import dsx.bps.crypto.xrp.datamodel.*
 import dsx.bps.rpc.JsonRpcHttpClient
-import java.io.InputStream
+import dsx.bps.rpc.RpcResponse
 import java.math.BigDecimal
-import com.google.gson.GsonBuilder
 
 class XrpRpc(url: String): JsonRpcHttpClient(url) {
 
@@ -124,20 +124,18 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         return obj["ledger_current_index"].asLong
     }
 
-    override fun parseResponse(input: InputStream, id: String): Any? {
-        val r = input.use { it.readBytes().toString(charset) }
-
-        val json = r
-            .let { gson.fromJson(r, Map::class.java) }
+    override fun parseResponse(response: RpcResponse): Any? {
+        val obj = response.json
+            .let { gson.fromJson(it, Map::class.java) }
             .let { gson.toJsonTree(it["result"]).asJsonObject }
 
-        if (json["status"].asString == "error") {
-            val code = json["error_code"].asInt
-            val error = json["error"].asString
-            val message = json["error_message"].asString
-            throw RuntimeException("RPC error \"$error\": code $code, message: \"$message\",\n for response: $r")
+        if (obj["status"].asString == "error") {
+            val code = obj["error_code"].asInt
+            val error = obj["error"].asString
+            val message = obj["error_message"].asString
+            throw RuntimeException("RPC error \"$error\": code $code, message: \"$message\",\n for response: ${response.json}")
         }
 
-        return json
+        return obj
     }
 }

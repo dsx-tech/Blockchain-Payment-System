@@ -1,11 +1,9 @@
 package dsx.bps.rpc
 
 import com.google.gson.Gson
-import java.io.InputStream
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
-import java.nio.charset.Charset
 import java.util.*
 import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.HttpsURLConnection
@@ -34,24 +32,23 @@ open class JsonRpcHttpClient: JsonRpcClient {
     }
 
     override fun query(method: String, vararg params: Any): Any? {
-        val conn = connect()
-        val id = Random.nextInt().toString()
-        val r = constructRequest(method, id, *params)
-
-        conn.outputStream.use {  it.write(r) }
-        if (conn.responseCode != 200) {
-            val errorStream = conn.errorStream
-            throw RuntimeException("RPC query ${r.toString(charset)} failed\n" +
-                    "Code: ${conn.responseCode}\n" +
-                    "Message: ${conn.responseMessage}\n" +
-                    "Response: ${errorStream.use { it.readBytes().toString(charset) }}")
-        }
-
-        return parseResponse(conn.inputStream, id)
+        return constructRequest(method, *params)
+            .let(::execute)
+            .let(::parseResponse)
     }
 
-    private fun connect(): HttpURLConnection {
-        val conn = rpcURL.openConnection() as HttpURLConnection
+    protected open fun constructRequest(method: String, vararg params: Any): RpcRequest {
+        val id = Random.nextInt().toString()
+        val json = gson.toJson( mapOf(
+            "method" to method,
+            "params" to params,
+            "id"     to id
+        ))
+        return RpcRequest(rpcURL, json, id)
+    }
+
+    private fun connect(url: URL): HttpURLConnection {
+        val conn = url.openConnection() as HttpURLConnection
         conn.doInput = true
         conn.doOutput = true
         conn.requestMethod = "POST"
@@ -66,26 +63,36 @@ open class JsonRpcHttpClient: JsonRpcClient {
         return conn
     }
 
-    private fun constructRequest(method: String, id: String, vararg params: Any): ByteArray {
-        return gson.toJson( mapOf(
-            "method" to method,
-            "params" to params,
-            "id"     to id
-        )).toByteArray(Charset.forName("ISO8859-1"))
+    private fun execute(request: RpcRequest): RpcResponse {
+        val conn = connect(request.url)
+        val bytes = request.json.toByteArray(charset)
+        conn.outputStream.use { it.write(bytes) }
+
+        if (conn.responseCode != 200) {
+            val errorStream = conn.errorStream
+            throw RuntimeException("$request failed\n" +
+                    "Code: ${conn.responseCode}\n" +
+                    "Message: ${conn.responseMessage}\n" +
+                    "Response: ${errorStream.use { it.readBytes().toString(charset) }}")
+        }
+
+        val response = conn.inputStream
+            .bufferedReader(charset)
+            .use { it.readText() }
+        return RpcResponse(response, request.id)
     }
 
-    protected open fun parseResponse(input: InputStream, id: String): Any? {
-        val r = input.use { it.readBytes().toString(charset) }
-        val json = gson.fromJson(r, Map::class.java)
+    protected open fun parseResponse(response: RpcResponse): Any? {
+        val obj = gson.fromJson(response.json, Map::class.java)
 
-        if (id != json["id"])
-            throw RuntimeException("Wrong response id: sent $id, received ${json["id"]}")
+        if (response.id != obj["id"])
+            throw RuntimeException("Wrong response id: sent ${response.id}, received ${obj["id"]}")
 
-        if (json["error"] != null) {
-            val error = json["error"] as Map<*, *>
+        if (obj["error"] != null) {
+            val error = obj["error"] as Map<*, *>
             throw RuntimeException("RPC error: code ${error["code"]}, message: ${error["message"]}")
         }
 
-        return json["result"]
+        return obj["result"]
     }
 }

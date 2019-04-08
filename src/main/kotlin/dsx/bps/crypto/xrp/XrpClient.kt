@@ -54,6 +54,7 @@ class XrpClient: CoinClient {
             .let { rpc.sign(privateKey, it) }
             .let { rpc.submit(it) }
 
+        // TODO: move initialization of payment fields in processor
         with(payment) {
             txid = TxId(tx.hash, tx.sequence)
             fee = BigDecimal(tx.fee)

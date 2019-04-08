@@ -57,6 +57,7 @@ class BtcClient: CoinClient {
             .details
             .single { detail -> match(detail, payment) }
 
+        // TODO: move initialization of payment fields in processor
         with(payment) {
             txid = TxId(tx.hash, detail.vout)
             hex = tx.hex

@@ -41,7 +41,7 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
                 try {
                     it to CoinClientFactory.createCoinClient(it, config)
                 } catch (ex: Exception) {
-                    println("Failed to create client fo ${it.name}:\n" + ex.message)
+                    println("Failed to create client for ${it.name}:\n" + ex.message)
                     null
                 }
             }.toMap()
