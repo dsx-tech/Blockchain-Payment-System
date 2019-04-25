@@ -6,9 +6,8 @@ import java.math.BigDecimal
 
 internal class TrxRpcTest {
 
-    private val fulURL = "http://34.253.178.165:18190/"
-    private val solURL = "http://34.253.178.165:18191/"
-    private val trxRpc = TrxRpc(fulURL, solURL)
+    private val url = "http://34.253.178.165:18190/wallet/"
+    private val trxRpc = TrxRpc(url)
 
     private val alice = "41dc6c2bc46639e5371fe99e002858754604cf5847"
     private val alice_p = "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec"
@@ -40,7 +39,7 @@ internal class TrxRpcTest {
 
     @Test
     fun getBlockByNum() {
-        val num = 23758
+        val num = 434
         assertDoesNotThrow {
             val block = trxRpc.getBlockByNum(num)
             println(block)
@@ -49,7 +48,7 @@ internal class TrxRpcTest {
 
     @Test
     fun getBlockById() {
-        val hash = "0000000000005cce2c4b2be92592130c3bb9034c4274a7c9ad882288c9dab7e9"
+        val hash = "0000000000000146e414afe7964eb30deceb8d3921f60287a20070c6d94c7152"
         assertDoesNotThrow {
             val block = trxRpc.getBlockById(hash)
             println(block)
@@ -58,10 +57,19 @@ internal class TrxRpcTest {
 
     @Test
     fun getTransactionById() {
-        val hash = "3826fd262cce1c6ac3313d597c468bc927da4d37d6f199513dfaf4797d01a39d"
+        val hash = "a05663ef0bce4546bb78cbd72b190b74c6d05e9f35a52f8c7c8b150a1a4581ac"
         assertDoesNotThrow {
             val tx = trxRpc.getTransactionById(hash)
             println(tx)
+        }
+    }
+
+    @Test
+    fun getTransactionInfoById() {
+        val hash = "a05663ef0bce4546bb78cbd72b190b74c6d05e9f35a52f8c7c8b150a1a4581ac"
+        assertDoesNotThrow {
+            val txInfo = trxRpc.getTransactionInfoById(hash)
+            println(txInfo)
         }
     }
 
@@ -85,7 +93,7 @@ internal class TrxRpcTest {
     @Test
     fun broadcastTransaction() {
         assertDoesNotThrow {
-            val tx1 = trxRpc.createTransaction(bob, alice, BigDecimal("678")).also(::println)
+            val tx1 = trxRpc.createTransaction(bob, alice, BigDecimal("353")).also(::println)
             val tx2 = trxRpc.getTransactionSign(alice_p, tx1).also(::println)
             val result = trxRpc.broadcastTransaction(tx2)
             println(result)

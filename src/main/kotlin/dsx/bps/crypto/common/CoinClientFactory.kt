@@ -11,6 +11,7 @@ class CoinClientFactory {
         fun createCoinClient(currency: Currency, config: Properties): CoinClient = when (currency) {
             Currency.BTC -> BtcClient(config)
             Currency.XRP -> XrpClient(config)
+            Currency.TRX -> throw NotImplementedError()
         }
     }
 }

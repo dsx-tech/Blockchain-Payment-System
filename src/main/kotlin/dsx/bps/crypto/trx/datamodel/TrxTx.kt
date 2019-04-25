@@ -8,7 +8,7 @@ data class TrxTx(
     @SerializedName("raw_data")
     val rawData: TrxTxRawData,
     @SerializedName("raw_data_hex")
-    val rawDataHex: String,
+    val hex: String,
     @SerializedName("signature")
     private val _signature: List<String>?,
     @SerializedName("ret")
