@@ -2,7 +2,6 @@ package dsx.bps.crypto.xrp
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.JsonElement
 import dsx.bps.crypto.xrp.datamodel.*
 import dsx.bps.rpc.JsonRpcHttpClient
 import dsx.bps.rpc.RpcResponse
@@ -75,14 +74,10 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
     }
 
     fun sign(privateKey: String, tx: XrpTxPayment, offline: Boolean = true): String {
-        return sign(privateKey, gson.toJsonTree(tx, XrpTxPayment::class.java), offline)
-    }
-
-    private fun sign(privateKey: String, txJson: JsonElement, offline: Boolean = true): String {
         // TODO: implement local tx sign
         val params = mutableMapOf(
             "secret" to privateKey,
-            "tx_json" to txJson,
+            "tx_json" to tx,
             "offline" to offline)
         val result = query("sign", params)
         val obj = gson.toJsonTree(result).asJsonObject

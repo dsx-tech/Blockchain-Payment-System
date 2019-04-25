@@ -10,7 +10,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 import kotlin.random.Random
 
-open class JsonRpcHttpClient: JsonRpcClient {
+abstract class JsonRpcHttpClient {
 
     protected var rpcURL: URL
     protected var auth: String?
@@ -31,7 +31,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
             ?.let { Base64.getEncoder().encodeToString(it) }
     }
 
-    override fun query(method: String, vararg params: Any): Any? {
+    fun query(method: String, vararg params: Any): Any? {
         return constructRequest(method, *params)
             .let(::execute)
             .let(::parseResponse)
@@ -59,7 +59,7 @@ open class JsonRpcHttpClient: JsonRpcClient {
                 conn.sslSocketFactory = sslSocketFactory
         }
 
-        headers.forEach { k, v -> conn.setRequestProperty(k, v) }
+        headers.forEach { (k, v) -> conn.setRequestProperty(k, v) }
         return conn
     }
 
