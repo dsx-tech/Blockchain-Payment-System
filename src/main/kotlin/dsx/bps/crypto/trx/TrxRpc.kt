@@ -65,7 +65,6 @@ class TrxRpc(url: String): JsonRpcHttpClient(url) {
 
     fun broadcastTransaction(tx: TrxTx): TrxBroadcastTxResult {
         val result = query("broadcasttransaction", tx) as String
-        println(result)
         return gson.fromJson(result, TrxBroadcastTxResult::class.java)
     }
 

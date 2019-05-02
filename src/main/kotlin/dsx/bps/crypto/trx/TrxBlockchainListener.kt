@@ -11,5 +11,24 @@ class TrxBlockchainListener(override val coin: TrxClient, frequency: Long): Bloc
         explore()
     }
 
-    override fun explore() {}
+    override fun explore() {
+        var last = coin.getNowBlock()
+        viewed.add(last.hash)
+
+        timer(this::class.toString(), true, 0, frequency) {
+            var new = coin.getNowBlock()
+            if (last.hash != new.hash) {
+                last = new
+                while (!viewed.contains(new.hash)) {
+                    new.transactions
+                        .forEach {
+                            val tx = coin.constructTx(it)
+                            emitter.onNext(tx)
+                        }
+                    new = coin.getBlockById(new.blockHeader.rawData.parentHash)
+                }
+            }
+        }
+
+    }
 }

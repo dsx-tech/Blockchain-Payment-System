@@ -16,7 +16,7 @@ internal class TrxRpcTest {
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            val bal = trxRpc.getBalance(alice)
+            val bal = trxRpc.getBalance(bob)
             println(bal)
         }
     }
