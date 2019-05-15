@@ -5,6 +5,7 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
 import java.util.UUID
+import kotlin.concurrent.timer
 
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Observer<Tx> {
 
@@ -12,11 +13,12 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
     private val unpaid: HashSet<String> = hashSetOf()
     private val invoices: HashMap<String, Invoice> = hashMapOf()
 
+    var frequency: Long = 5000
+
     init {
         manager.subscribe(this)
+        check()
     }
-
-    fun getInvoice(id: String): Invoice? = invoices[id]
 
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
         val id = UUID.randomUUID().toString().replace("-", "")
@@ -24,6 +26,16 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
         invoices[inv.id] = inv
         unpaid.add(inv.id)
         return inv
+    }
+
+    fun getInvoice(id: String): Invoice? = invoices[id]
+
+    private fun check() {
+        timer(this::class.toString(), true, 0, frequency) {
+            unpaid
+                .mapNotNull { invoices[it] }
+                .forEach { recalculate(it) }
+        }
     }
 
     private fun recalculate(inv: Invoice) {

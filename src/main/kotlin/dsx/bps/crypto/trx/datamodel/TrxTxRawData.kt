@@ -9,5 +9,6 @@ data class TrxTxRawData(
     @SerializedName("ref_block_hash")
     val refBlockHash: String,
     val expiration: Long,
-    val timestamp: Long
+    val timestamp: Long,
+    var data: String?
 )

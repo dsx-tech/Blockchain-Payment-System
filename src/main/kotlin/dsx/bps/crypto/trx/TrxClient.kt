@@ -7,6 +7,7 @@ import dsx.bps.crypto.trx.datamodel.TrxBlock
 import dsx.bps.crypto.trx.datamodel.TrxTx
 import java.math.BigDecimal
 import java.util.*
+import kotlin.random.Random
 
 class TrxClient: CoinClient {
 
@@ -45,7 +46,7 @@ class TrxClient: CoinClient {
 
     override fun getAddress(): String = address
 
-    override fun getTag(): Int? = null
+    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
 
     override fun getTx(txid: TxId): Tx {
         val trxTx = rpc.getTransactionById(txid.hash)
@@ -55,7 +56,10 @@ class TrxClient: CoinClient {
     override fun sendPayment(payment: Payment) {
         val tx = payment
             .let { rpc.createTransaction(it.address, address, it.amount) }
-            .let { rpc.getTransactionSign(privateKey, it)}
+            .let {
+                it.rawData.data = payment.tag?.toString(16)
+                rpc.getTransactionSign(privateKey, it)
+            }
 
         val result = rpc.broadcastTransaction(tx)
 
@@ -103,6 +107,7 @@ class TrxClient: CoinClient {
                 }
             }
 
+            override fun tag() = trxTx.rawData.data?.toInt(16)
         }
     }
 }

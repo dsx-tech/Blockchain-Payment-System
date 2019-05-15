@@ -25,6 +25,7 @@ class TrxBlockchainListener(override val coin: TrxClient, frequency: Long): Bloc
                             val tx = coin.constructTx(it)
                             emitter.onNext(tx)
                         }
+                    viewed.add(new.hash)
                     new = coin.getBlockById(new.blockHeader.rawData.parentHash)
                 }
             }
