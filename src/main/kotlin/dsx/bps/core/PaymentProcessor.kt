@@ -4,15 +4,18 @@ import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
 import java.math.BigDecimal
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.NoSuchElementException
 import kotlin.concurrent.timer
 
 class PaymentProcessor(private val manager: BlockchainPaymentSystemManager) {
 
-    var frequency: Long = 2000
+    var frequency: Long = 3000
 
     // TODO: Implement db-storage for payments
-    private val unconfirmed: HashSet<String> = hashSetOf()
-    private val payments: HashMap<String, Payment> = hashMapOf()
+    private val pending = ConcurrentHashMap.newKeySet<String>()
+    private val processing = ConcurrentHashMap.newKeySet<String>()
+    private val payments = ConcurrentHashMap<String, Payment>()
 
     init {
         check()
@@ -22,15 +25,28 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager) {
         val id = UUID.randomUUID().toString().replace("-", "")
         val pay = Payment(id, currency, amount, address, tag)
         payments[pay.id] = pay
-        unconfirmed.add(pay.id)
+        pending.add(pay.id)
         return pay
+    }
+
+    fun updatePayment(id: String, tx: Tx) {
+        assert(pending.contains(id)) { "There is no pending payment with id = $id" }
+        val payment = payments[id]
+            ?: throw NoSuchElementException("There is no payment with id = $id")
+
+        payment.txid = tx.txid()
+        payment.fee = tx.fee()
+
+        pending.remove(id)
+        payment.status = PaymentStatus.PROCESSING
+        processing.add(id)
     }
 
     fun getPayment(id: String): Payment? = payments[id]
 
     private fun check() {
         timer(this::class.toString(), true, 0, frequency) {
-            unconfirmed
+            processing
                 .mapNotNull { id -> payments[id] }
                 .forEach { pay ->
                     val tx = manager.getTx(pay.currency, pay.txid)
@@ -41,7 +57,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager) {
                             }
                             TxStatus.CONFIRMED -> {
                                 pay.status = PaymentStatus.SUCCEED
-                                unconfirmed.remove(pay.id)
+                                processing.remove(pay.id)
                             }
                             TxStatus.REJECTED -> {
                                 pay.status = PaymentStatus.FAILED
@@ -57,7 +73,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager) {
 
     private fun match(pay: Payment, tx: Tx): Boolean =
             pay.currency == tx.currency() &&
-            pay.amount == tx.amount() &&
+            pay.amount.compareTo(tx.amount()) == 0 &&
             pay.address == tx.destination() &&
             pay.tag == tx.tag()
 }

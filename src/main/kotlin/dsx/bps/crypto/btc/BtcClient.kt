@@ -45,30 +45,25 @@ class BtcClient: CoinClient {
         return constructTx(btcTx, txid)
     }
 
-    override fun sendPayment(payment: Payment) {
-        val tx = payment
-            .let { rpc.createRawTransaction(it.amount, it.address) }
+    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+        val tx = rpc.createRawTransaction(amount, address)
             .let { rpc.fundRawTransaction(it) }
+            // TODO: implement local tx sign
             .let { rpc.signRawTransactionWithWallet(it) }
             .let { rpc.sendRawTransaction(it) }
             .let { rpc.getTransaction(it) }
 
         val detail = tx
             .details
-            .single { detail -> match(detail, payment) }
+            .single { detail -> match(detail, amount, address) }
 
-        // TODO: move initialization of payment fields in processor
-        with(payment) {
-            txid = TxId(tx.hash, detail.vout)
-            hex = tx.hex
-            fee = tx.fee.abs()
-        }
+        return constructTx(tx, TxId(tx.hash, detail.vout))
     }
 
-    private fun match(detail: BtcTxDetail, payment: Payment): Boolean =
-            detail.address == payment.address &&
+    private fun match(detail: BtcTxDetail, amount: BigDecimal, address: String): Boolean =
+            detail.address == address &&
             detail.category == "send" &&
-            detail.amount == payment.amount.negate()
+            detail.amount.abs().compareTo(amount.abs()) == 0
 
     fun getBestBlockHash(): String = rpc.getBestBlockHash()
 

@@ -5,13 +5,14 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Observer<Tx> {
 
     // TODO: Implement db-storage for invoices
-    private val unpaid: HashSet<String> = hashSetOf()
-    private val invoices: HashMap<String, Invoice> = hashMapOf()
+    private val unpaid = ConcurrentHashMap.newKeySet<String>()
+    private val invoices = ConcurrentHashMap<String, Invoice>()
 
     var frequency: Long = 5000
 
@@ -40,17 +41,20 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
 
     private fun recalculate(inv: Invoice) {
         var received = BigDecimal.ZERO
-        manager
-            .getTxs(inv.currency, inv.txids)
-            .forEach { tx ->
-                when (tx.status()) {
-                    TxStatus.REJECTED ->
-                        inv.txids.remove(tx.txid())
-                    TxStatus.CONFIRMED ->
-                        received += tx.amount()
-                    else -> {}
+        synchronized(inv.txids) {
+            manager
+                .getTxs(inv.currency, inv.txids)
+                .forEach { tx ->
+                    when (tx.status()) {
+                        TxStatus.REJECTED ->
+                            inv.txids.remove(tx.txid())
+                        TxStatus.CONFIRMED ->
+                            received += tx.amount()
+                        else -> {
+                        }
+                    }
                 }
-            }
+        }
         inv.received = received
     }
 

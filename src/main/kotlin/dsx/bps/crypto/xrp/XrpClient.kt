@@ -41,25 +41,18 @@ class XrpClient: CoinClient {
 
     override fun getAddress(): String = account
 
-    override fun getTag(): Int? = Random.nextInt(Int.MAX_VALUE)
+    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
 
     override fun getTx(txid: TxId): Tx {
         val xrtTx = rpc.getTransaction(txid.hash)
         return constructTx(xrtTx)
     }
 
-    override fun sendPayment(payment: Payment) {
-        val tx = payment
-            .let { createTransaction(it.amount, it.address, it.tag) }
+    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+        return createTransaction(amount, address, tag)
             .let { rpc.sign(privateKey, it) }
             .let { rpc.submit(it) }
-
-        // TODO: move initialization of payment fields in processor
-        with(payment) {
-            txid = TxId(tx.hash, tx.sequence)
-            fee = BigDecimal(tx.fee)
-            hex = tx.hex
-        }
+            .let { constructTx(it) }
     }
 
     private fun createTransaction(amount: BigDecimal, address: String, tag: Int?): XrpTxPayment {

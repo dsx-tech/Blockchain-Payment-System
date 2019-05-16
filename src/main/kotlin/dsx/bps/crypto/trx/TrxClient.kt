@@ -18,7 +18,7 @@ class TrxClient: CoinClient {
     override val currency = Currency.TRX
 
     private val account: String
-    private val address: String
+    private val accountAddress: String
     private val privateKey: String
 
     override val rpc: TrxRpc
@@ -27,8 +27,8 @@ class TrxClient: CoinClient {
     private val confirmations: Int
 
     init {
-        account = config.getProperty("TRX.account", "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS") // Base58Checksum representation of address
-        address = config.getProperty("TRX.address", "41dc6c2bc46639e5371fe99e002858754604cf5847")
+        account = config.getProperty("TRX.account", "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS") // Base58Checksum representation of account
+        accountAddress = config.getProperty("TRX.address", "41dc6c2bc46639e5371fe99e002858754604cf5847")
         privateKey = config.getProperty("TRX.privateKey", "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec")
 
         val host = config.getProperty("TRX.ip", "127.0.0.1")
@@ -42,9 +42,9 @@ class TrxClient: CoinClient {
         confirmations = 3 // 19 for mainnet
     }
 
-    override fun getBalance(): BigDecimal = rpc.getBalance(address)
+    override fun getBalance(): BigDecimal = rpc.getBalance(accountAddress)
 
-    override fun getAddress(): String = address
+    override fun getAddress(): String = accountAddress
 
     override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
 
@@ -53,25 +53,19 @@ class TrxClient: CoinClient {
         return constructTx(trxTx)
     }
 
-    override fun sendPayment(payment: Payment) {
-        val tx = payment
-            .let { rpc.createTransaction(it.address, address, it.amount) }
+    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+        val tx = rpc.createTransaction(address, accountAddress, amount)
             .let {
-                it.rawData.data = payment.tag?.toString(16)
+                it.rawData.data = tag?.toString(16)
                 rpc.getTransactionSign(privateKey, it)
             }
 
         val result = rpc.broadcastTransaction(tx)
 
-        if (result.result) {
-            with(payment) {
-                txid = TxId(tx.hash, 0)
-                hex = tx.hex
-                fee = BigDecimal.ZERO
-            }
+        if (result.success) {
+            return constructTx(tx)
         } else {
-            val message = "Unable to broadcast TRX transaction $tx with response $result"
-            throw RuntimeException(message)
+            throw RuntimeException("Unable to broadcast TRX transaction $tx with response $result")
         }
     }
 

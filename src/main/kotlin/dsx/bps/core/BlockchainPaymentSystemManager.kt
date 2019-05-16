@@ -66,7 +66,8 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
     fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): String {
         val coin = getCoin(currency)
         val payment = paymentProcessor.createPayment(currency, amount, address, tag)
-        coin.sendPayment(payment)
+        val tx = coin.sendPayment(amount, address, tag)
+        paymentProcessor.updatePayment(payment.id, tx)
         return payment.id
     }
 

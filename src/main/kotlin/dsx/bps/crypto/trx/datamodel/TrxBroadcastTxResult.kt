@@ -8,6 +8,6 @@ data class TrxBroadcastTxResult(
     val code: String?,
     val message: String?
 ) {
-    val result: Boolean
+    val success: Boolean
         get() = _result ?: false
 }
