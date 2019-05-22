@@ -1,11 +1,13 @@
 package dsx.bps.crypto.trx
 
 import dsx.bps.crypto.common.Explorer
+import java.util.*
 import kotlin.concurrent.timer
 
-class TrxExplorer(override val coin: TrxCoin, frequency: Long): Explorer(frequency) {
+class TrxExplorer(override val coin: TrxCoin, conf: Properties): Explorer(conf) {
 
     override val currency = coin.currency
+    override var frequency = config.getProperty("TRX.frequency", "2000").toLong()
 
     init {
         explore()

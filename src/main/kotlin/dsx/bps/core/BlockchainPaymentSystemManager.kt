@@ -1,15 +1,14 @@
 package dsx.bps.core
 
 import dsx.bps.core.datamodel.*
-import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.common.CoinFactory
-import io.reactivex.Observable
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.crypto.Coins
+import dsx.bps.crypto.Explorers
 import io.reactivex.Observer
-import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
-import java.util.Properties
+import java.util.*
 
 class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
 
@@ -19,8 +18,8 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
     }
 
     private val config = Properties(DEFAULT_CONFIG)
-    private val coins: Map<Currency, Coin>
-    private val emitter: Observable<Tx>
+    private val coins: Coins
+    private val explorers: Explorers
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
@@ -34,47 +33,28 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
             throw RuntimeException(ex.message) // TODO: replace with logging
         }
 
-        coins = Currency
-            .values()
-            .filter { config.getProperty(it.name) == "1" }
-            .mapNotNull {
-                try {
-                    it to CoinFactory.create(it, config)
-                } catch (ex: Exception) {
-                    println("Failed to create client for ${it.name}:\n" + ex.message)
-                    null
-                }
-            }.toMap()
-
-        val emitters = coins.values.map { it.getTxEmitter() }
-        emitter = Observable
-            .merge(emitters)
-            .observeOn(Schedulers.computation())
-
+        coins = Coins(config)
+        explorers = Explorers(coins, config)
         invoiceProcessor = InvoiceProcessor(this)
         paymentProcessor = PaymentProcessor(this)
+
+        explorers.subscribe(invoiceProcessor)
     }
 
-    private fun getCoin(currency: Currency): Coin = coins[currency]
-        ?: throw Exception("Currency ${currency.name} isn't specified in configuration file or isn't supported.")
-
     fun getBalance(currency: Currency): BigDecimal {
-        val coin = getCoin(currency)
-        return coin.getBalance()
+        return coins.balance(currency)
     }
 
     fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): String {
-        val coin = getCoin(currency)
         val payment = paymentProcessor.createPayment(currency, amount, address, tag)
-        val tx = coin.sendPayment(amount, address, tag)
+        val tx = coins.send(currency, amount, address, tag)
         paymentProcessor.updatePayment(payment.id, tx)
         return payment.id
     }
 
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
-        val coin = getCoin(currency)
-        val tag = coin.getTag()
-        val address = coin.getAddress()
+        val tag = coins.tag(currency)
+        val address = coins.address(currency)
         val invoice = invoiceProcessor.createInvoice(currency, amount, address, tag)
         return invoice.id
     }
@@ -84,16 +64,18 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
     fun getInvoice(id: String): Invoice? = invoiceProcessor.getInvoice(id)
 
     fun getTx(currency: Currency, txid: TxId): Tx {
-        val coin = getCoin(currency)
-        return coin.getTx(txid)
+        return coins.tx(currency, txid)
     }
 
     fun getTxs(currency: Currency, txids: List<TxId>): List<Tx> {
-        val coin = getCoin(currency)
-        return coin.getTxs(txids)
+        return coins.txs(currency, txids)
     }
 
     fun subscribe(observer: Observer<Tx>) {
-        emitter.subscribe(observer)
+        explorers.subscribe(observer)
+    }
+
+    fun subscribeOnCoin(currency: Currency, observer: Observer<Tx>) {
+        explorers.subscribeOnCoin(currency, observer)
     }
 }

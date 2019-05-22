@@ -49,7 +49,7 @@ internal class XrpClientTest {
     }
 
     @Test
-    fun createInvoiceXrp() {
+    fun createInvoice() {
         val invId = bob.createInvoice(cur, 373)
         val inv = bob.getInvoice(invId)
         assertNotNull(inv)

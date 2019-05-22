@@ -7,7 +7,6 @@ import dsx.bps.crypto.trx.TrxCoin
 import dsx.bps.crypto.xrp.XrpCoin
 
 class CoinFactory {
-
     companion object {
         fun create(currency: Currency, config: Properties): Coin = when (currency) {
             Currency.BTC -> BtcCoin(config)

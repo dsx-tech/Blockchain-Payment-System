@@ -77,6 +77,7 @@ internal class BlockchainPaymentSystemAPITest {
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
         }
+        println("invoice $inv is paid in tx:\n${inv.txids}")
     }
 
     @Test

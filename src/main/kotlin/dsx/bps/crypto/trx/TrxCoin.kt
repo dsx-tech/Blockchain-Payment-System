@@ -9,26 +9,19 @@ import java.math.BigDecimal
 import java.util.*
 import kotlin.random.Random
 
-class TrxCoin: Coin {
-
-    constructor(): super()
-    constructor(conf: Properties): super(conf)
-    constructor(confPath: String): super(confPath)
+class TrxCoin(conf: Properties): Coin(conf) {
 
     override val currency = Currency.TRX
-
-    private val account: String
-    private val accountAddress: String
-    private val privateKey: String
-
     override val rpc: TrxRpc
-    override val explorer: TrxExplorer
 
-    private val confirmations: Int
+    override val address: String
+    private val privateKey: String
+    var confirmations: Int
 
     init {
-        account = config.getProperty("TRX.account", "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS") // Base58Checksum representation of account
-        accountAddress = config.getProperty("TRX.address", "41dc6c2bc46639e5371fe99e002858754604cf5847")
+        val account = config.getProperty("TRX.account", "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS")
+        // TODO: get address from account (Base58Checksum)
+        address = config.getProperty("TRX.address", "41dc6c2bc46639e5371fe99e002858754604cf5847")
         privateKey = config.getProperty("TRX.privateKey", "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec")
 
         val host = config.getProperty("TRX.ip", "127.0.0.1")
@@ -36,25 +29,21 @@ class TrxCoin: Coin {
         val url = "http://$host:$port/wallet/"
         rpc = TrxRpc(url)
 
-        val frequency = config.getProperty("TRX.frequency", "3000").toLong()
-        explorer = TrxExplorer(this, frequency)
-
-        confirmations = 3 // 19 for mainnet
+        confirmations = config.getProperty("TRX.confirmations", "3").toInt()
     }
 
-    override fun getBalance(): BigDecimal = rpc.getBalance(accountAddress)
+    override val balance: BigDecimal
+        get() = rpc.getBalance(address)
 
-    override fun getAddress(): String = accountAddress
+    override fun tag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
 
-    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
-
-    override fun getTx(txid: TxId): Tx {
+    override fun tx(txid: TxId): Tx {
         val trxTx = rpc.getTransactionById(txid.hash)
         return constructTx(trxTx)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
-        val tx = rpc.createTransaction(address, accountAddress, amount)
+    override fun send(amount: BigDecimal, destination: String, tag: Int?): Tx {
+        val tx = rpc.createTransaction(destination, address, amount)
             .let {
                 it.rawData.data = tag?.toString(16)
                 rpc.getTransactionSign(privateKey, it)
@@ -83,6 +72,7 @@ class TrxCoin: Coin {
         val lastBlock = rpc.getNowBlock()
 
         return object: Tx {
+            
             override fun currency() = Currency.TRX
 
             override fun hash() = trxTx.hash

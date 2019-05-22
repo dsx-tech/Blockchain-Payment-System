@@ -17,7 +17,6 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Obs
     var frequency: Long = 5000
 
     init {
-        manager.subscribe(this)
         check()
     }
 

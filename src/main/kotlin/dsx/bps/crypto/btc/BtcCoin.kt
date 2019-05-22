@@ -7,18 +7,11 @@ import dsx.bps.crypto.common.Coin
 import java.math.BigDecimal
 import java.util.*
 
-class BtcCoin: Coin {
-
-    constructor(): super()
-    constructor(conf: Properties): super(conf)
-    constructor(confPath: String): super(confPath)
+class BtcCoin(conf: Properties): Coin(conf) {
 
     override val currency = Currency.BTC
-
     override val rpc: BtcRpc
-    override val explorer: BtcExplorer
-
-    private val confirmations: Int
+    var confirmations: Int
 
     init {
         val user = config.getProperty("BTC.user", "user")
@@ -28,25 +21,22 @@ class BtcCoin: Coin {
         val url = "http://$user:$pass@$host:$port/"
         rpc = BtcRpc(url)
 
-        val frequency = config.getProperty("BTC.frequency", "5000").toLong()
-        explorer = BtcExplorer(this, frequency)
-
         confirmations = config.getProperty("BTC.confirmations", "1").toInt()
     }
 
-    override fun getBalance(): BigDecimal = rpc.getBalance()
+    override val address: String
+        get() = rpc.getNewAddress()
 
-    override fun getAddress(): String = rpc.getNewAddress()
+    override val balance: BigDecimal
+        get() = rpc.getBalance()
 
-    override fun getTag(): Int? = null
-
-    override fun getTx(txid: TxId): Tx {
+    override fun tx(txid: TxId): Tx {
         val btcTx = rpc.getTransaction(txid.hash)
         return constructTx(btcTx, txid)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
-        val tx = rpc.createRawTransaction(amount, address)
+    override fun send(amount: BigDecimal, destination: String, tag: Int?): Tx {
+        val tx = rpc.createRawTransaction(amount, destination)
             .let { rpc.fundRawTransaction(it) }
             // TODO: implement local tx sign
             .let { rpc.signRawTransactionWithWallet(it) }
@@ -55,7 +45,7 @@ class BtcCoin: Coin {
 
         val detail = tx
             .details
-            .single { detail -> match(detail, amount, address) }
+            .single { detail -> match(detail, amount, destination) }
 
         return constructTx(tx, TxId(tx.hash, detail.vout))
     }
@@ -77,6 +67,7 @@ class BtcCoin: Coin {
             .first { detail -> detail.vout == txid.index }
 
         return object: Tx {
+
             override fun currency() = Currency.BTC
 
             override fun hash() = btcTx.hash

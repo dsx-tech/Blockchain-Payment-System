@@ -1,11 +1,13 @@
 package dsx.bps.crypto.btc
 
 import dsx.bps.crypto.common.Explorer
+import java.util.*
 import kotlin.concurrent.timer
 
-class BtcExplorer(override val coin: BtcCoin, frequency: Long): Explorer(frequency) {
+class BtcExplorer(override val coin: BtcCoin, conf: Properties): Explorer(conf) {
 
     override val currency = coin.currency
+    override var frequency = config.getProperty("BTC.frequency", "5000").toLong()
 
     init {
         explore()
