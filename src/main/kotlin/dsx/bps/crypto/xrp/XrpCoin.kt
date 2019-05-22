@@ -2,13 +2,13 @@ package dsx.bps.crypto.xrp
 
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
-import dsx.bps.crypto.common.CoinClient
+import dsx.bps.crypto.common.Coin
 import dsx.bps.crypto.xrp.datamodel.*
 import java.math.BigDecimal
 import java.util.*
 import kotlin.random.Random
 
-class XrpClient: CoinClient {
+class XrpCoin: Coin {
 
     constructor(): super()
     constructor(conf: Properties): super(conf)
@@ -21,7 +21,7 @@ class XrpClient: CoinClient {
     private val passPhrase: String
 
     override val rpc: XrpRpc
-    override val blockchainListener: XrpBlockchainListener
+    override val explorer: XrpExplorer
 
     init {
         account = config.getProperty("XRP.account", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh")
@@ -34,7 +34,7 @@ class XrpClient: CoinClient {
         rpc = XrpRpc(url)
 
         val frequency = config.getProperty("XRP.frequency", "5000").toLong()
-        blockchainListener = XrpBlockchainListener(this, frequency)
+        explorer = XrpExplorer(this, frequency)
     }
 
     override fun getBalance(): BigDecimal = rpc.getBalance(account)

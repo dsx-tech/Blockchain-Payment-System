@@ -1,9 +1,9 @@
 package dsx.bps.crypto.trx
 
-import dsx.bps.crypto.common.BlockchainListener
+import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
-class TrxBlockchainListener(override val coin: TrxClient, frequency: Long): BlockchainListener(frequency) {
+class TrxExplorer(override val coin: TrxCoin, frequency: Long): Explorer(frequency) {
 
     override val currency = coin.currency
 

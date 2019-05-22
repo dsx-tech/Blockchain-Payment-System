@@ -2,14 +2,14 @@ package dsx.bps.crypto.trx
 
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.*
-import dsx.bps.crypto.common.CoinClient
+import dsx.bps.crypto.common.Coin
 import dsx.bps.crypto.trx.datamodel.TrxBlock
 import dsx.bps.crypto.trx.datamodel.TrxTx
 import java.math.BigDecimal
 import java.util.*
 import kotlin.random.Random
 
-class TrxClient: CoinClient {
+class TrxCoin: Coin {
 
     constructor(): super()
     constructor(conf: Properties): super(conf)
@@ -22,7 +22,7 @@ class TrxClient: CoinClient {
     private val privateKey: String
 
     override val rpc: TrxRpc
-    override val blockchainListener: TrxBlockchainListener
+    override val explorer: TrxExplorer
 
     private val confirmations: Int
 
@@ -37,7 +37,7 @@ class TrxClient: CoinClient {
         rpc = TrxRpc(url)
 
         val frequency = config.getProperty("TRX.frequency", "3000").toLong()
-        blockchainListener = TrxBlockchainListener(this, frequency)
+        explorer = TrxExplorer(this, frequency)
 
         confirmations = 3 // 19 for mainnet
     }

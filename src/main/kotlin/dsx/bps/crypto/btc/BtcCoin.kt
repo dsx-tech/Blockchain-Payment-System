@@ -3,11 +3,11 @@ package dsx.bps.crypto.btc
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.btc.datamodel.*
-import dsx.bps.crypto.common.CoinClient
+import dsx.bps.crypto.common.Coin
 import java.math.BigDecimal
 import java.util.*
 
-class BtcClient: CoinClient {
+class BtcCoin: Coin {
 
     constructor(): super()
     constructor(conf: Properties): super(conf)
@@ -16,7 +16,7 @@ class BtcClient: CoinClient {
     override val currency = Currency.BTC
 
     override val rpc: BtcRpc
-    override val blockchainListener: BtcBlockchainListener
+    override val explorer: BtcExplorer
 
     private val confirmations: Int
 
@@ -29,7 +29,7 @@ class BtcClient: CoinClient {
         rpc = BtcRpc(url)
 
         val frequency = config.getProperty("BTC.frequency", "5000").toLong()
-        blockchainListener = BtcBlockchainListener(this, frequency)
+        explorer = BtcExplorer(this, frequency)
 
         confirmations = config.getProperty("BTC.confirmations", "1").toInt()
     }

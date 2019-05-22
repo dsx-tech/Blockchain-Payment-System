@@ -1,8 +1,8 @@
 package dsx.bps.core
 
 import dsx.bps.core.datamodel.*
-import dsx.bps.crypto.common.CoinClient
-import dsx.bps.crypto.common.CoinClientFactory
+import dsx.bps.crypto.common.Coin
+import dsx.bps.crypto.common.CoinFactory
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.schedulers.Schedulers
@@ -19,7 +19,7 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
     }
 
     private val config = Properties(DEFAULT_CONFIG)
-    private val coins: Map<Currency, CoinClient>
+    private val coins: Map<Currency, Coin>
     private val emitter: Observable<Tx>
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
@@ -39,7 +39,7 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
             .filter { config.getProperty(it.name) == "1" }
             .mapNotNull {
                 try {
-                    it to CoinClientFactory.createCoinClient(it, config)
+                    it to CoinFactory.create(it, config)
                 } catch (ex: Exception) {
                     println("Failed to create client for ${it.name}:\n" + ex.message)
                     null
@@ -55,7 +55,7 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
         paymentProcessor = PaymentProcessor(this)
     }
 
-    private fun getCoin(currency: Currency): CoinClient = coins[currency]
+    private fun getCoin(currency: Currency): Coin = coins[currency]
         ?: throw Exception("Currency ${currency.name} isn't specified in configuration file or isn't supported.")
 
     fun getBalance(currency: Currency): BigDecimal {

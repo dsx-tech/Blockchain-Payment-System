@@ -5,19 +5,18 @@ import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
 import io.reactivex.subjects.PublishSubject
-import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.rpc.JsonRpcHttpClient
 
-abstract class CoinClient {
+abstract class Coin {
 
     abstract val currency: Currency
     protected val config: Properties
 
     protected abstract val rpc: JsonRpcHttpClient
-    protected abstract val blockchainListener: BlockchainListener
+    protected abstract val explorer: Explorer
 
     constructor() {
         config = Properties()
@@ -34,7 +33,7 @@ abstract class CoinClient {
         }
     }
 
-    fun getTxEmitter(): PublishSubject<Tx> = blockchainListener.emitter
+    fun getTxEmitter(): PublishSubject<Tx> = explorer.emitter
 
     abstract fun getBalance(): BigDecimal
 

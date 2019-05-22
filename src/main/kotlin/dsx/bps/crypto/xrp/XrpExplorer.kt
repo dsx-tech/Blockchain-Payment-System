@@ -1,9 +1,9 @@
 package dsx.bps.crypto.xrp
 
-import dsx.bps.crypto.common.BlockchainListener
+import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
-class XrpBlockchainListener(override val coin: XrpClient, frequency: Long): BlockchainListener(frequency) {
+class XrpExplorer(override val coin: XrpCoin, frequency: Long): Explorer(frequency) {
 
     override val currency = coin.currency
 

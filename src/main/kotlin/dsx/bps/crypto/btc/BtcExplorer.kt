@@ -1,9 +1,9 @@
 package dsx.bps.crypto.btc
 
-import dsx.bps.crypto.common.BlockchainListener
+import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
-class BtcBlockchainListener(override val coin: BtcClient, frequency: Long): BlockchainListener(frequency) {
+class BtcExplorer(override val coin: BtcCoin, frequency: Long): Explorer(frequency) {
 
     override val currency = coin.currency
 
