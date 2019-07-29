@@ -1,12 +1,20 @@
 package dsx.bps.crypto.xrp
 
-import com.google.gson.JsonElement
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dsx.bps.crypto.xrp.datamodel.*
 import dsx.bps.rpc.JsonRpcHttpClient
-import java.io.InputStream
+import dsx.bps.rpc.RpcResponse
 import java.math.BigDecimal
 
 class XrpRpc(url: String): JsonRpcHttpClient(url) {
+
+    override val gson: Gson = GsonBuilder()
+        .registerTypeAdapter(
+            XrpAmount::class.java,
+            XrpAmount.Companion.XrpAmountDeserializer()
+        )
+        .create()
 
     fun getBalance(account: String): BigDecimal {
         val accountData = getAccountInfo(account)
@@ -66,14 +74,10 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
     }
 
     fun sign(privateKey: String, tx: XrpTxPayment, offline: Boolean = true): String {
-        return sign(privateKey, gson.toJsonTree(tx, XrpTxPayment::class.java), offline)
-    }
-
-    private fun sign(privateKey: String, txJson: JsonElement, offline: Boolean = true): String {
         // TODO: implement local tx sign
         val params = mutableMapOf(
             "secret" to privateKey,
-            "tx_json" to txJson,
+            "tx_json" to tx,
             "offline" to offline)
         val result = query("sign", params)
         val obj = gson.toJsonTree(result).asJsonObject
@@ -97,7 +101,7 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
     }
 
     fun getSequence(account: String): Int {
-        val accountData = getAccountInfo(account)
+        val accountData = getAccountInfo(account, false)
         return accountData.sequence
     }
 
@@ -115,21 +119,18 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         return obj["ledger_current_index"].asLong
     }
 
-    override fun parseResponse(input: InputStream, id: String): Any? {
-        val r = input.use { it.readBytes().toString(charset) }
-
-        val json = r
-            .let { gson.fromJson(r, Map::class.java) }
+    override fun parseResponse(response: RpcResponse): Any? {
+        val obj = response.json
+            .let { gson.fromJson(it, Map::class.java) }
             .let { gson.toJsonTree(it["result"]).asJsonObject }
 
-        if (json["status"].asString == "error") {
-            val code = json["error_code"].asInt
-            val error = json["error"].asString
-            val message = json["error_message"].asString
-            val request = json["request"].asString
-            throw RuntimeException("RPC error \"$error\": code $code, message: \"$message\", request: $request")
+        if (obj["status"].asString == "error") {
+            val code = obj["error_code"].asInt
+            val error = obj["error"].asString
+            val message = obj["error_message"].asString
+            throw RuntimeException("RPC error \"$error\": code $code, message: \"$message\",\n for response: ${response.json}")
         }
 
-        return json
+        return obj
     }
 }

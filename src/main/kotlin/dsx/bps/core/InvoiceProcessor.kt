@@ -5,40 +5,56 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
+import kotlin.concurrent.timer
 
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Observer<Tx> {
 
     // TODO: Implement db-storage for invoices
-    private val unpaid: HashSet<String> = hashSetOf()
-    private val invoices: HashMap<String, Invoice> = hashMapOf()
+    private val unpaid = ConcurrentHashMap.newKeySet<String>()
+    private val invoices = ConcurrentHashMap<String, Invoice>()
+
+    var frequency: Long = 5000
 
     init {
         manager.subscribe(this)
+        check()
     }
 
-    fun getInvoice(id: String): Invoice? = invoices[id]
-
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
-        val id = UUID.randomUUID().toString()
+        val id = UUID.randomUUID().toString().replace("-", "")
         val inv = Invoice(id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
         return inv
     }
 
+    fun getInvoice(id: String): Invoice? = invoices[id]
+
+    private fun check() {
+        timer(this::class.toString(), true, 0, frequency) {
+            unpaid
+                .mapNotNull { invoices[it] }
+                .forEach { recalculate(it) }
+        }
+    }
+
     private fun recalculate(inv: Invoice) {
         var received = BigDecimal.ZERO
-        manager
-            .getTxs(inv.currency, inv.txids)
-            .forEach { tx ->
-                when (tx.status()) {
-                    TxStatus.REJECTED ->
-                        inv.txids.remove(tx.txid())
-                    TxStatus.CONFIRMED ->
-                        received += tx.amount()
-                    else -> {}
+        synchronized(inv.txids) {
+            manager
+                .getTxs(inv.currency, inv.txids)
+                .forEach { tx ->
+                    when (tx.status()) {
+                        TxStatus.REJECTED ->
+                            inv.txids.remove(tx.txid())
+                        TxStatus.CONFIRMED ->
+                            received += tx.amount()
+                        else -> {
+                        }
+                    }
                 }
-            }
+        }
         inv.received = received
     }
 

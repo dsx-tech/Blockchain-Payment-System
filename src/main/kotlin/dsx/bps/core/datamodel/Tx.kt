@@ -10,7 +10,7 @@ interface Tx {
 
     fun hash(): String
 
-    fun index(): Int
+    fun index(): Int = 0
 
     fun amount(): BigDecimal
 

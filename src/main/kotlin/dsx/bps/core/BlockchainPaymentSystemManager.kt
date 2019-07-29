@@ -41,7 +41,7 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
                 try {
                     it to CoinClientFactory.createCoinClient(it, config)
                 } catch (ex: Exception) {
-                    println("Failed to create client fo ${it.name}:\n" + ex.message)
+                    println("Failed to create client for ${it.name}:\n" + ex.message)
                     null
                 }
             }.toMap()
@@ -66,7 +66,8 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
     fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): String {
         val coin = getCoin(currency)
         val payment = paymentProcessor.createPayment(currency, amount, address, tag)
-        coin.sendPayment(payment)
+        val tx = coin.sendPayment(amount, address, tag)
+        paymentProcessor.updatePayment(payment.id, tx)
         return payment.id
     }
 

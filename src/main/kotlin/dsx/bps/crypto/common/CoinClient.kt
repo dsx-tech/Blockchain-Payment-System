@@ -46,5 +46,5 @@ abstract class CoinClient {
 
     fun getTxs(txids: List<TxId>): List<Tx> = txids.map(::getTx)
 
-    abstract fun sendPayment(payment: Payment)
+    abstract fun sendPayment(amount: BigDecimal, address: String, tag: Int? = null): Tx
 }

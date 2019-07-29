@@ -8,9 +8,9 @@ data class XrpTx(
     @SerializedName("Account")
     val account: String,
     @SerializedName("Amount")
-    val amount: BigDecimal,
+    val amount: XrpAmount?,
     @SerializedName("Destination")
-    val destination: String,
+    private val _destination: String?,
     @SerializedName("Fee")
     val fee: String,
     @SerializedName("Sequence")
@@ -18,11 +18,18 @@ data class XrpTx(
     @SerializedName("TransactionType")
     val type: String,
     @SerializedName("DestinationTag")
-    val destinationTag: Int? = null,
+    val destinationTag: Int?,
     @SerializedName("ledger_index")
     val ledgerIndex: Long,
-    val meta: XrpTxMeta? = null,
-    val validated: Boolean = false
+    val meta: XrpTxMeta?,
+    @SerializedName("validated")
+    private val _validated: Boolean?
 ) {
     lateinit var hex: String
+
+    val destination: String
+        get() = _destination ?: ""
+
+    val validated: Boolean
+        get() = _validated ?: false
 }

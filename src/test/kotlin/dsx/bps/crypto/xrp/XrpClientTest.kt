@@ -44,7 +44,7 @@ internal class XrpClientTest {
             rpc.ledgerAccept()
             count += 1
             Thread.sleep(2000)
-            assertNotEquals(5, count, "Payment wasn't confirmed or found in 10 blocks")
+            assertNotEquals(5, count, "Payment wasn't confirmed or found in 5 blocks")
         }
     }
 

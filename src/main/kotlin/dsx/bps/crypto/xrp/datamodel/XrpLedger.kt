@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 
 data class XrpLedger(
     val closed: Boolean,
-    val seqNum: String,
     val transactions: List<XrpTx>? = null,
     @SerializedName("ledger_hash")
     val hash: String,
