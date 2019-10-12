@@ -1,9 +1,11 @@
 package dsx.bps.crypto.btc
 
-import java.math.BigDecimal
 import com.google.gson.reflect.TypeToken
+import dsx.bps.crypto.btc.datamodel.BtcBlock
+import dsx.bps.crypto.btc.datamodel.BtcListSinceBlock
+import dsx.bps.crypto.btc.datamodel.BtcTx
 import dsx.bps.rpc.JsonRpcHttpClient
-import dsx.bps.crypto.btc.datamodel.*
+import java.math.BigDecimal
 
 class BtcRpc(url: String): JsonRpcHttpClient(url) {
 
@@ -72,6 +74,10 @@ class BtcRpc(url: String): JsonRpcHttpClient(url) {
         return gson.fromJson(json, BtcTx::class.java)
     }
 
+    @Deprecated(
+        "Wil be fully removed in bitcoind v0.19",
+        ReplaceWith("generatetoaddress")
+        )
     fun generate(n: Int): List<String> {
         val result = query("generate", n)
         val json = gson.toJson(result)

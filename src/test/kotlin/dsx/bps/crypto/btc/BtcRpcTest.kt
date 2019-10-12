@@ -1,14 +1,13 @@
 package dsx.bps.crypto.btc
 
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import java.math.BigDecimal
 import kotlin.math.roundToInt
 
 internal class BtcRpcTest {
 
-    private val url = "http://bob:password@34.253.178.165:8444/"
+    private val url = "http://bob:password@127.0.0.1:18444/"
     private val rpc = BtcRpc(url)
     private val alice = "2N2PDfbH7zRjB1G7MuiVSYYfykME28wKFw6"
 

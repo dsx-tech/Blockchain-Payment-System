@@ -7,19 +7,17 @@ import dsx.bps.crypto.btc.BtcRpc
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import java.io.File
 import java.math.BigDecimal
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BlockchainPaymentSystemAPITest {
 
-    private val configDir = System.getProperty("user.home") + File.separator + "bps" + File.separator
-    private val aliceConfigPath = configDir + "alice.properties"
-    private val bobConfigPath = configDir + "bob.properties"
+    private val aliceConfigPath = javaClass.classLoader.getResource("alice.properties")?.path
+    private val bobConfigPath = javaClass.classLoader.getResource("bob.properties")?.path
 
-    private val aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath)
-    private val bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
-    private val generator = BtcRpc("http://carol:password@34.253.178.165:8555/")
+    private val aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
+    private val bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
+    private val generator = BtcRpc("http://alice:password@127.0.0.1:18443/")
 
     private val aliceBtcAddress = "2MtYy1RGY2msh9WbRBf5VwUAE4xtGNJ9GQc"
     private val bobBtcAddress = "2NETNm86ug9drkCJ7N4U5crA9B9681HidzX"
