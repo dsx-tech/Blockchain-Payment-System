@@ -72,3 +72,5 @@ gradle-app.setting
 
 ### Gradle Patch ###
 **/build/
+
+nodes/bitcoind/**/regtest
