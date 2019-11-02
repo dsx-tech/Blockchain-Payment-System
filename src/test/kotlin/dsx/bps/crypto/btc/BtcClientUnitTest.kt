@@ -1,0 +1,145 @@
+package dsx.bps.crypto.btc
+
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
+import dsx.bps.crypto.btc.datamodel.BtcTx
+import dsx.bps.crypto.btc.datamodel.BtcTxDetail
+import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
+import org.junit.jupiter.api.*
+import org.mockito.Mockito
+import java.math.BigDecimal
+
+internal class BtcClientUnitTest{
+
+    private val btcRpc = Mockito.mock(BtcRpc::class.java)
+    private val btcBlockchainListener = Mockito.mock(BtcBlockchainListener::class.java)
+    private val btcClient = BtcClient(btcRpc, btcBlockchainListener)
+
+    @Test
+    @DisplayName("getBalance test ")
+    fun getBalanceTest(){
+        btcClient.getBalance()
+    }
+
+    @Test
+    @DisplayName("getAddress test")
+    fun getAddressTest(){
+        btcClient.getAddress()
+    }
+
+    @Test
+    @DisplayName("getTag test")
+    fun getTagTest(){
+        Assertions.assertEquals(btcClient.getTag(), null)
+    }
+
+    @Test
+    @DisplayName("getTx test")
+    fun getTxTest(){
+        val btcTxDetail: BtcTxDetail = Mockito.mock(BtcTxDetail::class.java)
+        Mockito.`when`(btcTxDetail.vout).thenReturn(1)
+        val btcTx: BtcTx = Mockito.mock(BtcTx::class.java)
+        Mockito.`when`(btcTx.details).thenReturn(listOf(btcTxDetail))
+
+        Mockito.`when`(btcRpc.getTransaction("hash")).thenReturn(btcTx)
+
+        val txid: TxId = Mockito.mock(TxId::class.java)
+        Mockito.`when`(txid.hash).thenReturn("hash")
+        Mockito.`when`(txid.index).thenReturn(1)
+
+        btcClient.getTx(txid)
+    }
+
+    @Test
+    @DisplayName("sendPayment test")
+    fun sendPaymentTest(){
+        val btcTxDetail: BtcTxDetail = Mockito.mock(BtcTxDetail::class.java)
+        Mockito.`when`(btcTxDetail.vout).thenReturn(1)
+        Mockito.`when`(btcTxDetail.category).thenReturn("send")
+        Mockito.`when`(btcTxDetail.address).thenReturn("testaddress")
+        Mockito.`when`(btcTxDetail.amount).thenReturn(BigDecimal.TEN)
+
+        val btcTx: BtcTx = Mockito.mock(BtcTx::class.java)
+        Mockito.`when`(btcTx.details).thenReturn(listOf(btcTxDetail))
+        Mockito.`when`(btcTx.hash).thenReturn("hash")
+
+        Mockito.`when`(btcRpc.getTransaction("hash")).thenReturn(btcTx)
+        Mockito.`when`(btcRpc.createRawTransaction(BigDecimal.TEN, "testaddress")).thenReturn("rawTx")
+        Mockito.`when`(btcRpc.fundRawTransaction("rawTx")).thenReturn("fundRawTx")
+        Mockito.`when`(btcRpc.signRawTransactionWithWallet("fundRawTx")).thenReturn("signFundRawTx")
+        Mockito.`when`(btcRpc.sendRawTransaction("signFundRawTx")).thenReturn("hash")
+        Mockito.`when`(btcRpc.getTransaction("hash")).thenReturn(btcTx)
+
+        val result = btcClient.sendPayment(BigDecimal.TEN, "testaddress", null)
+        Assertions.assertEquals(result.currency(), btcClient.currency)
+        Assertions.assertEquals(result.destination(), btcTxDetail.address)
+        Assertions.assertEquals(result.index(), btcTxDetail.vout)
+        Assertions.assertEquals(result.hash(), btcTx.hash)
+        Assertions.assertEquals(result.amount(), BigDecimal.TEN)
+    }
+
+    @Test
+    @DisplayName("getBestBlockHash test")
+    fun getBestBlockHashTest(){
+        btcClient.getBestBlockHash()
+    }
+
+    @Test
+    @DisplayName("getBlock test")
+    fun getBlockTest(){
+        btcClient.getBlock("hash")
+    }
+
+    @Test
+    @DisplayName("listSinceBlock test")
+    fun listSinceBlockTest(){
+        btcClient.listSinceBlock("hash")
+    }
+
+    @Test
+    @DisplayName("constructTx(btcTx: BtcTx, txid: TxId) test")
+    fun constructTxTest1(){
+        val btcTxDetail: BtcTxDetail = Mockito.mock(BtcTxDetail::class.java)
+        Mockito.`when`(btcTxDetail.vout).thenReturn(1)
+        Mockito.`when`(btcTxDetail.address).thenReturn("testaddress")
+        Mockito.`when`(btcTxDetail.amount).thenReturn(BigDecimal.TEN)
+        Mockito.`when`(btcTxDetail.fee).thenReturn(BigDecimal(-5))
+        val btcTx: BtcTx = Mockito.mock(BtcTx::class.java)
+        Mockito.`when`(btcTx.details).thenReturn(listOf(btcTxDetail))
+        Mockito.`when`(btcTx.hash).thenReturn("hash")
+        Mockito.`when`(btcTx.confirmations).thenReturn(0)
+        val txid: TxId = Mockito.mock(TxId::class.java)
+        Mockito.`when`(txid.index).thenReturn(1)
+
+         val result: Tx = btcClient.constructTx(btcTx,txid)
+        Assertions.assertEquals(result.currency(), btcClient.currency)
+        Assertions.assertEquals(result.amount(), btcTxDetail.amount)
+        Assertions.assertEquals(result.destination(), btcTxDetail.address)
+        Assertions.assertEquals(result.fee(), btcTxDetail.fee.abs())
+        Assertions.assertEquals(result.status(), TxStatus.VALIDATING)
+        Assertions.assertEquals(result.hash(), btcTx.hash)
+        Assertions.assertEquals(result.index(), btcTxDetail.vout)
+    }
+
+    @Test
+    @DisplayName("constructTx(btcTxSinceBlock: BtcTxSinceBlock) test")
+    fun constructTxTest2(){
+        val btcTxSinceBlock = Mockito.mock(BtcTxSinceBlock::class.java)
+        Mockito.`when`(btcTxSinceBlock.amount).thenReturn(BigDecimal.TEN)
+        Mockito.`when`(btcTxSinceBlock.address).thenReturn("testaddress")
+        Mockito.`when`(btcTxSinceBlock.confirmations).thenReturn(0)
+        Mockito.`when`(btcTxSinceBlock.fee).thenReturn(BigDecimal(5))
+        Mockito.`when`(btcTxSinceBlock.hash).thenReturn("hash")
+        Mockito.`when`(btcTxSinceBlock.vout).thenReturn(1)
+
+        val result = btcClient.constructTx(btcTxSinceBlock)
+        Assertions.assertEquals(result.currency(), btcClient.currency)
+        Assertions.assertEquals(result.amount(), btcTxSinceBlock.amount)
+        Assertions.assertEquals(result.destination(), btcTxSinceBlock.address)
+        Assertions.assertEquals(result.status(), TxStatus.VALIDATING)
+        Assertions.assertEquals(result.fee(), btcTxSinceBlock.fee)
+        Assertions.assertEquals(result.hash(), btcTxSinceBlock.hash)
+        Assertions.assertEquals(result.index(), btcTxSinceBlock.vout)
+    }
+}
