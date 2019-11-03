@@ -1,9 +1,11 @@
 package dsx.bps.crypto.trx
 
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.math.BigDecimal
 
+@Disabled
 internal class TrxRpcTest {
 
     private val url = "http://34.253.178.165:18190/wallet/"

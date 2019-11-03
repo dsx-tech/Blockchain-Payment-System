@@ -6,11 +6,13 @@ import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.io.File
 import java.math.BigDecimal
 
+@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class XrpClientTest {
 

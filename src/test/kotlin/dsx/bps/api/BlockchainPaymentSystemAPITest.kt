@@ -5,10 +5,12 @@ import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.btc.BtcRpc
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import java.math.BigDecimal
 
+@Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BlockchainPaymentSystemAPITest {
 
