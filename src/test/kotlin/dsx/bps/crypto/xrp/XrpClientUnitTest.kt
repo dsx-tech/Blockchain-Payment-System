@@ -6,6 +6,7 @@ import dsx.bps.crypto.xrp.datamodel.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import org.mockito.Mock
 import org.mockito.Mockito
 import java.math.BigDecimal
 
@@ -19,6 +20,8 @@ internal class XrpClientUnitTest {
     @DisplayName("getBalance test")
     fun getBalanceTest(){
         xrpClient.getBalance()
+        //default value: account
+        Mockito.verify(xrpRpc, Mockito.only()).getBalance("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh")
     }
 
     @Test
@@ -90,18 +93,23 @@ internal class XrpClientUnitTest {
     @DisplayName("getLastLedger test")
     fun getLastLedgerTest(){
         xrpClient.getLastLedger()
+        Mockito.verify(xrpRpc, Mockito.only()).getLastLedger()
     }
 
     @Test
     @DisplayName("getLedger test")
     fun getLedgerTest(){
         xrpClient.getLedger("hash")
+        Mockito.verify(xrpRpc, Mockito.only()).getLedger("hash")
     }
 
     @Test
     @DisplayName("getAccountTxs test")
     fun getAccountTxsTest(){
         xrpClient.getAccountTxs(1,1)
+        //default value: account
+        Mockito.verify(xrpRpc, Mockito.only())
+            .getAccountTxs("rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",1,1)
     }
 
     @Test

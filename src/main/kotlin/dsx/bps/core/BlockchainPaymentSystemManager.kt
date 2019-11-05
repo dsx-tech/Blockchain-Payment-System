@@ -10,6 +10,8 @@ import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
 import java.util.Properties
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class BlockchainPaymentSystemManager {
 
@@ -61,9 +63,10 @@ class BlockchainPaymentSystemManager {
         coins = coinClients
 
         val emitters = coins.values.map { it.getTxEmitter() }
+        val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
         emitter = Observable
             .merge(emitters)
-            .observeOn(Schedulers.computation())
+            .observeOn(Schedulers.from(threadPool))
 
         this.invoiceProcessor = invoiceProcessor
         this.paymentProcessor = paymentProcessor

@@ -8,8 +8,6 @@ import dsx.bps.crypto.xrp.XrpClient
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
 import java.math.BigDecimal
 
@@ -25,19 +23,11 @@ internal class BlockchainPaymentSystemManagerUnitTest {
     private val paymentProcessor = Mockito.mock(PaymentProcessor::class.java)
     private val bpsManager = BlockchainPaymentSystemManager(coinClients, invoiceProcessor, paymentProcessor)
 
-    @ParameterizedTest
+    @Test
     @DisplayName("getBalance test")
-    @EnumSource(value = Currency::class)
-    fun getBalanceTest(currency: Currency){
+    fun getBalanceTest(){
         Mockito.`when`(btcClient.getBalance()).thenReturn(BigDecimal.TEN)
-        Mockito.`when`(trxClient.getBalance()).thenReturn(BigDecimal.ONE)
-        Mockito.`when`(xrpClient.getBalance()).thenReturn(BigDecimal.ZERO)
-        val returnBalance = bpsManager.getBalance(currency)
-        when (currency){
-            Currency.BTC -> Assertions.assertEquals(returnBalance, BigDecimal.TEN)
-            Currency.TRX -> Assertions.assertEquals(returnBalance, BigDecimal.ONE)
-            Currency.XRP -> Assertions.assertEquals(returnBalance, BigDecimal.ZERO)
-        }
+        Assertions.assertEquals(bpsManager.getBalance(Currency.BTC), BigDecimal.TEN)
     }
 
     @Test
@@ -70,12 +60,14 @@ internal class BlockchainPaymentSystemManagerUnitTest {
     @DisplayName("getPayment test")
     fun getPaymentTest(){
         bpsManager.getPayment("id")
+        Mockito.verify(paymentProcessor, Mockito.only()).getPayment("id")
     }
 
     @Test
     @DisplayName("getInvoice test")
     fun getInvoiceTest(){
         bpsManager.getInvoice("id")
+        Mockito.verify(invoiceProcessor, Mockito.only()).getInvoice("id")
     }
 
     @Test
@@ -96,11 +88,5 @@ internal class BlockchainPaymentSystemManagerUnitTest {
         Mockito.`when`(btcClient.getTxs(txids)).thenReturn(txs)
         val resultTx = bpsManager.getTxs(Currency.BTC, txids)
         Assertions.assertEquals(resultTx, txs)
-    }
-
-    @Test
-    @DisplayName("Subscribe test")
-    fun subscribeTest(){
-        bpsManager.subscribe(invoiceProcessor)
     }
 }

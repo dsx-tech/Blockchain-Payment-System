@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.mockito.Mock
 import org.mockito.Mockito
 import java.lang.RuntimeException
 import java.math.BigDecimal
@@ -22,12 +23,15 @@ internal class TrxClientUnitTest {
     @DisplayName("getBalance test")
     fun getBalanceTest(){
         trxClient.getBalance()
+        //default value: accountAddress
+        Mockito.verify(trxRpc, Mockito.only()).getBalance("41dc6c2bc46639e5371fe99e002858754604cf5847")
     }
 
     @Test
     @DisplayName("getAddress test")
     fun getAddressTest(){
-        trxClient.getAddress()
+        //default value: accountAddress
+        Assertions.assertEquals(trxClient.getAddress(), "41dc6c2bc46639e5371fe99e002858754604cf5847")
     }
 
     @Test
@@ -98,18 +102,21 @@ internal class TrxClientUnitTest {
     @DisplayName("getNowBlock test")
     fun getNowBlockTest(){
         trxClient.getNowBlock()
+        Mockito.verify(trxRpc, Mockito.only()).getNowBlock()
     }
 
     @Test
     @DisplayName("getBlockByNum test")
     fun getBlockByNumTest(){
         trxClient.getBlockByNum(1)
+        Mockito.verify(trxRpc, Mockito.only()).getBlockByNum(1)
     }
 
     @Test
     @DisplayName("getBlockById test")
     fun getBlockById(){
         trxClient.getBlockById("hash")
+        Mockito.verify(trxRpc, Mockito.only()).getBlockById("hash")
     }
 
     @Test

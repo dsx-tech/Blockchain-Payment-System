@@ -20,12 +20,14 @@ internal class BtcClientUnitTest{
     @DisplayName("getBalance test ")
     fun getBalanceTest(){
         btcClient.getBalance()
+        Mockito.verify(btcRpc, Mockito.only()).getBalance()
     }
 
     @Test
     @DisplayName("getAddress test")
     fun getAddressTest(){
         btcClient.getAddress()
+        Mockito.verify(btcRpc, Mockito.only()).getNewAddress()
     }
 
     @Test
@@ -83,18 +85,21 @@ internal class BtcClientUnitTest{
     @DisplayName("getBestBlockHash test")
     fun getBestBlockHashTest(){
         btcClient.getBestBlockHash()
+        Mockito.verify(btcRpc, Mockito.only()).getBestBlockHash()
     }
 
     @Test
     @DisplayName("getBlock test")
     fun getBlockTest(){
         btcClient.getBlock("hash")
+        Mockito.verify(btcRpc, Mockito.only()).getBlock("hash")
     }
 
     @Test
     @DisplayName("listSinceBlock test")
     fun listSinceBlockTest(){
         btcClient.listSinceBlock("hash")
+        Mockito.verify(btcRpc, Mockito.only()).listSinceBlock("hash")
     }
 
     @Test

@@ -1,13 +1,7 @@
 package dsx.bps.core
 
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.PaymentStatus
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxId
-import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.DisplayName
-import org.junit.jupiter.api.Nested
-import org.junit.jupiter.api.Test
+import dsx.bps.core.datamodel.*
+import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
@@ -41,9 +35,22 @@ internal class PaymentProcessorUnitTest {
         @Test
         @DisplayName("update pending payment")
         fun updatePayment2(){
+            val txId = Mockito.mock(TxId::class.java)
+            Mockito.`when`(txId.hash).thenReturn("hash")
+            Mockito.`when`(txId.index).thenReturn(1)
+
             val tx = Mockito.mock(Tx::class.java)
             Mockito.`when`(tx.txid()).thenReturn(TxId("hash", 1))
             Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ZERO)
+            Mockito.`when`(tx.currency()).thenReturn(Currency.BTC)
+            Mockito.`when`(tx.amount()).thenReturn(BigDecimal.TEN)
+            Mockito.`when`(tx.destination()).thenReturn("testaddress")
+            Mockito.`when`(tx.tag()).thenReturn(1)
+            Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ONE)
+            Mockito.`when`(tx.txid()).thenReturn(txId)
+            Mockito.`when`(tx.status()).thenReturn(TxStatus.VALIDATING)
+
+            Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
             val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
