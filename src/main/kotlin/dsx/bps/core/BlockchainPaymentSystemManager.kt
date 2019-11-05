@@ -50,9 +50,10 @@ class BlockchainPaymentSystemManager {
             }.toMap()
 
         val emitters = coins.values.map { it.getTxEmitter() }
+        val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
         emitter = Observable
             .merge(emitters)
-            .observeOn(Schedulers.computation())
+            .observeOn(Schedulers.from(threadPool))
 
         invoiceProcessor = InvoiceProcessor(this)
         paymentProcessor = PaymentProcessor(this)

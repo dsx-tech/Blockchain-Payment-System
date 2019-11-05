@@ -24,10 +24,10 @@ internal class BlockchainPaymentSystemManagerUnitTest {
     private val bpsManager = BlockchainPaymentSystemManager(coinClients, invoiceProcessor, paymentProcessor)
 
     @Test
-    @DisplayName("getBalance test")
+    @DisplayName("getBalance pick the right coinClient test")
     fun getBalanceTest(){
-        Mockito.`when`(btcClient.getBalance()).thenReturn(BigDecimal.TEN)
-        Assertions.assertEquals(bpsManager.getBalance(Currency.BTC), BigDecimal.TEN)
+        bpsManager.getBalance(Currency.BTC)
+        Mockito.verify(btcClient).getBalance()
     }
 
     @Test
