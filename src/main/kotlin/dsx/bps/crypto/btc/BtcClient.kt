@@ -9,18 +9,13 @@ import java.util.*
 
 class BtcClient: CoinClient {
 
-    constructor(): super()
-    constructor(conf: Properties): super(conf)
-    constructor(confPath: String): super(confPath)
-
-    override val currency = Currency.BTC
-
-    override val rpc: BtcRpc
-    override val blockchainListener: BtcBlockchainListener
-
-    private val confirmations: Int
-
-    init {
+    constructor(): super(){
+        //default
+        val url = "http://user:password@127.0.0.1:18443/"
+        rpc = BtcRpc(url)
+        blockchainListener = BtcBlockchainListener(this, 5000)
+    }
+    constructor(conf: Properties): super(conf){
         val user = config.getProperty("BTC.user", "user")
         val pass = config.getProperty("BTC.password", "password")
         val host = config.getProperty("BTC.ip", "127.0.0.1")
@@ -30,9 +25,34 @@ class BtcClient: CoinClient {
 
         val frequency = config.getProperty("BTC.frequency", "5000").toLong()
         blockchainListener = BtcBlockchainListener(this, frequency)
+    }
+    constructor(confPath: String): super(confPath){
+        val user = config.getProperty("BTC.user", "user")
+        val pass = config.getProperty("BTC.password", "password")
+        val host = config.getProperty("BTC.ip", "127.0.0.1")
+        val port = config.getProperty("BTC.port", "18443")
+        val url = "http://$user:$pass@$host:$port/"
+        rpc = BtcRpc(url)
 
+        val frequency = config.getProperty("BTC.frequency", "5000").toLong()
+        blockchainListener = BtcBlockchainListener(this, frequency)
+    }
+
+    constructor(btcRpc: BtcRpc, btcBlockchainListener: BtcBlockchainListener) {
+        rpc = btcRpc
+        blockchainListener = btcBlockchainListener
+    }
+
+    init {
         confirmations = config.getProperty("BTC.confirmations", "1").toInt()
     }
+
+    override val currency = Currency.BTC
+
+    override val rpc: BtcRpc
+    override val blockchainListener: BtcBlockchainListener
+
+    private val confirmations: Int
 
     override fun getBalance(): BigDecimal = rpc.getBalance()
 

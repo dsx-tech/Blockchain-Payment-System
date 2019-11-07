@@ -10,9 +10,35 @@ import kotlin.random.Random
 
 class XrpClient: CoinClient {
 
-    constructor(): super()
-    constructor(conf: Properties): super(conf)
-    constructor(confPath: String): super(confPath)
+    constructor(): super(){
+        val url = "http://127.0.0.1:51234/"
+        rpc = XrpRpc(url)
+
+        blockchainListener = XrpBlockchainListener(this, 5000)
+    }
+    constructor(conf: Properties): super(conf){
+        val host = config.getProperty("XRP.ip", "127.0.0.1")
+        val port = config.getProperty("XRP.port", "51234")
+        val url = "http://$host:$port/"
+        rpc = XrpRpc(url)
+
+        val frequency = config.getProperty("XRP.frequency", "5000").toLong()
+        blockchainListener = XrpBlockchainListener(this, frequency)
+    }
+    constructor(confPath: String): super(confPath){
+        val host = config.getProperty("XRP.ip", "127.0.0.1")
+        val port = config.getProperty("XRP.port", "51234")
+        val url = "http://$host:$port/"
+        rpc = XrpRpc(url)
+
+        val frequency = config.getProperty("XRP.frequency", "5000").toLong()
+        blockchainListener = XrpBlockchainListener(this, frequency)
+    }
+
+    constructor(xrpRpc: XrpRpc, xrcBlockchainListener: XrpBlockchainListener): super(){
+        rpc = xrpRpc
+        blockchainListener = xrcBlockchainListener
+    }
 
     override val currency = Currency.XRP
 
@@ -27,14 +53,6 @@ class XrpClient: CoinClient {
         account = config.getProperty("XRP.account", "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh")
         privateKey = config.getProperty("XRP.privateKey", "snoPBrXtMeMyMHUVTgbuqAfg1SUTb")
         passPhrase = config.getProperty("XRP.passPhrase", "masterpassphrase")
-
-        val host = config.getProperty("XRP.ip", "127.0.0.1")
-        val port = config.getProperty("XRP.port", "51234")
-        val url = "http://$host:$port/"
-        rpc = XrpRpc(url)
-
-        val frequency = config.getProperty("XRP.frequency", "5000").toLong()
-        blockchainListener = XrpBlockchainListener(this, frequency)
     }
 
     override fun getBalance(): BigDecimal = rpc.getBalance(account)

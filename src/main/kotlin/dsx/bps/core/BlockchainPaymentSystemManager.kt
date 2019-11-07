@@ -10,21 +10,24 @@ import java.io.File
 import java.io.FileInputStream
 import java.math.BigDecimal
 import java.util.Properties
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
-class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
+class BlockchainPaymentSystemManager {
 
     companion object {
         private val DEFAULT_CONFIG = Properties() // TODO: init default configuration
         private val DEFAULT_CONFIG_PATH = System.getProperty("user.home") + File.separator + "bps" + File.separator + "bps.properties"
     }
 
-    private val config = Properties(DEFAULT_CONFIG)
+    private val config: Properties = Properties(DEFAULT_CONFIG)
     private val coins: Map<Currency, CoinClient>
     private val emitter: Observable<Tx>
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
-    init {
+    constructor(confPath: String = DEFAULT_CONFIG_PATH){
+
         try {
             val f = File(confPath)
             if (f.exists()) {
@@ -47,12 +50,27 @@ class BlockchainPaymentSystemManager(confPath: String = DEFAULT_CONFIG_PATH) {
             }.toMap()
 
         val emitters = coins.values.map { it.getTxEmitter() }
+        val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
         emitter = Observable
             .merge(emitters)
-            .observeOn(Schedulers.computation())
+            .observeOn(Schedulers.from(threadPool))
 
         invoiceProcessor = InvoiceProcessor(this)
         paymentProcessor = PaymentProcessor(this)
+    }
+
+    constructor(coinClients: Map<Currency, CoinClient>, invoiceProcessor: InvoiceProcessor,
+                paymentProcessor: PaymentProcessor, confPath: String = DEFAULT_CONFIG_PATH){
+        coins = coinClients
+
+        val emitters = coins.values.map { it.getTxEmitter() }
+        val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+        emitter = Observable
+            .merge(emitters)
+            .observeOn(Schedulers.from(threadPool))
+
+        this.invoiceProcessor = invoiceProcessor
+        this.paymentProcessor = paymentProcessor
     }
 
     private fun getCoin(currency: Currency): CoinClient = coins[currency]
