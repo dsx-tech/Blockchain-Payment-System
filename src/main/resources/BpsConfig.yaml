@@ -1,7 +1,7 @@
-invoiceProcessor:
+invoiceProcessorConfig:
   frequency: 5000
 
-paymentProcessor:
+paymentProcessorConfig:
   frequency: 3000
 
 # Set your own values for each cryptocurrency
