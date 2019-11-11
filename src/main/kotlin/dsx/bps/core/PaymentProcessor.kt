@@ -1,5 +1,7 @@
 package dsx.bps.core
 
+import com.uchuhimo.konf.Config
+import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
 import java.math.BigDecimal
@@ -8,9 +10,10 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.NoSuchElementException
 import kotlin.concurrent.timer
 
-class PaymentProcessor(private val manager: BlockchainPaymentSystemManager) {
+class PaymentProcessor(private val manager: BlockchainPaymentSystemManager,
+                       private val config: Config) {
 
-    var frequency: Long = 3000
+    var frequency: Long = config[PaymentProcessorConfig.frequency]
 
     // TODO: Implement db-storage for payments
     private val pending = ConcurrentHashMap.newKeySet<String>()

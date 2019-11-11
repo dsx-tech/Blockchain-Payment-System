@@ -1,6 +1,11 @@
 package dsx.bps.core
 
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml
+import dsx.bps.config.InvoiceProcessorConfig
+import dsx.bps.config.currencyconfig.TrxConfig
 import dsx.bps.core.datamodel.*
+import dsx.bps.crypto.trx.TrxClient
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -9,12 +14,29 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito;
 import io.reactivex.disposables.Disposable
 import org.junit.jupiter.api.Nested
+import java.io.File
 import java.math.BigDecimal
 
 internal class InvoiceProcessorUnitTest {
 
     private val manager: BlockchainPaymentSystemManager = Mockito.mock(BlockchainPaymentSystemManager::class.java)
-    private val invoiceProcessor = InvoiceProcessor(manager)
+    private val invoiceProcessor: InvoiceProcessor
+    private val testConfig: Config
+
+    init {
+        val initConfig = Config()
+        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        testConfig = with (initConfig) {
+            addSpec(InvoiceProcessorConfig)
+            from.yaml.file(configFile)
+        }
+
+        testConfig.validateRequired()
+
+        invoiceProcessor = InvoiceProcessor(manager, testConfig)
+    }
+
+
 
     @Test
     @DisplayName("create invoice and get invoice test")

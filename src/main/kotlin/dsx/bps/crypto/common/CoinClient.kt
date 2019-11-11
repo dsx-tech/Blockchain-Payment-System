@@ -1,8 +1,6 @@
 package dsx.bps.crypto.common
 
-import java.util.*
-import java.io.File
-import java.io.FileInputStream
+import com.uchuhimo.konf.Config
 import java.math.BigDecimal
 import io.reactivex.subjects.PublishSubject
 import dsx.bps.core.datamodel.Currency
@@ -13,25 +11,10 @@ import dsx.bps.rpc.JsonRpcHttpClient
 abstract class CoinClient {
 
     abstract val currency: Currency
-    protected val config: Properties
+    abstract val config: Config
 
     protected abstract val rpc: JsonRpcHttpClient
     protected abstract val blockchainListener: BlockchainListener
-
-    constructor() {
-        config = Properties()
-    }
-
-    constructor(conf: Properties) {
-        config = Properties(conf)
-    }
-
-    constructor(confPath: String): this() {
-        val f = File(confPath)
-        if (f.exists()) {
-            FileInputStream(f).use { config.load(it) }
-        }
-    }
 
     fun getTxEmitter(): PublishSubject<Tx> = blockchainListener.emitter
 

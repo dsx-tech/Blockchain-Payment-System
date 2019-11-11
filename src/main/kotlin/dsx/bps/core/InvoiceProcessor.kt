@@ -1,5 +1,7 @@
 package dsx.bps.core
 
+import com.uchuhimo.konf.Config
+import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
@@ -8,13 +10,14 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 
-class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager): Observer<Tx> {
+class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager,
+                       private val config: Config): Observer<Tx> {
 
     // TODO: Implement db-storage for invoices
     private val unpaid = ConcurrentHashMap.newKeySet<String>()
     private val invoices = ConcurrentHashMap<String, Invoice>()
 
-    var frequency: Long = 5000
+    var frequency: Long = config[InvoiceProcessorConfig.frequency]
 
     init {
         manager.subscribe(this)
