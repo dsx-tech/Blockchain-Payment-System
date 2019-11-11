@@ -1,5 +1,12 @@
 package dsx.bps.core
 
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml
+import dsx.bps.config.InvoiceProcessorConfig
+import dsx.bps.config.PaymentProcessorConfig
+import dsx.bps.config.currencyconfig.BtcConfig
+import dsx.bps.config.currencyconfig.TrxConfig
+import dsx.bps.config.currencyconfig.XrpConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.common.CoinClientFactory
@@ -7,47 +14,52 @@ import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.schedulers.Schedulers
 import java.io.File
-import java.io.FileInputStream
 import java.math.BigDecimal
-import java.util.Properties
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class BlockchainPaymentSystemManager {
 
     companion object {
-        private val DEFAULT_CONFIG = Properties() // TODO: init default configuration
-        private val DEFAULT_CONFIG_PATH = System.getProperty("user.home") + File.separator + "bps" + File.separator + "bps.properties"
+        private val DEFAULT_CONFIG_PATH = javaClass.getResource("/BpsConfig.yaml").path
     }
 
-    private val config: Properties = Properties(DEFAULT_CONFIG)
+    private val config: Config
     private val coins: Map<Currency, CoinClient>
     private val emitter: Observable<Tx>
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
     constructor(confPath: String = DEFAULT_CONFIG_PATH){
+        val initConfig = Config()
 
-        try {
-            val f = File(confPath)
-            if (f.exists()) {
-                FileInputStream(f).use { config.load(it) }
-            }
-        } catch (ex: Exception) {
-            throw RuntimeException(ex.message) // TODO: replace with logging
+        val configFile = File(confPath)
+        config = with (initConfig) {
+            addSpec(InvoiceProcessorConfig)
+            addSpec(PaymentProcessorConfig)
+            addSpec(BtcConfig)
+            addSpec(TrxConfig)
+            addSpec(XrpConfig)
+            from.yaml.file(configFile)
         }
 
-        coins = Currency
-            .values()
-            .filter { config.getProperty(it.name) == "1" }
-            .mapNotNull {
-                try {
-                    it to CoinClientFactory.createCoinClient(it, config)
-                } catch (ex: Exception) {
-                    println("Failed to create client for ${it.name}:\n" + ex.message)
-                    null
-                }
-            }.toMap()
+        config.validateRequired()
+
+        val mutableCoinsMap = mutableMapOf<Currency, CoinClient>()
+
+        if (config[BtcConfig.enabled]) {
+            mutableCoinsMap[Currency.BTC] = CoinClientFactory.createCoinClient(Currency.BTC, config)
+        }
+
+        if (config[TrxConfig.enabled]) {
+            mutableCoinsMap[Currency.TRX] = CoinClientFactory.createCoinClient(Currency.TRX, config)
+        }
+
+        if (config[TrxConfig.enabled]) {
+            mutableCoinsMap[Currency.XRP] = CoinClientFactory.createCoinClient(Currency.XRP, config)
+        }
+
+        coins = mutableCoinsMap.toMap()
 
         val emitters = coins.values.map { it.getTxEmitter() }
         val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
@@ -55,12 +67,14 @@ class BlockchainPaymentSystemManager {
             .merge(emitters)
             .observeOn(Schedulers.from(threadPool))
 
-        invoiceProcessor = InvoiceProcessor(this)
-        paymentProcessor = PaymentProcessor(this)
+        invoiceProcessor = InvoiceProcessor(this, config)
+        paymentProcessor = PaymentProcessor(this, config)
     }
 
     constructor(coinClients: Map<Currency, CoinClient>, invoiceProcessor: InvoiceProcessor,
-                paymentProcessor: PaymentProcessor, confPath: String = DEFAULT_CONFIG_PATH){
+                paymentProcessor: PaymentProcessor){
+        config = Config()
+
         coins = coinClients
 
         val emitters = coins.values.map { it.getTxEmitter() }

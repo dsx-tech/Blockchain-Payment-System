@@ -1,17 +1,36 @@
 package dsx.bps.core
 
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml
+import dsx.bps.config.InvoiceProcessorConfig
+import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
+import java.io.File
 import java.lang.AssertionError
 import java.math.BigDecimal
 
 internal class PaymentProcessorUnitTest {
 
     private val manager = Mockito.mock(BlockchainPaymentSystemManager::class.java)
-    private val paymentProcessor = PaymentProcessor(manager)
+    private val paymentProcessor: PaymentProcessor
+    private val testConfig: Config
+
+    init {
+        val initConfig = Config()
+        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        testConfig = with (initConfig) {
+            addSpec(PaymentProcessorConfig)
+            from.yaml.file(configFile)
+        }
+
+        testConfig.validateRequired()
+
+        paymentProcessor = PaymentProcessor(manager, testConfig)
+    }
 
     @ParameterizedTest
     @EnumSource(value = Currency::class)

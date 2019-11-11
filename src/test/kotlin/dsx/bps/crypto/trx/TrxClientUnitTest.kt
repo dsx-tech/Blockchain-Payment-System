@@ -1,5 +1,8 @@
 package dsx.bps.crypto.trx
 
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml
+import dsx.bps.config.currencyconfig.TrxConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.trx.datamodel.*
@@ -8,8 +11,8 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import org.mockito.Mock
 import org.mockito.Mockito
+import java.io.File
 import java.lang.RuntimeException
 import java.math.BigDecimal
 
@@ -17,21 +20,32 @@ internal class TrxClientUnitTest {
 
     private val trxRpc = Mockito.mock(TrxRpc::class.java)
     private val trxBlockchainListener = Mockito.mock(TrxBlockchainListener::class.java)
-    private val trxClient = TrxClient(trxRpc, trxBlockchainListener)
+    private val trxClient = TrxClient(trxRpc, trxBlockchainListener,
+        javaClass.getResource("/TestBpsConfig.yaml").path)
+    private val testConfig: Config
+
+    init {
+        val initConfig = Config()
+        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        testConfig = with (initConfig) {
+            addSpec(TrxConfig)
+            from.yaml.file(configFile)
+        }
+
+        testConfig.validateRequired()
+    }
 
     @Test
     @DisplayName("getBalance test")
     fun getBalanceTest(){
         trxClient.getBalance()
-        //default value: accountAddress
-        Mockito.verify(trxRpc, Mockito.only()).getBalance("41dc6c2bc46639e5371fe99e002858754604cf5847")
+        Mockito.verify(trxRpc, Mockito.only()).getBalance(testConfig[TrxConfig.accountAddress])
     }
 
     @Test
     @DisplayName("getAddress test")
     fun getAddressTest(){
-        //default value: accountAddress
-        Assertions.assertEquals(trxClient.getAddress(), "41dc6c2bc46639e5371fe99e002858754604cf5847")
+        Assertions.assertEquals(trxClient.getAddress(), testConfig[TrxConfig.accountAddress])
     }
 
     @Test
@@ -60,12 +74,10 @@ internal class TrxClientUnitTest {
         fun sendPaymentTest1(){
             val trxTx = mockForConstructTx()
 
-            //default private field values: addressAccount, privateKey
-            Mockito.`when`(trxRpc.createTransaction("testaddress", "41dc6c2bc46639e5371fe99e002858754604cf5847", BigDecimal.TEN))
-                .thenReturn(trxTx)
-            Mockito.`when`(trxRpc.
-                getTransactionSign("92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec", trxTx))
-                .thenReturn(trxTx)
+            Mockito.`when`(trxRpc.createTransaction("testaddress",
+                testConfig[TrxConfig.accountAddress], BigDecimal.TEN)).thenReturn(trxTx)
+            Mockito.`when`(trxRpc.getTransactionSign(testConfig[TrxConfig.privateKey],
+                trxTx)).thenReturn(trxTx)
 
             val trxBroadcastTxResult = Mockito.mock(TrxBroadcastTxResult::class.java)
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(true)
@@ -82,10 +94,9 @@ internal class TrxClientUnitTest {
             Mockito.`when`(trxTx.rawData).thenReturn(trxTxRawData)
 
             //default private field values: addressAccount, privateKey
-            Mockito.`when`(trxRpc.createTransaction("testaddress", "41dc6c2bc46639e5371fe99e002858754604cf5847", BigDecimal.TEN))
-                .thenReturn(trxTx)
-            Mockito.`when`(trxRpc.
-                getTransactionSign("92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec", trxTx))
+            Mockito.`when`(trxRpc.createTransaction("testaddress",
+                testConfig[TrxConfig.accountAddress], BigDecimal.TEN)).thenReturn(trxTx)
+            Mockito.`when`(trxRpc.getTransactionSign(testConfig[TrxConfig.privateKey], trxTx))
                 .thenReturn(trxTx)
 
             val trxBroadcastTxResult = Mockito.mock(TrxBroadcastTxResult::class.java)

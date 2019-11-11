@@ -1,58 +1,87 @@
 package dsx.bps.crypto.btc
 
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml
+import dsx.bps.config.currencyconfig.BtcConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.btc.datamodel.*
 import dsx.bps.crypto.common.CoinClient
+import java.io.File
 import java.math.BigDecimal
-import java.util.*
 
 class BtcClient: CoinClient {
 
-    constructor(): super(){
-        //default
-        val url = "http://user:password@127.0.0.1:18443/"
-        rpc = BtcRpc(url)
-        blockchainListener = BtcBlockchainListener(this, 5000)
-    }
-    constructor(conf: Properties): super(conf){
-        val user = config.getProperty("BTC.user", "user")
-        val pass = config.getProperty("BTC.password", "password")
-        val host = config.getProperty("BTC.ip", "127.0.0.1")
-        val port = config.getProperty("BTC.port", "18443")
-        val url = "http://$user:$pass@$host:$port/"
-        rpc = BtcRpc(url)
-
-        val frequency = config.getProperty("BTC.frequency", "5000").toLong()
-        blockchainListener = BtcBlockchainListener(this, frequency)
-    }
-    constructor(confPath: String): super(confPath){
-        val user = config.getProperty("BTC.user", "user")
-        val pass = config.getProperty("BTC.password", "password")
-        val host = config.getProperty("BTC.ip", "127.0.0.1")
-        val port = config.getProperty("BTC.port", "18443")
-        val url = "http://$user:$pass@$host:$port/"
-        rpc = BtcRpc(url)
-
-        val frequency = config.getProperty("BTC.frequency", "5000").toLong()
-        blockchainListener = BtcBlockchainListener(this, frequency)
-    }
-
-    constructor(btcRpc: BtcRpc, btcBlockchainListener: BtcBlockchainListener) {
-        rpc = btcRpc
-        blockchainListener = btcBlockchainListener
-    }
-
-    init {
-        confirmations = config.getProperty("BTC.confirmations", "1").toInt()
-    }
-
     override val currency = Currency.BTC
+    override val config: Config
 
     override val rpc: BtcRpc
     override val blockchainListener: BtcBlockchainListener
 
     private val confirmations: Int
+
+    constructor(){
+        config = Config()
+
+        //default
+        val url = "http://user:password@127.0.0.1:18443/"
+        rpc = BtcRpc(url)
+        blockchainListener = BtcBlockchainListener(this, 5000)
+
+        confirmations = 1
+    }
+
+    constructor(conf: Config){
+        config = conf
+        val user = config[BtcConfig.user]
+        val pass = config[BtcConfig.password]
+        val host = config[BtcConfig.host]
+        val port = config[BtcConfig.port]
+        val url = "http://$user:$pass@$host:$port/"
+        rpc = BtcRpc(url)
+
+        val frequency = config[BtcConfig.frequency]
+        blockchainListener = BtcBlockchainListener(this, frequency)
+
+        confirmations = config[BtcConfig.confirmations]
+    }
+
+    constructor(configPath: String){
+        val initConfig = Config()
+        val configFile = File(configPath)
+        config = with (initConfig) {
+            addSpec(BtcConfig)
+            from.yaml.file(configFile)
+        }
+
+        config.validateRequired()
+
+        val user = config[BtcConfig.user]
+        val pass = config[BtcConfig.password]
+        val host = config[BtcConfig.host]
+        val port = config[BtcConfig.port]
+        val url = "http://$user:$pass@$host:$port/"
+        rpc = BtcRpc(url)
+
+        val frequency = config[BtcConfig.frequency]
+        blockchainListener = BtcBlockchainListener(this, frequency)
+
+        confirmations = config[BtcConfig.confirmations]
+    }
+
+    constructor(btcRpc: BtcRpc, btcBlockchainListener: BtcBlockchainListener, configPath: String) {
+        val initConfig = Config()
+        val configFile = File(configPath)
+        config = with (initConfig) {
+            addSpec(BtcConfig)
+            from.yaml.file(configFile)
+        }
+
+        config.validateRequired()
+        rpc = btcRpc
+        blockchainListener = btcBlockchainListener
+        confirmations = config[BtcConfig.confirmations]
+    }
 
     override fun getBalance(): BigDecimal = rpc.getBalance()
 
