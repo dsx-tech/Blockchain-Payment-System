@@ -4,9 +4,16 @@ invoiceProcessorConfig:
 paymentProcessorConfig:
   frequency: 3000
 
-# Set your own values for each cryptocurrency
+# Enabled currencies
+# Supported сurrencies: BTC, XRP, TRX
+enabledCoins:
+  coins:
+    - BTC
+    - XRP
+    - TRX
+
+# Example values
 btcConfig:
-  enabled: 1
   user: "user"
   password: "password"
   host: "127.0.0.1"
@@ -15,8 +22,7 @@ btcConfig:
   frequency: 5000
 
 trxConfig:
-  enabled: 1
-  #// Base58Checksum representation of account
+  # Base58Checksum representation of account
   account: "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS"
   accountAddress: "41dc6c2bc46639e5371fe99e002858754604cf5847"
   privateKey: "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec"
@@ -26,7 +32,6 @@ trxConfig:
   frequency: 3000
 
 xrpConfig:
-  enabled: 1
   account: "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
   privateKey: "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"
   passPhrase: "masterpassphrase"

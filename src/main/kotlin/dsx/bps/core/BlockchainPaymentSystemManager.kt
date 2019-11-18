@@ -4,9 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.config.currencyconfig.BtcConfig
-import dsx.bps.config.currencyconfig.TrxConfig
-import dsx.bps.config.currencyconfig.XrpConfig
+import dsx.bps.config.currencyconfig.EnabledCoinsConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.common.CoinClientFactory
@@ -21,42 +19,31 @@ import java.util.concurrent.Executors
 class BlockchainPaymentSystemManager {
 
     companion object {
-        private val DEFAULT_CONFIG_PATH = javaClass.getResource("/BpsConfig.yaml").path
+        private val DEFAULT_CONFIG_PATH = this::class.java.getResource("/BpsConfig.yaml").path
     }
 
-    private val config: Config
     private val coins: Map<Currency, CoinClient>
     private val emitter: Observable<Tx>
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
     constructor(confPath: String = DEFAULT_CONFIG_PATH){
-        val initConfig = Config()
-
         val configFile = File(confPath)
-        config = with (initConfig) {
-            addSpec(InvoiceProcessorConfig)
-            addSpec(PaymentProcessorConfig)
-            addSpec(BtcConfig)
-            addSpec(TrxConfig)
-            addSpec(XrpConfig)
+
+        val enabledCoinsConfig = with(Config()){
+            addSpec(EnabledCoinsConfig)
             from.yaml.file(configFile)
         }
 
-        config.validateRequired()
+        val mutableCoinsMap: MutableMap<Currency, CoinClient> = mutableMapOf()
 
-        val mutableCoinsMap = mutableMapOf<Currency, CoinClient>()
-
-        if (config[BtcConfig.enabled]) {
-            mutableCoinsMap[Currency.BTC] = CoinClientFactory.createCoinClient(Currency.BTC, config)
-        }
-
-        if (config[TrxConfig.enabled]) {
-            mutableCoinsMap[Currency.TRX] = CoinClientFactory.createCoinClient(Currency.TRX, config)
-        }
-
-        if (config[TrxConfig.enabled]) {
-            mutableCoinsMap[Currency.XRP] = CoinClientFactory.createCoinClient(Currency.XRP, config)
+        for (coin in enabledCoinsConfig[EnabledCoinsConfig.coins]){
+            val coinConfig = with(Config()) {
+                addSpec(coin.coinConfigSpec)
+                from.yaml.file(configFile)
+            }
+            coinConfig.validateRequired()
+            mutableCoinsMap[coin] = CoinClientFactory.createCoinClient(coin, coinConfig)
         }
 
         coins = mutableCoinsMap.toMap()
@@ -67,14 +54,22 @@ class BlockchainPaymentSystemManager {
             .merge(emitters)
             .observeOn(Schedulers.from(threadPool))
 
-        invoiceProcessor = InvoiceProcessor(this, config)
-        paymentProcessor = PaymentProcessor(this, config)
+        val invoiceProcessorConfig = with(Config()){
+            addSpec(InvoiceProcessorConfig)
+            from.yaml.file(configFile)
+        }
+
+        val paymentProcessorConfig = with(Config()) {
+            addSpec(PaymentProcessorConfig)
+            from.yaml.file(configFile)
+        }
+
+        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig)
+        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
     }
 
     constructor(coinClients: Map<Currency, CoinClient>, invoiceProcessor: InvoiceProcessor,
                 paymentProcessor: PaymentProcessor){
-        config = Config()
-
         coins = coinClients
 
         val emitters = coins.values.map { it.getTxEmitter() }
