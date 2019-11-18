@@ -2,7 +2,7 @@ package dsx.bps.crypto.trx
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.config.currencyconfig.TrxConfig
+import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.*
 import dsx.bps.crypto.common.CoinClient

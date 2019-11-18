@@ -2,7 +2,7 @@ package dsx.bps.crypto.xrp
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.config.currencyconfig.XrpConfig
+import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.xrp.datamodel.*

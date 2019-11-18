@@ -2,7 +2,6 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import org.junit.jupiter.api.*

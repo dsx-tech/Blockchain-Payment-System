@@ -1,4 +1,4 @@
-package dsx.bps.config.currencyconfig
+package dsx.bps.config.currencies
 
 import com.uchuhimo.konf.ConfigSpec
 import dsx.bps.core.datamodel.Currency

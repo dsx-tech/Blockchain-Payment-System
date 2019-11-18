@@ -4,7 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.config.currencyconfig.EnabledCoinsConfig
+import dsx.bps.config.currencies.EnabledCoinsConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.crypto.common.CoinClient
 import dsx.bps.crypto.common.CoinClientFactory
@@ -30,14 +30,15 @@ class BlockchainPaymentSystemManager {
     constructor(confPath: String = DEFAULT_CONFIG_PATH){
         val configFile = File(confPath)
 
-        val enabledCoinsConfig = with(Config()){
+        val enabledCoinsConfig = with(Config()) {
             addSpec(EnabledCoinsConfig)
             from.yaml.file(configFile)
         }
+        enabledCoinsConfig.validateRequired()
 
         val mutableCoinsMap: MutableMap<Currency, CoinClient> = mutableMapOf()
 
-        for (coin in enabledCoinsConfig[EnabledCoinsConfig.coins]){
+        for (coin in enabledCoinsConfig[EnabledCoinsConfig.coins]) {
             val coinConfig = with(Config()) {
                 addSpec(coin.coinConfigSpec)
                 from.yaml.file(configFile)
@@ -54,15 +55,17 @@ class BlockchainPaymentSystemManager {
             .merge(emitters)
             .observeOn(Schedulers.from(threadPool))
 
-        val invoiceProcessorConfig = with(Config()){
+        val invoiceProcessorConfig = with(Config()) {
             addSpec(InvoiceProcessorConfig)
             from.yaml.file(configFile)
         }
+        invoiceProcessorConfig.validateRequired()
 
         val paymentProcessorConfig = with(Config()) {
             addSpec(PaymentProcessorConfig)
             from.yaml.file(configFile)
         }
+        paymentProcessorConfig.validateRequired()
 
         invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig)
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)

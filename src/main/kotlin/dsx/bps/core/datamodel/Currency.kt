@@ -1,9 +1,9 @@
 package dsx.bps.core.datamodel
 
 import com.uchuhimo.konf.ConfigSpec
-import dsx.bps.config.currencyconfig.BtcConfig
-import dsx.bps.config.currencyconfig.TrxConfig
-import dsx.bps.config.currencyconfig.XrpConfig
+import dsx.bps.config.currencies.BtcConfig
+import dsx.bps.config.currencies.TrxConfig
+import dsx.bps.config.currencies.XrpConfig
 
 enum class Currency {
     BTC{
