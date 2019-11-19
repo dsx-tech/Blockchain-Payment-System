@@ -2,7 +2,7 @@ package dsx.bps.config.currencies
 
 import com.uchuhimo.konf.ConfigSpec
 
-object BtcConfig: ConfigSpec("btcConfig"){
+object BtcConfig: ConfigSpec("btcConfig") {
     val user by required<String>()
     val password by required<String>()
     val host by required<String>()

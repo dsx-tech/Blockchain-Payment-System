@@ -37,27 +37,27 @@ internal class TrxClientUnitTest {
 
     @Test
     @DisplayName("getBalance test")
-    fun getBalanceTest(){
+    fun getBalanceTest() {
         trxClient.getBalance()
         Mockito.verify(trxRpc, Mockito.only()).getBalance(testConfig[TrxConfig.accountAddress])
     }
 
     @Test
     @DisplayName("getAddress test")
-    fun getAddressTest(){
+    fun getAddressTest() {
         Assertions.assertEquals(trxClient.getAddress(), testConfig[TrxConfig.accountAddress])
     }
 
     @Test
     @DisplayName("getTag test")
-    fun getTagTest(){
+    fun getTagTest() {
         val randomInt = trxClient.getTag()
         Assertions.assertTrue(randomInt is Int)
     }
 
     @Test
     @DisplayName("getTx test")
-    fun getTxTest(){
+    fun getTxTest() {
         val txid = Mockito.mock(TxId::class.java)
         Mockito.`when`(txid.hash).thenReturn("hash")
 
@@ -71,7 +71,7 @@ internal class TrxClientUnitTest {
     inner class SendPaymentTest {
         @Test
         @DisplayName("sendPayment test: success broadcast result")
-        fun sendPaymentTest1(){
+        fun sendPaymentTest1() {
             val trxTx = mockForConstructTx()
 
             Mockito.`when`(trxRpc.createTransaction("testaddress",
@@ -88,7 +88,7 @@ internal class TrxClientUnitTest {
 
         @Test
         @DisplayName("sendPayment test: failure broadcast result")
-        fun sendPaymentTest2(){
+        fun sendPaymentTest2() {
             val trxTxRawData = Mockito.mock(TrxTxRawData::class.java)
             val trxTx = Mockito.mock(TrxTx::class.java)
             Mockito.`when`(trxTx.rawData).thenReturn(trxTxRawData)
@@ -111,28 +111,28 @@ internal class TrxClientUnitTest {
 
     @Test
     @DisplayName("getNowBlock test")
-    fun getNowBlockTest(){
+    fun getNowBlockTest() {
         trxClient.getNowBlock()
         Mockito.verify(trxRpc, Mockito.only()).getNowBlock()
     }
 
     @Test
     @DisplayName("getBlockByNum test")
-    fun getBlockByNumTest(){
+    fun getBlockByNumTest() {
         trxClient.getBlockByNum(1)
         Mockito.verify(trxRpc, Mockito.only()).getBlockByNum(1)
     }
 
     @Test
     @DisplayName("getBlockById test")
-    fun getBlockById(){
+    fun getBlockById() {
         trxClient.getBlockById("hash")
         Mockito.verify(trxRpc, Mockito.only()).getBlockById("hash")
     }
 
     @Test
     @DisplayName("constructTx test")
-    fun constructTxTest(){
+    fun constructTxTest() {
         val trxTxInfo = Mockito.mock(TrxTxInfo::class.java)
         Mockito.`when`(trxTxInfo.blockNumber).thenReturn(1)
         Mockito.`when`(trxRpc.getTransactionInfoById("hash")).thenReturn(trxTxInfo)
@@ -169,7 +169,7 @@ internal class TrxClientUnitTest {
         Assertions.assertEquals(resultTx.tag(),trxTxRawData.data?.toInt(16))
     }
 
-    private fun mockForConstructTx(): TrxTx{
+    private fun mockForConstructTx(): TrxTx {
         val trxTxInfo = Mockito.mock(TrxTxInfo::class.java)
         Mockito.`when`(trxTxInfo.blockNumber).thenReturn(1)
         Mockito.`when`(trxRpc.getTransactionInfoById("hash")).thenReturn(trxTxInfo)

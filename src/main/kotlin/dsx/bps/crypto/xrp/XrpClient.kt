@@ -23,7 +23,7 @@ class XrpClient: CoinClient {
     override val rpc: XrpRpc
     override val blockchainListener: XrpBlockchainListener
 
-    constructor(){
+    constructor() {
         config = Config()
 
         account = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
@@ -36,7 +36,7 @@ class XrpClient: CoinClient {
         blockchainListener = XrpBlockchainListener(this, 5000)
     }
 
-    constructor(conf: Config){
+    constructor(conf: Config) {
         config = conf
 
         account = config[XrpConfig.account]
@@ -52,7 +52,7 @@ class XrpClient: CoinClient {
         blockchainListener = XrpBlockchainListener(this, frequency)
     }
 
-    constructor(configPath: String){
+    constructor(configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
@@ -75,7 +75,7 @@ class XrpClient: CoinClient {
         blockchainListener = XrpBlockchainListener(this, frequency)
     }
 
-    constructor(xrpRpc: XrpRpc, xrpBlockchainListener: XrpBlockchainListener, configPath: String): super(){
+    constructor(xrpRpc: XrpRpc, xrpBlockchainListener: XrpBlockchainListener, configPath: String): super() {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {

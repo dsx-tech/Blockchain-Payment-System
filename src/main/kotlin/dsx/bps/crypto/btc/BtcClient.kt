@@ -20,7 +20,7 @@ class BtcClient: CoinClient {
 
     private val confirmations: Int
 
-    constructor(){
+    constructor() {
         config = Config()
 
         //default
@@ -31,7 +31,7 @@ class BtcClient: CoinClient {
         confirmations = 1
     }
 
-    constructor(conf: Config){
+    constructor(conf: Config) {
         config = conf
         val user = config[BtcConfig.user]
         val pass = config[BtcConfig.password]
@@ -46,7 +46,7 @@ class BtcClient: CoinClient {
         confirmations = config[BtcConfig.confirmations]
     }
 
-    constructor(configPath: String){
+    constructor(configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {

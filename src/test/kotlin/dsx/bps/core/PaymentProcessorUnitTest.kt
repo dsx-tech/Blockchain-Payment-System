@@ -34,25 +34,25 @@ internal class PaymentProcessorUnitTest {
     @ParameterizedTest
     @EnumSource(value = Currency::class)
     @DisplayName("create and get payment test")
-    fun createPaymentTest(currency: Currency){
+    fun createPaymentTest(currency: Currency) {
         val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", 1)
         val receivePayment = paymentProcessor.getPayment(payment.id)
         Assertions.assertEquals(payment, receivePayment)
     }
 
     @Nested
-    inner class UpdatePayment{
+    inner class UpdatePayment {
         @Test
         @DisplayName("update a nonexistent payment")
-        fun updatePayment1(){
-            Assertions.assertThrows(AssertionError::class.java){
+        fun updatePayment1() {
+            Assertions.assertThrows(AssertionError::class.java) {
                 paymentProcessor.updatePayment("",Mockito.mock(Tx::class.java))
             }
         }
 
         @Test
         @DisplayName("update pending payment")
-        fun updatePayment2(){
+        fun updatePayment2() {
             val txId = Mockito.mock(TxId::class.java)
             Mockito.`when`(txId.hash).thenReturn("hash")
             Mockito.`when`(txId.index).thenReturn(1)

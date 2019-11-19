@@ -2,7 +2,7 @@ package dsx.bps.config.currencies
 
 import com.uchuhimo.konf.ConfigSpec
 
-object TrxConfig: ConfigSpec("trxConfig"){
+object TrxConfig: ConfigSpec("trxConfig") {
     val account by required<String>()
     val accountAddress by required<String>()
     val privateKey by required<String>()

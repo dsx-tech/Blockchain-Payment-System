@@ -27,7 +27,7 @@ class BlockchainPaymentSystemManager {
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
-    constructor(confPath: String = DEFAULT_CONFIG_PATH){
+    constructor(confPath: String = DEFAULT_CONFIG_PATH) {
         val configFile = File(confPath)
 
         val enabledCoinsConfig = with(Config()) {
@@ -72,7 +72,7 @@ class BlockchainPaymentSystemManager {
     }
 
     constructor(coinClients: Map<Currency, CoinClient>, invoiceProcessor: InvoiceProcessor,
-                paymentProcessor: PaymentProcessor){
+                paymentProcessor: PaymentProcessor) {
         coins = coinClients
 
         val emitters = coins.values.map { it.getTxEmitter() }

@@ -36,7 +36,7 @@ internal class InvoiceProcessorUnitTest {
 
     @Test
     @DisplayName("create invoice and get invoice test")
-    fun createInvoiceTest(){
+    fun createInvoiceTest() {
         val currency = Mockito.mock(Currency::class.java)
         val invoice = invoiceProcessor.createInvoice(currency, BigDecimal.TEN,"testaddress", 1)
         Assertions.assertNotNull(invoiceProcessor.getInvoice(invoice.id))
@@ -44,7 +44,7 @@ internal class InvoiceProcessorUnitTest {
     }
 
     @Nested
-    inner class OnNextTest{
+    inner class OnNextTest {
         @Test
         @DisplayName("onNextTest: right tx")
         fun onNextTest1() {
@@ -139,18 +139,18 @@ internal class InvoiceProcessorUnitTest {
     }
 
     @Test
-    fun onErrorTest(){
+    fun onErrorTest() {
         val e = Mockito.mock(Throwable::class.java)
         invoiceProcessor.onError(e)
     }
 
     @Test
-    fun onCompleteTest(){
+    fun onCompleteTest() {
         invoiceProcessor.onComplete()
     }
 
     @Test
-    fun onSubscribeTest(){
+    fun onSubscribeTest() {
         val d = Mockito.mock(Disposable::class.java)
         invoiceProcessor.onSubscribe(d)
     }

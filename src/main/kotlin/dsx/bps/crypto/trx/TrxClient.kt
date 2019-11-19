@@ -26,7 +26,7 @@ class TrxClient: CoinClient {
 
     private val confirmations: Int
 
-    constructor(){
+    constructor() {
         config = Config()
 
         account = "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS" // Base58Checksum representation of account
@@ -40,7 +40,7 @@ class TrxClient: CoinClient {
         confirmations = 3
     }
 
-    constructor(conf: Config){
+    constructor(conf: Config) {
         config = conf
 
         account = config[TrxConfig.account]
@@ -57,7 +57,7 @@ class TrxClient: CoinClient {
         confirmations = config[TrxConfig.confirmations]
     }
 
-    constructor(configPath: String){
+    constructor(configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
@@ -81,7 +81,7 @@ class TrxClient: CoinClient {
         confirmations = config[TrxConfig.confirmations]
     }
 
-    constructor(trxRpc: TrxRpc, trxBlockchainListener: TrxBlockchainListener, configPath: String){
+    constructor(trxRpc: TrxRpc, trxBlockchainListener: TrxBlockchainListener, configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {

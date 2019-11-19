@@ -34,26 +34,26 @@ internal class XrpClientUnitTest {
 
     @Test
     @DisplayName("getBalance test")
-    fun getBalanceTest(){
+    fun getBalanceTest() {
         xrpClient.getBalance()
         Mockito.verify(xrpRpc, Mockito.only()).getBalance(testConfig[XrpConfig.account])
     }
 
     @Test
     @DisplayName("getAddress test")
-    fun getAddressTest(){
+    fun getAddressTest() {
         Assertions.assertEquals(xrpClient.getAddress(),testConfig[XrpConfig.account])
     }
 
     @Test
     @DisplayName("getTag test")
-    fun getTagTest(){
+    fun getTagTest() {
         Assertions.assertTrue(xrpClient.getTag() is Int)
     }
 
     @Test
     @DisplayName("getTx test")
-    fun getTxTest(){
+    fun getTxTest() {
         val txid = Mockito.mock(TxId::class.java)
         Mockito.`when`(txid.hash).thenReturn("hash")
 
@@ -75,7 +75,7 @@ internal class XrpClientUnitTest {
 
     @Test
     @DisplayName("sendPayment test")
-    fun sendPaymentTest(){
+    fun sendPaymentTest() {
         Mockito.`when`(xrpRpc.getTxCost()).thenReturn(BigDecimal.ONE)
         Mockito.`when`(xrpRpc.getSequence(testConfig[XrpConfig.account])).thenReturn(1)
 
@@ -103,21 +103,21 @@ internal class XrpClientUnitTest {
 
     @Test
     @DisplayName("getLastLedger test")
-    fun getLastLedgerTest(){
+    fun getLastLedgerTest() {
         xrpClient.getLastLedger()
         Mockito.verify(xrpRpc, Mockito.only()).getLastLedger()
     }
 
     @Test
     @DisplayName("getLedger test")
-    fun getLedgerTest(){
+    fun getLedgerTest() {
         xrpClient.getLedger("hash")
         Mockito.verify(xrpRpc, Mockito.only()).getLedger("hash")
     }
 
     @Test
     @DisplayName("getAccountTxs test")
-    fun getAccountTxsTest(){
+    fun getAccountTxsTest() {
         xrpClient.getAccountTxs(1,1)
         //default value: account
         Mockito.verify(xrpRpc, Mockito.only())
@@ -126,7 +126,7 @@ internal class XrpClientUnitTest {
 
     @Test
     @DisplayName("constructTx(xrpAccountTx: XrpAccountTx) test")
-    fun constructTxTest1(){
+    fun constructTxTest1() {
         val xrpAmount = Mockito.mock(XrpAmount::class.java)
         Mockito.`when`(xrpAmount.value).thenReturn(BigDecimal.TEN)
         Mockito.`when`(xrpAmount.currency).thenReturn(xrpClient.currency.name)
@@ -154,7 +154,7 @@ internal class XrpClientUnitTest {
 
     @Test
     @DisplayName("constructTx(xrpTx: XrpTx) test")
-    fun constructTxTest2(){
+    fun constructTxTest2() {
         val xrpAmount = Mockito.mock(XrpAmount::class.java)
         Mockito.`when`(xrpAmount.value).thenReturn(BigDecimal.TEN)
         Mockito.`when`(xrpAmount.currency).thenReturn(xrpClient.currency.name)
