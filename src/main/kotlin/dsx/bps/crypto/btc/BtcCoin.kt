@@ -3,84 +3,81 @@ package dsx.bps.crypto.btc
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.currencies.BtcConfig
-import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.btc.datamodel.*
-import dsx.bps.crypto.common.CoinClient
+import dsx.bps.crypto.common.Coin
+import dsx.bps.crypto.common.Explorer
 import java.io.File
 import java.math.BigDecimal
 
-class BtcClient: CoinClient {
+class BtcCoin: Coin {
 
     override val currency = Currency.BTC
     override val config: Config
 
     override val rpc: BtcRpc
-    override val blockchainListener: BtcBlockchainListener
+    override val explorer: Explorer
 
     private val confirmations: Int
 
-    constructor(){
-        config = Config()
+    constructor(conf: Config) {
+        if (conf.specs.contains(BtcConfig))
+            conf.validateRequired()
+        else
+            throw Exception("Config not contain BtcConfig spec")
 
-        //default
-        val url = "http://user:password@127.0.0.1:18443/"
-        rpc = BtcRpc(url)
-        blockchainListener = BtcBlockchainListener(this, 5000)
-
-        confirmations = 1
-    }
-
-    constructor(conf: Config){
         config = conf
-        val user = config[BtcConfig.user]
-        val pass = config[BtcConfig.password]
-        val host = config[BtcConfig.host]
-        val port = config[BtcConfig.port]
+
+        val user = config[BtcConfig.Coin.user]
+        val pass = config[BtcConfig.Coin.password]
+        val host = config[BtcConfig.Coin.host]
+        val port = config[BtcConfig.Coin.port]
         val url = "http://$user:$pass@$host:$port/"
         rpc = BtcRpc(url)
 
-        val frequency = config[BtcConfig.frequency]
-        blockchainListener = BtcBlockchainListener(this, frequency)
+        confirmations = config[BtcConfig.Coin.confirmations]
 
-        confirmations = config[BtcConfig.confirmations]
+        val frequency = config[BtcConfig.Explorer.frequency]
+        explorer = BtcExplorer(this, frequency)
     }
 
-    constructor(configPath: String){
+    constructor(configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
             addSpec(BtcConfig)
             from.yaml.file(configFile)
         }
-
         config.validateRequired()
 
-        val user = config[BtcConfig.user]
-        val pass = config[BtcConfig.password]
-        val host = config[BtcConfig.host]
-        val port = config[BtcConfig.port]
+        val user = config[BtcConfig.Coin.user]
+        val pass = config[BtcConfig.Coin.password]
+        val host = config[BtcConfig.Coin.host]
+        val port = config[BtcConfig.Coin.port]
         val url = "http://$user:$pass@$host:$port/"
         rpc = BtcRpc(url)
 
-        val frequency = config[BtcConfig.frequency]
-        blockchainListener = BtcBlockchainListener(this, frequency)
+        confirmations = config[BtcConfig.Coin.confirmations]
 
-        confirmations = config[BtcConfig.confirmations]
+        val frequency = config[BtcConfig.Explorer.frequency]
+        explorer = BtcExplorer(this, frequency)
     }
 
-    constructor(btcRpc: BtcRpc, btcBlockchainListener: BtcBlockchainListener, configPath: String) {
+    constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
             addSpec(BtcConfig)
             from.yaml.file(configFile)
         }
-
         config.validateRequired()
+
+        confirmations = config[BtcConfig.Coin.confirmations]
         rpc = btcRpc
-        blockchainListener = btcBlockchainListener
-        confirmations = config[BtcConfig.confirmations]
+        explorer = btcExplorer
     }
 
     override fun getBalance(): BigDecimal = rpc.getBalance()

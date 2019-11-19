@@ -5,14 +5,15 @@ import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.*
-import dsx.bps.crypto.common.CoinClient
+import dsx.bps.crypto.common.Coin
+import dsx.bps.crypto.common.Explorer
 import dsx.bps.crypto.trx.datamodel.TrxBlock
 import dsx.bps.crypto.trx.datamodel.TrxTx
 import java.io.File
 import java.math.BigDecimal
 import kotlin.random.Random
 
-class TrxClient: CoinClient {
+class TrxCoin: Coin {
 
     override val currency = Currency.TRX
     override val config: Config
@@ -22,83 +23,74 @@ class TrxClient: CoinClient {
     private val privateKey: String
 
     override val rpc: TrxRpc
-    override val blockchainListener: TrxBlockchainListener
+    override val explorer: Explorer
 
     private val confirmations: Int
 
-    constructor(){
-        config = Config()
+    constructor(conf: Config) {
+        if (conf.specs.contains(TrxConfig))
+            conf.validateRequired()
+        else
+            throw Exception("Config not contain TrxConfig spec")
 
-        account = "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS" // Base58Checksum representation of account
-        accountAddress = "41dc6c2bc46639e5371fe99e002858754604cf5847"
-        privateKey = "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec"
-
-        val url = "http://127.0.0.1:18190/wallet/"
-        rpc = TrxRpc(url)
-
-        blockchainListener = TrxBlockchainListener(this, 3000)
-        confirmations = 3
-    }
-
-    constructor(conf: Config){
         config = conf
 
-        account = config[TrxConfig.account]
-        accountAddress = config[TrxConfig.accountAddress]
-        privateKey = config[TrxConfig.privateKey]
+        account = config[TrxConfig.Coin.account]
+        accountAddress = config[TrxConfig.Coin.accountAddress]
+        privateKey = config[TrxConfig.Coin.privateKey]
 
-        val host = config[TrxConfig.host]
-        val port = config[TrxConfig.port]
+        val host = config[TrxConfig.Coin.host]
+        val port = config[TrxConfig.Coin.port]
         val url = "http://$host:$port/wallet/"
         rpc = TrxRpc(url)
 
-        val frequency = config[TrxConfig.frequency]
-        blockchainListener = TrxBlockchainListener(this, frequency)
-        confirmations = config[TrxConfig.confirmations]
+        confirmations = config[TrxConfig.Coin.confirmations]
+
+        val frequency = config[TrxConfig.Explorer.frequency]
+        explorer = TrxExplorer(this, frequency)
     }
 
-    constructor(configPath: String){
+    constructor(configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
             addSpec(TrxConfig)
             from.yaml.file(configFile)
         }
-
         config.validateRequired()
 
-        account = config[TrxConfig.account]
-        accountAddress = config[TrxConfig.accountAddress]
-        privateKey = config[TrxConfig.privateKey]
+        account = config[TrxConfig.Coin.account]
+        accountAddress = config[TrxConfig.Coin.accountAddress]
+        privateKey = config[TrxConfig.Coin.privateKey]
 
-        val host = config[TrxConfig.host]
-        val port = config[TrxConfig.port]
+        val host = config[TrxConfig.Coin.host]
+        val port = config[TrxConfig.Coin.port]
         val url = "http://$host:$port/wallet/"
         rpc = TrxRpc(url)
 
-        val frequency = config[TrxConfig.frequency]
-        blockchainListener = TrxBlockchainListener(this, frequency)
-        confirmations = config[TrxConfig.confirmations]
+        confirmations = config[TrxConfig.Coin.confirmations]
+
+        val frequency = config[TrxConfig.Explorer.frequency]
+        explorer = TrxExplorer(this, frequency)
     }
 
-    constructor(trxRpc: TrxRpc, trxBlockchainListener: TrxBlockchainListener, configPath: String){
+    constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
             addSpec(TrxConfig)
             from.yaml.file(configFile)
         }
-
         config.validateRequired()
 
-        account = config[TrxConfig.account]
-        accountAddress = config[TrxConfig.accountAddress]
-        privateKey = config[TrxConfig.privateKey]
+        account = config[TrxConfig.Coin.account]
+        accountAddress = config[TrxConfig.Coin.accountAddress]
+        privateKey = config[TrxConfig.Coin.privateKey]
+
+        confirmations = config[TrxConfig.Coin.confirmations]
 
         rpc = trxRpc
-        blockchainListener = trxBlockchainListener
-
-        confirmations = config[TrxConfig.confirmations]
+        explorer = trxExplorer
     }
 
     override fun getBalance(): BigDecimal = rpc.getBalance(accountAddress)

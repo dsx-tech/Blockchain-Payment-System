@@ -4,10 +4,8 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.config.currencies.EnabledCoinsConfig
 import dsx.bps.core.datamodel.*
-import dsx.bps.crypto.common.CoinClient
-import dsx.bps.crypto.common.CoinClientFactory
+import dsx.bps.crypto.Coins
 import io.reactivex.Observable
 import io.reactivex.Observer
 import io.reactivex.schedulers.Schedulers
@@ -22,34 +20,17 @@ class BlockchainPaymentSystemManager {
         private val DEFAULT_CONFIG_PATH = this::class.java.getResource("/BpsConfig.yaml").path
     }
 
-    private val coins: Map<Currency, CoinClient>
+    private val coins: Coins
     private val emitter: Observable<Tx>
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
-    constructor(confPath: String = DEFAULT_CONFIG_PATH){
+    constructor(confPath: String = DEFAULT_CONFIG_PATH) {
         val configFile = File(confPath)
 
-        val enabledCoinsConfig = with(Config()) {
-            addSpec(EnabledCoinsConfig)
-            from.yaml.file(configFile)
-        }
-        enabledCoinsConfig.validateRequired()
+        coins = Coins(configFile)
 
-        val mutableCoinsMap: MutableMap<Currency, CoinClient> = mutableMapOf()
-
-        for (coin in enabledCoinsConfig[EnabledCoinsConfig.coins]) {
-            val coinConfig = with(Config()) {
-                addSpec(coin.coinConfigSpec)
-                from.yaml.file(configFile)
-            }
-            coinConfig.validateRequired()
-            mutableCoinsMap[coin] = CoinClientFactory.createCoinClient(coin, coinConfig)
-        }
-
-        coins = mutableCoinsMap.toMap()
-
-        val emitters = coins.values.map { it.getTxEmitter() }
+        val emitters = coins.coins.values.map { it.getTxEmitter() }
         val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
         emitter = Observable
             .merge(emitters)
@@ -71,11 +52,11 @@ class BlockchainPaymentSystemManager {
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
     }
 
-    constructor(coinClients: Map<Currency, CoinClient>, invoiceProcessor: InvoiceProcessor,
-                paymentProcessor: PaymentProcessor){
-        coins = coinClients
+    constructor(coinsMap: Coins, invoiceProcessor: InvoiceProcessor,
+                paymentProcessor: PaymentProcessor) {
+        coins = coinsMap
 
-        val emitters = coins.values.map { it.getTxEmitter() }
+        val emitters = coins.coins.values.map { it.getTxEmitter() }
         val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
         emitter = Observable
             .merge(emitters)
@@ -85,26 +66,20 @@ class BlockchainPaymentSystemManager {
         this.paymentProcessor = paymentProcessor
     }
 
-    private fun getCoin(currency: Currency): CoinClient = coins[currency]
-        ?: throw Exception("Currency ${currency.name} isn't specified in configuration file or isn't supported.")
-
     fun getBalance(currency: Currency): BigDecimal {
-        val coin = getCoin(currency)
-        return coin.getBalance()
+        return coins.getBalance(currency)
     }
 
     fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): String {
-        val coin = getCoin(currency)
         val payment = paymentProcessor.createPayment(currency, amount, address, tag)
-        val tx = coin.sendPayment(amount, address, tag)
+        val tx = coins.sendPayment(currency, amount, address, tag)
         paymentProcessor.updatePayment(payment.id, tx)
         return payment.id
     }
 
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
-        val coin = getCoin(currency)
-        val tag = coin.getTag()
-        val address = coin.getAddress()
+        val tag = coins.getTag(currency)
+        val address = coins.getAddress(currency)
         val invoice = invoiceProcessor.createInvoice(currency, amount, address, tag)
         return invoice.id
     }
@@ -114,13 +89,11 @@ class BlockchainPaymentSystemManager {
     fun getInvoice(id: String): Invoice? = invoiceProcessor.getInvoice(id)
 
     fun getTx(currency: Currency, txid: TxId): Tx {
-        val coin = getCoin(currency)
-        return coin.getTx(txid)
+        return coins.getTx(currency, txid)
     }
 
     fun getTxs(currency: Currency, txids: List<TxId>): List<Tx> {
-        val coin = getCoin(currency)
-        return coin.getTxs(txids)
+        return coins.getTxs(currency, txids)
     }
 
     fun subscribe(observer: Observer<Tx>) {
