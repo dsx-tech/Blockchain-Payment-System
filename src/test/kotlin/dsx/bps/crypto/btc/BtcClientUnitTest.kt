@@ -10,7 +10,7 @@ import org.junit.jupiter.api.*
 import org.mockito.Mockito
 import java.math.BigDecimal
 
-internal class BtcClientUnitTest{
+internal class BtcClientUnitTest {
 
     private val btcRpc = Mockito.mock(BtcRpc::class.java)
     private val btcBlockchainListener = Mockito.mock(BtcBlockchainListener::class.java)
@@ -19,27 +19,27 @@ internal class BtcClientUnitTest{
 
     @Test
     @DisplayName("getBalance test ")
-    fun getBalanceTest(){
+    fun getBalanceTest() {
         btcClient.getBalance()
         Mockito.verify(btcRpc, Mockito.only()).getBalance()
     }
 
     @Test
     @DisplayName("getAddress test")
-    fun getAddressTest(){
+    fun getAddressTest() {
         btcClient.getAddress()
         Mockito.verify(btcRpc, Mockito.only()).getNewAddress()
     }
 
     @Test
     @DisplayName("getTag test")
-    fun getTagTest(){
+    fun getTagTest() {
         Assertions.assertEquals(btcClient.getTag(), null)
     }
 
     @Test
     @DisplayName("getTx test")
-    fun getTxTest(){
+    fun getTxTest() {
         val btcTxDetail: BtcTxDetail = Mockito.mock(BtcTxDetail::class.java)
         Mockito.`when`(btcTxDetail.vout).thenReturn(1)
         val btcTx: BtcTx = Mockito.mock(BtcTx::class.java)
@@ -56,7 +56,7 @@ internal class BtcClientUnitTest{
 
     @Test
     @DisplayName("sendPayment test")
-    fun sendPaymentTest(){
+    fun sendPaymentTest() {
         val btcTxDetail: BtcTxDetail = Mockito.mock(BtcTxDetail::class.java)
         Mockito.`when`(btcTxDetail.vout).thenReturn(1)
         Mockito.`when`(btcTxDetail.category).thenReturn("send")
@@ -84,28 +84,28 @@ internal class BtcClientUnitTest{
 
     @Test
     @DisplayName("getBestBlockHash test")
-    fun getBestBlockHashTest(){
+    fun getBestBlockHashTest() {
         btcClient.getBestBlockHash()
         Mockito.verify(btcRpc, Mockito.only()).getBestBlockHash()
     }
 
     @Test
     @DisplayName("getBlock test")
-    fun getBlockTest(){
+    fun getBlockTest() {
         btcClient.getBlock("hash")
         Mockito.verify(btcRpc, Mockito.only()).getBlock("hash")
     }
 
     @Test
     @DisplayName("listSinceBlock test")
-    fun listSinceBlockTest(){
+    fun listSinceBlockTest() {
         btcClient.listSinceBlock("hash")
         Mockito.verify(btcRpc, Mockito.only()).listSinceBlock("hash")
     }
 
     @Test
     @DisplayName("constructTx(btcTx: BtcTx, txid: TxId) test")
-    fun constructTxTest1(){
+    fun constructTxTest1() {
         val btcTxDetail: BtcTxDetail = Mockito.mock(BtcTxDetail::class.java)
         Mockito.`when`(btcTxDetail.vout).thenReturn(1)
         Mockito.`when`(btcTxDetail.address).thenReturn("testaddress")
@@ -130,7 +130,7 @@ internal class BtcClientUnitTest{
 
     @Test
     @DisplayName("constructTx(btcTxSinceBlock: BtcTxSinceBlock) test")
-    fun constructTxTest2(){
+    fun constructTxTest2() {
         val btcTxSinceBlock = Mockito.mock(BtcTxSinceBlock::class.java)
         Mockito.`when`(btcTxSinceBlock.amount).thenReturn(BigDecimal.TEN)
         Mockito.`when`(btcTxSinceBlock.address).thenReturn("testaddress")

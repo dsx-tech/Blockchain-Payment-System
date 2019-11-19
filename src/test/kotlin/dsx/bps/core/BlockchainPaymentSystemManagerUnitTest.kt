@@ -25,14 +25,14 @@ internal class BlockchainPaymentSystemManagerUnitTest {
 
     @Test
     @DisplayName("getBalance pick the right coinClient test")
-    fun getBalanceTest(){
+    fun getBalanceTest() {
         bpsManager.getBalance(Currency.BTC)
         Mockito.verify(btcClient).getBalance()
     }
 
     @Test
     @DisplayName("sendPayment test")
-    fun sendPaymentTest(){
+    fun sendPaymentTest() {
         val payment = Mockito.mock(Payment::class.java)
         Mockito.`when`(payment.id).thenReturn("id")
         Mockito.`when`(paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN,"testaddress",1))
@@ -45,7 +45,7 @@ internal class BlockchainPaymentSystemManagerUnitTest {
 
     @Test
     @DisplayName("createInvoice test")
-    fun createInvoiceTest(){
+    fun createInvoiceTest() {
         val invoice = Mockito.mock(Invoice::class.java)
         Mockito.`when`(invoice.id).thenReturn("id")
         Mockito.`when`(invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1))
@@ -58,21 +58,21 @@ internal class BlockchainPaymentSystemManagerUnitTest {
 
     @Test
     @DisplayName("getPayment test")
-    fun getPaymentTest(){
+    fun getPaymentTest() {
         bpsManager.getPayment("id")
         Mockito.verify(paymentProcessor, Mockito.only()).getPayment("id")
     }
 
     @Test
     @DisplayName("getInvoice test")
-    fun getInvoiceTest(){
+    fun getInvoiceTest() {
         bpsManager.getInvoice("id")
         Mockito.verify(invoiceProcessor, Mockito.only()).getInvoice("id")
     }
 
     @Test
     @DisplayName("getTx test")
-    fun getTxTest(){
+    fun getTxTest() {
         val txid = Mockito.mock(TxId::class.java)
         val tx = Mockito.mock(Tx::class.java)
         Mockito.`when`(btcClient.getTx(txid)).thenReturn(tx)
@@ -82,7 +82,7 @@ internal class BlockchainPaymentSystemManagerUnitTest {
 
     @Test
     @DisplayName("getTxs test")
-    fun getTxsTest(){
+    fun getTxsTest() {
         val txids = listOf(Mockito.mock(TxId::class.java))
         val txs = listOf(Mockito.mock(Tx::class.java))
         Mockito.`when`(btcClient.getTxs(txids)).thenReturn(txs)

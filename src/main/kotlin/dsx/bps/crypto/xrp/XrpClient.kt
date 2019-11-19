@@ -2,7 +2,7 @@ package dsx.bps.crypto.xrp
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.config.currencyconfig.XrpConfig
+import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.CoinClient
@@ -23,7 +23,7 @@ class XrpClient: CoinClient {
     override val rpc: XrpRpc
     override val blockchainListener: XrpBlockchainListener
 
-    constructor(){
+    constructor() {
         config = Config()
 
         account = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
@@ -36,7 +36,7 @@ class XrpClient: CoinClient {
         blockchainListener = XrpBlockchainListener(this, 5000)
     }
 
-    constructor(conf: Config){
+    constructor(conf: Config) {
         config = conf
 
         account = config[XrpConfig.account]
@@ -52,7 +52,7 @@ class XrpClient: CoinClient {
         blockchainListener = XrpBlockchainListener(this, frequency)
     }
 
-    constructor(configPath: String){
+    constructor(configPath: String) {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
@@ -75,7 +75,7 @@ class XrpClient: CoinClient {
         blockchainListener = XrpBlockchainListener(this, frequency)
     }
 
-    constructor(xrpRpc: XrpRpc, xrpBlockchainListener: XrpBlockchainListener, configPath: String): super(){
+    constructor(xrpRpc: XrpRpc, xrpBlockchainListener: XrpBlockchainListener, configPath: String): super() {
         val initConfig = Config()
         val configFile = File(configPath)
         config = with (initConfig) {
