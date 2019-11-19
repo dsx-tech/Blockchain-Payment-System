@@ -34,7 +34,7 @@ internal class PaymentProcessorUnitTest {
     @ParameterizedTest
     @EnumSource(value = Currency::class)
     @DisplayName("create and get payment test")
-    fun createPaymentTest(currency: Currency){
+    fun createPaymentTest(currency: Currency) {
         val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", 1)
         val receivePayment = paymentProcessor.getPayment(payment.id)
         Assertions.assertEquals(payment, receivePayment)
