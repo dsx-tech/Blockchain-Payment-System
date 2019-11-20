@@ -39,8 +39,8 @@ class TrxCoin: Coin {
         accountAddress = config[TrxConfig.Coin.accountAddress]
         privateKey = config[TrxConfig.Coin.privateKey]
 
-        val host = config[TrxConfig.Coin.host]
-        val port = config[TrxConfig.Coin.port]
+        val host = config[TrxConfig.Connection.host]
+        val port = config[TrxConfig.Connection.port]
         val url = "http://$host:$port/wallet/"
         rpc = TrxRpc(url)
 
@@ -63,8 +63,8 @@ class TrxCoin: Coin {
         accountAddress = config[TrxConfig.Coin.accountAddress]
         privateKey = config[TrxConfig.Coin.privateKey]
 
-        val host = config[TrxConfig.Coin.host]
-        val port = config[TrxConfig.Coin.port]
+        val host = config[TrxConfig.Connection.host]
+        val port = config[TrxConfig.Connection.port]
         val url = "http://$host:$port/wallet/"
         rpc = TrxRpc(url)
 

@@ -17,9 +17,10 @@ btcConfig:
   coin:
     user: "user"
     password: "password"
+    confirmations: 1
+  connection:
     host: "127.0.0.1"
     port: "18443"
-    confirmations: 1
   explorer:
     frequency: 5000
 
@@ -29,9 +30,10 @@ trxConfig:
     account: "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS"
     accountAddress: "41dc6c2bc46639e5371fe99e002858754604cf5847"
     privateKey: "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec"
+    confirmations: 19
+  connection:
     host: "127.0.0.1"
     port: "18190"
-    confirmations: 19
   explorer:
     frequency: 3000
 
@@ -40,6 +42,7 @@ xrpConfig:
     account: "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
     privateKey: "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"
     passPhrase: "masterpassphrase"
+  connection:
     host: "127.0.0.1"
     port: "51234"
   explorer:

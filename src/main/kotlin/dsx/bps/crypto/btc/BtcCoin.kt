@@ -33,8 +33,8 @@ class BtcCoin: Coin {
 
         val user = config[BtcConfig.Coin.user]
         val pass = config[BtcConfig.Coin.password]
-        val host = config[BtcConfig.Coin.host]
-        val port = config[BtcConfig.Coin.port]
+        val host = config[BtcConfig.Connection.host]
+        val port = config[BtcConfig.Connection.port]
         val url = "http://$user:$pass@$host:$port/"
         rpc = BtcRpc(url)
 
@@ -55,8 +55,8 @@ class BtcCoin: Coin {
 
         val user = config[BtcConfig.Coin.user]
         val pass = config[BtcConfig.Coin.password]
-        val host = config[BtcConfig.Coin.host]
-        val port = config[BtcConfig.Coin.port]
+        val host = config[BtcConfig.Connection.host]
+        val port = config[BtcConfig.Connection.port]
         val url = "http://$user:$pass@$host:$port/"
         rpc = BtcRpc(url)
 

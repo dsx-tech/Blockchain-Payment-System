@@ -36,8 +36,8 @@ class XrpCoin: Coin {
         privateKey = config[XrpConfig.Coin.privateKey]
         passPhrase = config[XrpConfig.Coin.passPhrase]
 
-        val host = config[XrpConfig.Coin.host]
-        val port = config[XrpConfig.Coin.port]
+        val host = config[XrpConfig.Connection.host]
+        val port = config[XrpConfig.Connection.port]
         val url = "http://$host:$port/"
         rpc = XrpRpc(url)
 
@@ -58,8 +58,8 @@ class XrpCoin: Coin {
         privateKey = config[XrpConfig.Coin.privateKey]
         passPhrase = config[XrpConfig.Coin.passPhrase]
 
-        val host = config[XrpConfig.Coin.host]
-        val port = config[XrpConfig.Coin.port]
+        val host = config[XrpConfig.Connection.host]
+        val port = config[XrpConfig.Connection.port]
         val url = "http://$host:$port/"
         rpc = XrpRpc(url)
 
