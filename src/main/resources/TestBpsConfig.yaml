@@ -1,8 +1,8 @@
 # Just for tests
-invoiceProcessorConfig:
+invoiceProcessor:
   frequency: 5000
 
-paymentProcessorConfig:
+paymentProcessor:
   frequency: 3000
 
 # Enabled currencies
@@ -14,7 +14,7 @@ enabledCoins:
     - TRX
 
 # Example values
-btcConfig:
+BTC:
   coin:
     user: "user"
     password: "password"
@@ -25,7 +25,7 @@ btcConfig:
   explorer:
     frequency: 5000
 
-trxConfig:
+TRX:
   coin:
     # Base58Checksum representation of account
     account: "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS"
@@ -38,7 +38,7 @@ trxConfig:
   explorer:
     frequency: 3000
 
-xrpConfig:
+XRP:
   coin:
     account: "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
     privateKey: "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"

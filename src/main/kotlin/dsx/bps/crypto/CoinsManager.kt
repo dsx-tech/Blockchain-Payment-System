@@ -6,14 +6,17 @@ import dsx.bps.config.currencies.EnabledCoinsConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
+import dsx.bps.crypto.btc.BtcCoin
 import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.common.CoinFactory
+import dsx.bps.crypto.trx.TrxCoin
+import dsx.bps.crypto.xrp.XrpCoin
+import io.reactivex.Observable
 import java.io.File
 import java.math.BigDecimal
 
-class Coins {
+class CoinsManager {
 
-    val coins: Map<Currency, Coin>
+    private val enabledCoins: Map<Currency, Coin>
 
     constructor(configFile: File) {
         val enabledCoinsConfig = with(Config()) {
@@ -23,62 +26,61 @@ class Coins {
         enabledCoinsConfig.validateRequired()
 
         val mutableCoinsMap: MutableMap<Currency, Coin> = mutableMapOf()
-
         for (coin in enabledCoinsConfig[EnabledCoinsConfig.coins]) {
             val coinConfig = with(Config()) {
                 addSpec(coin.coinConfigSpec)
                 from.yaml.file(configFile)
             }
             coinConfig.validateRequired()
-            mutableCoinsMap[coin] = CoinFactory.createCoinClient(coin, coinConfig)
+            mutableCoinsMap[coin] = when (coin) {
+                Currency.BTC -> BtcCoin(coinConfig)
+                Currency.XRP -> XrpCoin(coinConfig)
+                Currency.TRX -> TrxCoin(coinConfig)
+            }
         }
-
-        coins = mutableCoinsMap.toMap()
+        enabledCoins = mutableCoinsMap.toMap()
     }
 
     constructor(coinsMap: Map<Currency, Coin>) {
-        coins = coinsMap
+        enabledCoins = coinsMap
     }
 
-    private fun getCoin(currency: Currency): Coin = coins[currency]
+    private fun getCoin(currency: Currency): Coin = enabledCoins[currency]
         ?: throw Exception("Currency ${currency.name} isn't specified in configuration file.")
 
     fun getAddress(currency: Currency): String {
-        val coin = getCoin(currency)
-        return coin.getAddress()
+        return getCoin(currency).getAddress()
     }
 
     fun getBalance(currency: Currency): BigDecimal {
-        val coin = getCoin(currency)
-        return coin.getBalance()
+        return getCoin(currency).getBalance()
     }
 
     fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Tx {
-        val coin = getCoin(currency)
-        return coin.sendPayment(amount, address, tag)
+        return getCoin(currency).sendPayment(amount, address, tag)
     }
 
     fun getTag(currency: Currency): Int? {
-        val coin = getCoin(currency)
-        return coin.getTag()
+        return getCoin(currency).getTag()
     }
 
     fun getTx(currency: Currency, txid: TxId): Tx {
-        val coin = getCoin(currency)
-        return coin.getTx(txid)
+        return getCoin(currency).getTx(txid)
     }
 
     fun getTxs(currency: Currency, txids: List<TxId>): List<Tx> {
-        val coin = getCoin(currency)
-
         return txids
             .mapNotNull { txid ->
                 try {
-                    coin.getTx(txid)
+                    getCoin(currency).getTx(txid)
                 } catch (ex: Exception) {
                     println(ex.message)
                     null
                 }
             }
+    }
+
+    fun getAllEmitters(): Observable<Tx> {
+        return Observable.merge(enabledCoins.values.map { it.getTxEmitter() })
     }
 }

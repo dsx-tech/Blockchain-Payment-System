@@ -19,16 +19,11 @@ class BtcCoin: Coin {
     override val config: Config
 
     override val rpc: BtcRpc
-    override val explorer: Explorer
+    override val explorer: BtcExplorer
 
     private val confirmations: Int
 
     constructor(conf: Config) {
-        if (conf.specs.contains(BtcConfig))
-            conf.validateRequired()
-        else
-            throw Exception("Config not contain BtcConfig spec")
-
         config = conf
 
         val user = config[BtcConfig.Coin.user]
@@ -44,32 +39,9 @@ class BtcCoin: Coin {
         explorer = BtcExplorer(this, frequency)
     }
 
-    constructor(configPath: String) {
-        val initConfig = Config()
-        val configFile = File(configPath)
-        config = with (initConfig) {
-            addSpec(BtcConfig)
-            from.yaml.file(configFile)
-        }
-        config.validateRequired()
-
-        val user = config[BtcConfig.Coin.user]
-        val pass = config[BtcConfig.Coin.password]
-        val host = config[BtcConfig.Connection.host]
-        val port = config[BtcConfig.Connection.port]
-        val url = "http://$user:$pass@$host:$port/"
-        rpc = BtcRpc(url)
-
-        confirmations = config[BtcConfig.Coin.confirmations]
-
-        val frequency = config[BtcConfig.Explorer.frequency]
-        explorer = BtcExplorer(this, frequency)
-    }
-
     constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String) {
-        val initConfig = Config()
         val configFile = File(configPath)
-        config = with (initConfig) {
+        config = with (Config()) {
             addSpec(BtcConfig)
             from.yaml.file(configFile)
         }

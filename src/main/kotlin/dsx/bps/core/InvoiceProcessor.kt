@@ -10,8 +10,7 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 
-class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager,
-                       private val config: Config): Observer<Tx> {
+class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config): Observer<Tx> {
 
     // TODO: Implement db-storage for invoices
     private val unpaid = ConcurrentHashMap.newKeySet<String>()

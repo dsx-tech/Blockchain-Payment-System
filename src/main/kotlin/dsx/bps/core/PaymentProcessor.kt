@@ -10,8 +10,7 @@ import java.util.concurrent.ConcurrentHashMap
 import kotlin.NoSuchElementException
 import kotlin.concurrent.timer
 
-class PaymentProcessor(private val manager: BlockchainPaymentSystemManager,
-                       private val config: Config) {
+class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, config: Config) {
 
     var frequency: Long = config[PaymentProcessorConfig.frequency]
 

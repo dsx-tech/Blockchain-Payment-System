@@ -22,14 +22,9 @@ class XrpCoin: Coin {
     private val passPhrase: String
 
     override val rpc: XrpRpc
-    override val explorer: Explorer
+    override val explorer: XrpExplorer
 
     constructor(conf: Config) {
-        if (conf.specs.contains(XrpConfig))
-            conf.validateRequired()
-        else
-            throw Exception("Config not contain XrpConfig spec")
-
         config = conf
 
         account = config[XrpConfig.Coin.account]
@@ -45,32 +40,9 @@ class XrpCoin: Coin {
         explorer = XrpExplorer(this, frequency)
     }
 
-    constructor(configPath: String) {
-        val initConfig = Config()
-        val configFile = File(configPath)
-        config = with (initConfig) {
-            addSpec(XrpConfig)
-            from.yaml.file(configFile)
-        }
-        config.validateRequired()
-
-        account = config[XrpConfig.Coin.account]
-        privateKey = config[XrpConfig.Coin.privateKey]
-        passPhrase = config[XrpConfig.Coin.passPhrase]
-
-        val host = config[XrpConfig.Connection.host]
-        val port = config[XrpConfig.Connection.port]
-        val url = "http://$host:$port/"
-        rpc = XrpRpc(url)
-
-        val frequency = config[XrpConfig.Explorer.frequency]
-        explorer = XrpExplorer(this, frequency)
-    }
-
     constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String) {
-        val initConfig = Config()
         val configFile = File(configPath)
-        config = with (initConfig) {
+        config = with (Config()) {
             addSpec(XrpConfig)
             from.yaml.file(configFile)
         }

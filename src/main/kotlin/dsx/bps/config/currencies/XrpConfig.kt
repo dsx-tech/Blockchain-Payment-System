@@ -2,7 +2,7 @@ package dsx.bps.config.currencies
 
 import com.uchuhimo.konf.ConfigSpec
 
-object XrpConfig: ConfigSpec("xrpConfig") {
+object XrpConfig: ConfigSpec("XRP") {
     object Coin: ConfigSpec("coin") {
         val account by required<String>()
         val privateKey by required<String>()

@@ -23,16 +23,11 @@ class TrxCoin: Coin {
     private val privateKey: String
 
     override val rpc: TrxRpc
-    override val explorer: Explorer
+    override val explorer: TrxExplorer
 
     private val confirmations: Int
 
     constructor(conf: Config) {
-        if (conf.specs.contains(TrxConfig))
-            conf.validateRequired()
-        else
-            throw Exception("Config not contain TrxConfig spec")
-
         config = conf
 
         account = config[TrxConfig.Coin.account]
@@ -50,34 +45,9 @@ class TrxCoin: Coin {
         explorer = TrxExplorer(this, frequency)
     }
 
-    constructor(configPath: String) {
-        val initConfig = Config()
-        val configFile = File(configPath)
-        config = with (initConfig) {
-            addSpec(TrxConfig)
-            from.yaml.file(configFile)
-        }
-        config.validateRequired()
-
-        account = config[TrxConfig.Coin.account]
-        accountAddress = config[TrxConfig.Coin.accountAddress]
-        privateKey = config[TrxConfig.Coin.privateKey]
-
-        val host = config[TrxConfig.Connection.host]
-        val port = config[TrxConfig.Connection.port]
-        val url = "http://$host:$port/wallet/"
-        rpc = TrxRpc(url)
-
-        confirmations = config[TrxConfig.Coin.confirmations]
-
-        val frequency = config[TrxConfig.Explorer.frequency]
-        explorer = TrxExplorer(this, frequency)
-    }
-
     constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String) {
-        val initConfig = Config()
         val configFile = File(configPath)
-        config = with (initConfig) {
+        config = with (Config()) {
             addSpec(TrxConfig)
             from.yaml.file(configFile)
         }
