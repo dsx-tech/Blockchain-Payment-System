@@ -6,7 +6,7 @@ paymentProcessor:
 
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX
-enabledCoins:
+enabledCurrencies:
   coins:
     - BTC
     - XRP

@@ -2,7 +2,7 @@ package dsx.bps.crypto
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.config.currencies.EnabledCoinsConfig
+import dsx.bps.config.currencies.EnabledCurrenciesConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
@@ -19,24 +19,20 @@ class CoinsManager {
     private val enabledCoins: Map<Currency, Coin>
 
     constructor(configFile: File) {
-        val enabledCoinsConfig = with(Config()) {
-            addSpec(EnabledCoinsConfig)
+        val enabledCurrenciesConfig = with(Config()) {
+            addSpec(EnabledCurrenciesConfig)
             from.yaml.file(configFile)
         }
-        enabledCoinsConfig.validateRequired()
+        enabledCurrenciesConfig.validateRequired()
 
         val mutableCoinsMap: MutableMap<Currency, Coin> = mutableMapOf()
-        for (coin in enabledCoinsConfig[EnabledCoinsConfig.coins]) {
+        for (enabledCurrency in enabledCurrenciesConfig[EnabledCurrenciesConfig.coins]) {
             val coinConfig = with(Config()) {
-                addSpec(coin.coinConfigSpec)
+                addSpec(enabledCurrency.coinConfigSpec)
                 from.yaml.file(configFile)
             }
             coinConfig.validateRequired()
-            mutableCoinsMap[coin] = when (coin) {
-                Currency.BTC -> BtcCoin(coinConfig)
-                Currency.XRP -> XrpCoin(coinConfig)
-                Currency.TRX -> TrxCoin(coinConfig)
-            }
+            mutableCoinsMap[enabledCurrency] = enabledCurrency.createCoin(coinConfig)
         }
         enabledCoins = mutableCoinsMap.toMap()
     }
