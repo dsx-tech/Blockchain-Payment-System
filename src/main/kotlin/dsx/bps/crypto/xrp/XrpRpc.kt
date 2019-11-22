@@ -3,6 +3,7 @@ package dsx.bps.crypto.xrp
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import dsx.bps.crypto.xrp.datamodel.*
+import dsx.bps.exception.rpc.xrp.XrpRpcException
 import dsx.bps.rpc.JsonRpcHttpClient
 import dsx.bps.rpc.RpcResponse
 import java.math.BigDecimal
@@ -91,7 +92,7 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
 
         val engineResult = obj["engine_result"].asString
         if (engineResult != "tesSUCCESS" && !engineResult.startsWith("tec"))
-            throw RuntimeException("engine_result: ${obj["engine_result"].asString}\n" +
+            throw XrpRpcException("engine_result: ${obj["engine_result"].asString}\n" +
                     "engine_result_code: ${obj["engine_result_code"].asInt}\n" +
                     "engine_result_message: ${obj["engine_result_message"].asString}")
 
@@ -128,7 +129,8 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
             val code = obj["error_code"].asInt
             val error = obj["error"].asString
             val message = obj["error_message"].asString
-            throw RuntimeException("RPC error \"$error\": code $code, message: \"$message\",\n for response: ${response.json}")
+            throw XrpRpcException("RPC error \"$error\": code $code, message: \"$message\"," +
+                    "\n for response: ${response.json}")
         }
 
         return obj

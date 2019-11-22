@@ -10,6 +10,7 @@ import dsx.bps.crypto.btc.BtcCoin
 import dsx.bps.crypto.common.Coin
 import dsx.bps.crypto.trx.TrxCoin
 import dsx.bps.crypto.xrp.XrpCoin
+import dsx.bps.exception.rpc.BpsRpcException
 import io.reactivex.Observable
 import java.io.File
 import java.math.BigDecimal
@@ -32,7 +33,11 @@ class CoinsManager {
                 from.yaml.file(configFile)
             }
             coinConfig.validateRequired()
-            mutableCoinsMap[enabledCurrency] = enabledCurrency.createCoin(coinConfig)
+            mutableCoinsMap[enabledCurrency] = when (enabledCurrency) {
+                    Currency.BTC -> BtcCoin(coinConfig)
+                    Currency.TRX -> TrxCoin(coinConfig)
+                    Currency.XRP -> XrpCoin(coinConfig)
+            }
         }
         enabledCoins = mutableCoinsMap.toMap()
     }
@@ -69,7 +74,7 @@ class CoinsManager {
             .mapNotNull { txid ->
                 try {
                     getCoin(currency).getTx(txid)
-                } catch (ex: Exception) {
+                } catch (ex: BpsRpcException) {
                     println(ex.message)
                     null
                 }

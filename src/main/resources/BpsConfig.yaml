@@ -1,3 +1,6 @@
+BPS:
+  threadsForInvoiceObserver: 2
+
 invoiceProcessor:
   frequency: 5000
 

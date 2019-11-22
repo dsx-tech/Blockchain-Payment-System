@@ -4,11 +4,13 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.*
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.common.Explorer
 import dsx.bps.crypto.trx.datamodel.TrxBlock
 import dsx.bps.crypto.trx.datamodel.TrxTx
+import dsx.bps.exception.crypto.trx.TrxException
 import java.io.File
 import java.math.BigDecimal
 import kotlin.random.Random
@@ -86,7 +88,7 @@ class TrxCoin: Coin {
         if (result.success) {
             return constructTx(tx)
         } else {
-            throw RuntimeException("Unable to broadcast TRX transaction $tx with response $result")
+            throw TrxException("Unable to broadcast TRX transaction $tx with response $result")
         }
     }
 

@@ -2,6 +2,7 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.config.BPSConfig
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
@@ -30,7 +31,12 @@ class BlockchainPaymentSystemManager {
 
         coinsManager = CoinsManager(configFile)
 
-        val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+        val bpsConfig = with(Config()) {
+            addSpec(BPSConfig)
+            from.yaml.file(configFile)
+        }
+        bpsConfig.validateRequired()
+        val threadPool: ExecutorService = Executors.newFixedThreadPool(bpsConfig[BPSConfig.threadsForInvoiceObserver])
         emitter = coinsManager.getAllEmitters().observeOn(Schedulers.from(threadPool))
 
         val invoiceProcessorConfig = with(Config()) {
@@ -49,12 +55,12 @@ class BlockchainPaymentSystemManager {
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
     }
 
-    constructor(coinsMap: CoinsManager, invoiceProcessor: InvoiceProcessor,
+    constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor,
                 paymentProcessor: PaymentProcessor) {
-        coinsManager = coinsMap
+        this.coinsManager = coinsManager
 
         val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
-        emitter = coinsManager.getAllEmitters().observeOn(Schedulers.from(threadPool))
+        emitter = this.coinsManager.getAllEmitters().observeOn(Schedulers.from(threadPool))
 
         this.invoiceProcessor = invoiceProcessor
         this.paymentProcessor = paymentProcessor

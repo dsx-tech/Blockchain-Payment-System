@@ -1,9 +1,7 @@
 package dsx.bps.crypto.common
 
-import com.uchuhimo.konf.Config
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
-import io.reactivex.Observer
 import io.reactivex.subjects.PublishSubject
 
 abstract class Explorer(protected var frequency: Long) {

@@ -7,13 +7,13 @@ import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.trx.datamodel.*
 import dsx.bps.crypto.xrp.datamodel.TrxTxInfo
+import dsx.bps.exception.crypto.trx.TrxException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.io.File
-import java.lang.RuntimeException
 import java.math.BigDecimal
 
 internal class TrxClientUnitTest {
@@ -101,7 +101,7 @@ internal class TrxClientUnitTest {
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(false)
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
 
-            Assertions.assertThrows(RuntimeException::class.java) {
+            Assertions.assertThrows(TrxException::class.java) {
                 trxClient.sendPayment(BigDecimal.TEN,"testaddress",1)
             }
         }

@@ -1,6 +1,5 @@
 package dsx.bps.crypto.trx
 
-import com.uchuhimo.konf.Config
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer

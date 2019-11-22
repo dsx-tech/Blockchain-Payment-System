@@ -3,10 +3,11 @@ package dsx.bps.crypto.xrp
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.currencies.XrpConfig
-import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.common.Explorer
 import dsx.bps.crypto.xrp.datamodel.*
 import java.io.File
 import java.math.BigDecimal

@@ -4,10 +4,10 @@ import com.uchuhimo.konf.Config
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.exception.core.payment.PaymentException
 import java.math.BigDecimal
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.NoSuchElementException
 import kotlin.concurrent.timer
 
 class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, config: Config) {
@@ -32,9 +32,9 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
     }
 
     fun updatePayment(id: String, tx: Tx) {
-        assert(pending.contains(id)) { "There is no pending payment with id = $id" }
+        if (!pending.contains(id)) throw PaymentException("There is no pending payment with id = $id")
         val payment = payments[id]
-            ?: throw NoSuchElementException("There is no payment with id = $id")
+            ?: throw PaymentException("There is no payment with id = $id")
 
         payment.txid = tx.txid()
         payment.fee = tx.fee()
