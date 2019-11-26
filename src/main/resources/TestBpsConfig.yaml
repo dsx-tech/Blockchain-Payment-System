@@ -1,41 +1,53 @@
 # Just for tests
-invoiceProcessorConfig:
+BPS:
+  threadsForInvoiceObserver: 2
+
+invoiceProcessor:
   frequency: 5000
 
-paymentProcessorConfig:
+paymentProcessor:
   frequency: 3000
 
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX
-enabledCoins:
+enabledCurrencies:
   coins:
     - BTC
     - XRP
     - TRX
 
 # Example values
-btcConfig:
-  user: "user"
-  password: "password"
-  host: "127.0.0.1"
-  port: "18443"
-  confirmations: 1
-  frequency: 5000
+BTC:
+  coin:
+    user: "user"
+    password: "password"
+    confirmations: 1
+  connection:
+    host: "127.0.0.1"
+    port: "18443"
+  explorer:
+    frequency: 5000
 
-trxConfig:
-  # Base58Checksum representation of account
-  account: "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS"
-  accountAddress: "41dc6c2bc46639e5371fe99e002858754604cf5847"
-  privateKey: "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec"
-  host: "127.0.0.1"
-  port: "18190"
-  confirmations: 3
-  frequency: 3000
+TRX:
+  coin:
+    # Base58Checksum representation of account
+    account: "TW4hF7TVhme1STRC2NToDA41RxCx1H2HbS"
+    accountAddress: "41dc6c2bc46639e5371fe99e002858754604cf5847"
+    privateKey: "92f451c194301b4a1eae3a818cc181e1a319656dcdf6760cdbe35c54b05bb3ec"
+    confirmations: 3
+  connection:
+    host: "127.0.0.1"
+    port: "18190"
+  explorer:
+    frequency: 3000
 
-xrpConfig:
-  account: "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
-  privateKey: "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"
-  passPhrase: "masterpassphrase"
-  host: "127.0.0.1"
-  port: "51234"
-  frequency: 5000
+XRP:
+  coin:
+    account: "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
+    privateKey: "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"
+    passPhrase: "masterpassphrase"
+  connection:
+    host: "127.0.0.1"
+    port: "51234"
+  explorer:
+    frequency: 5000

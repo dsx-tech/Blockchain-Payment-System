@@ -16,8 +16,8 @@ import java.math.BigDecimal
 internal class XrpClientUnitTest {
 
     private val xrpRpc = Mockito.mock(XrpRpc::class.java)
-    private val xrpBlockchainListener = Mockito.mock(XrpBlockchainListener::class.java)
-    private val xrpClient = XrpClient(xrpRpc, xrpBlockchainListener,
+    private val xrpBlockchainListener = Mockito.mock(XrpExplorer::class.java)
+    private val xrpClient = XrpCoin(xrpRpc, xrpBlockchainListener,
         javaClass.getResource("/TestBpsConfig.yaml").path)
     private val testConfig: Config
 
@@ -36,13 +36,13 @@ internal class XrpClientUnitTest {
     @DisplayName("getBalance test")
     fun getBalanceTest() {
         xrpClient.getBalance()
-        Mockito.verify(xrpRpc, Mockito.only()).getBalance(testConfig[XrpConfig.account])
+        Mockito.verify(xrpRpc, Mockito.only()).getBalance(testConfig[XrpConfig.Coin.account])
     }
 
     @Test
     @DisplayName("getAddress test")
     fun getAddressTest() {
-        Assertions.assertEquals(xrpClient.getAddress(),testConfig[XrpConfig.account])
+        Assertions.assertEquals(xrpClient.getAddress(),testConfig[XrpConfig.Coin.account])
     }
 
     @Test
@@ -77,12 +77,12 @@ internal class XrpClientUnitTest {
     @DisplayName("sendPayment test")
     fun sendPaymentTest() {
         Mockito.`when`(xrpRpc.getTxCost()).thenReturn(BigDecimal.ONE)
-        Mockito.`when`(xrpRpc.getSequence(testConfig[XrpConfig.account])).thenReturn(1)
+        Mockito.`when`(xrpRpc.getSequence(testConfig[XrpConfig.Coin.account])).thenReturn(1)
 
-        val xrpTxPayment = XrpTxPayment(testConfig[XrpConfig.account],
+        val xrpTxPayment = XrpTxPayment(testConfig[XrpConfig.Coin.account],
             BigDecimal.TEN, "testaddress", "1", 1,1)
 
-        Mockito.`when`(xrpRpc.sign(testConfig[XrpConfig.privateKey],xrpTxPayment)).thenReturn("signedtx")
+        Mockito.`when`(xrpRpc.sign(testConfig[XrpConfig.Coin.privateKey],xrpTxPayment)).thenReturn("signedtx")
 
         val xrpAmount = Mockito.mock(XrpAmount::class.java)
         Mockito.`when`(xrpAmount.value).thenReturn(BigDecimal.TEN)
@@ -121,7 +121,7 @@ internal class XrpClientUnitTest {
         xrpClient.getAccountTxs(1,1)
         //default value: account
         Mockito.verify(xrpRpc, Mockito.only())
-            .getAccountTxs(testConfig[XrpConfig.account],1,1)
+            .getAccountTxs(testConfig[XrpConfig.Coin.account],1,1)
     }
 
     @Test

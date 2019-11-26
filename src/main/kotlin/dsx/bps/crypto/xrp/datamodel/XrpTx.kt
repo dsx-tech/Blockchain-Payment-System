@@ -1,7 +1,6 @@
 package dsx.bps.crypto.xrp.datamodel
 
 import com.google.gson.annotations.SerializedName
-import java.math.BigDecimal
 
 data class XrpTx(
     val hash: String,

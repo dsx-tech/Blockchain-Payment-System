@@ -8,25 +8,23 @@ import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.rpc.JsonRpcHttpClient
 
-abstract class CoinClient {
+abstract class Coin {
 
     abstract val currency: Currency
     abstract val config: Config
 
     protected abstract val rpc: JsonRpcHttpClient
-    protected abstract val blockchainListener: BlockchainListener
+    protected abstract val explorer: Explorer
 
-    fun getTxEmitter(): PublishSubject<Tx> = blockchainListener.emitter
+    fun getTxEmitter(): PublishSubject<Tx> = explorer.emitter
 
     abstract fun getBalance(): BigDecimal
 
     abstract fun getAddress(): String
 
-    abstract fun getTag(): Int?
+    open fun getTag(): Int? = null
 
     abstract fun getTx(txid: TxId): Tx
-
-    fun getTxs(txids: List<TxId>): List<Tx> = txids.map(::getTx)
 
     abstract fun sendPayment(amount: BigDecimal, address: String, tag: Int? = null): Tx
 }

@@ -4,12 +4,15 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
-import org.junit.jupiter.api.*
+import dsx.bps.exception.core.payment.PaymentException
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
 import java.io.File
-import java.lang.AssertionError
 import java.math.BigDecimal
 
 internal class PaymentProcessorUnitTest {
@@ -45,7 +48,7 @@ internal class PaymentProcessorUnitTest {
         @Test
         @DisplayName("update a nonexistent payment")
         fun updatePayment1() {
-            Assertions.assertThrows(AssertionError::class.java) {
+            Assertions.assertThrows(PaymentException::class.java) {
                 paymentProcessor.updatePayment("",Mockito.mock(Tx::class.java))
             }
         }
