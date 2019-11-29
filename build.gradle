@@ -23,6 +23,8 @@ dependencies {
     testCompile "org.mockito:mockito-core:3.1.0"
     testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
     testImplementation 'org.mockito:mockito-inline:3.1.0'
+
+    compile "org.jetbrains.exposed:exposed:0.17.7"
 }
 
 sourceSets {
