@@ -4,6 +4,7 @@ import com.google.gson.reflect.TypeToken
 import dsx.bps.crypto.btc.datamodel.BtcBlock
 import dsx.bps.crypto.btc.datamodel.BtcListSinceBlock
 import dsx.bps.crypto.btc.datamodel.BtcTx
+import dsx.bps.exception.rpc.btc.BtcRpcException
 import dsx.bps.rpc.JsonRpcHttpClient
 import java.math.BigDecimal
 
@@ -47,7 +48,7 @@ class BtcRpc(url: String): JsonRpcHttpClient(url) {
         if (obj["complete"].asBoolean) {
             return obj["hex"].asString
         } else {
-            throw RuntimeException("Unable to sign raw transaction: $hex")
+            throw BtcRpcException("Unable to sign raw transaction: $hex")
         }
     }
 

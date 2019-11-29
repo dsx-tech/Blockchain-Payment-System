@@ -3,15 +3,17 @@ package dsx.bps.crypto.xrp
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.currencies.XrpConfig
-import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
-import dsx.bps.crypto.common.CoinClient
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
+import dsx.bps.crypto.common.Coin
 import dsx.bps.crypto.xrp.datamodel.*
 import java.io.File
 import java.math.BigDecimal
 import kotlin.random.Random
 
-class XrpClient: CoinClient {
+class XrpCoin: Coin {
 
     override val currency = Currency.XRP
     override val config: Config
@@ -21,76 +23,38 @@ class XrpClient: CoinClient {
     private val passPhrase: String
 
     override val rpc: XrpRpc
-    override val blockchainListener: XrpBlockchainListener
-
-    constructor() {
-        config = Config()
-
-        account = "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
-        privateKey = "snoPBrXtMeMyMHUVTgbuqAfg1SUTb"
-        passPhrase = "masterpassphrase"
-
-        val url = "http://127.0.0.1:51234/"
-        rpc = XrpRpc(url)
-
-        blockchainListener = XrpBlockchainListener(this, 5000)
-    }
+    override val explorer: XrpExplorer
 
     constructor(conf: Config) {
         config = conf
 
-        account = config[XrpConfig.account]
-        privateKey = config[XrpConfig.privateKey]
-        passPhrase = config[XrpConfig.passPhrase]
+        account = config[XrpConfig.Coin.account]
+        privateKey = config[XrpConfig.Coin.privateKey]
+        passPhrase = config[XrpConfig.Coin.passPhrase]
 
-        val host = config[XrpConfig.host]
-        val port = config[XrpConfig.port]
+        val host = config[XrpConfig.Connection.host]
+        val port = config[XrpConfig.Connection.port]
         val url = "http://$host:$port/"
         rpc = XrpRpc(url)
 
-        val frequency = config[XrpConfig.frequency]
-        blockchainListener = XrpBlockchainListener(this, frequency)
+        val frequency = config[XrpConfig.Explorer.frequency]
+        explorer = XrpExplorer(this, frequency)
     }
 
-    constructor(configPath: String) {
-        val initConfig = Config()
+    constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String) {
         val configFile = File(configPath)
-        config = with (initConfig) {
+        config = with (Config()) {
             addSpec(XrpConfig)
             from.yaml.file(configFile)
         }
-
         config.validateRequired()
 
-        account = config[XrpConfig.account]
-        privateKey = config[XrpConfig.privateKey]
-        passPhrase = config[XrpConfig.passPhrase]
-
-        val host = config[XrpConfig.host]
-        val port = config[XrpConfig.port]
-        val url = "http://$host:$port/"
-        rpc = XrpRpc(url)
-
-        val frequency = config[XrpConfig.frequency]
-        blockchainListener = XrpBlockchainListener(this, frequency)
-    }
-
-    constructor(xrpRpc: XrpRpc, xrpBlockchainListener: XrpBlockchainListener, configPath: String): super() {
-        val initConfig = Config()
-        val configFile = File(configPath)
-        config = with (initConfig) {
-            addSpec(XrpConfig)
-            from.yaml.file(configFile)
-        }
-
-        config.validateRequired()
-
-        account = config[XrpConfig.account]
-        privateKey = config[XrpConfig.privateKey]
-        passPhrase = config[XrpConfig.passPhrase]
+        account = config[XrpConfig.Coin.account]
+        privateKey = config[XrpConfig.Coin.privateKey]
+        passPhrase = config[XrpConfig.Coin.passPhrase]
 
         rpc = xrpRpc
-        blockchainListener = xrpBlockchainListener
+        explorer = xrpExplorer
     }
 
     override fun getBalance(): BigDecimal = rpc.getBalance(account)

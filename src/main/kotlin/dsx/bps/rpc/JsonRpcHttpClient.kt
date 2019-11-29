@@ -1,6 +1,7 @@
 package dsx.bps.rpc
 
 import com.google.gson.Gson
+import dsx.bps.exception.rpc.BpsRpcException
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
@@ -70,7 +71,7 @@ abstract class JsonRpcHttpClient {
 
         if (conn.responseCode != 200) {
             val errorStream = conn.errorStream
-            throw RuntimeException("$request failed\n" +
+            throw BpsRpcException("$request failed\n" +
                     "Code: ${conn.responseCode}\n" +
                     "Message: ${conn.responseMessage}\n" +
                     "Response: ${errorStream.use { it.readBytes().toString(charset) }}")
@@ -86,11 +87,11 @@ abstract class JsonRpcHttpClient {
         val obj = gson.fromJson(response.json, Map::class.java)
 
         if (response.id != obj["id"])
-            throw RuntimeException("Wrong response id: sent ${response.id}, received ${obj["id"]}")
+            throw BpsRpcException("Wrong response id: sent ${response.id}, received ${obj["id"]}")
 
         if (obj["error"] != null) {
             val error = obj["error"] as Map<*, *>
-            throw RuntimeException("RPC error: code ${error["code"]}, message: ${error["message"]}")
+            throw BpsRpcException("RPC error: code ${error["code"]}, message: ${error["message"]}")
         }
 
         return obj["result"]
