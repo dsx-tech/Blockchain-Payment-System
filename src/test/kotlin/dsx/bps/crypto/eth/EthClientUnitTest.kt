@@ -114,7 +114,7 @@ internal class EthClientUnitTest {
         Mockito.`when`(ethRpc.getTransactionByHash("hash2")).thenReturn(ethTx)
 
         val resTx = ethClient.sendPayment(BigDecimal.ONE,"testaddress")
-        Assertions.assertEquals(resTx, TxStatus.VALIDATING)
+        Assertions.assertEquals(resTx.status(), TxStatus.VALIDATING)
     }
 
     @Test
