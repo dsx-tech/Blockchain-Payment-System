@@ -8,6 +8,7 @@ import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.btc.BtcCoin
 import dsx.bps.crypto.common.Coin
+import dsx.bps.crypto.eth.EthCoin
 import dsx.bps.crypto.trx.TrxCoin
 import dsx.bps.crypto.xrp.XrpCoin
 import dsx.bps.exception.rpc.BpsRpcException
@@ -37,6 +38,7 @@ class CoinsManager {
                     Currency.BTC -> BtcCoin(coinConfig)
                     Currency.TRX -> TrxCoin(coinConfig)
                     Currency.XRP -> XrpCoin(coinConfig)
+                    Currency.ETH -> EthCoin(coinConfig)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()

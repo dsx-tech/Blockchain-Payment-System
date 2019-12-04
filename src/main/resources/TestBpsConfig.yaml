@@ -51,3 +51,14 @@ XRP:
     port: "51234"
   explorer:
     frequency: 5000
+
+ETH:
+  coin:
+    accountAddress: "0xacfd9f1452e191fa39ff882e5fea428b999fb2af"
+    privateKey: "root"
+    confirmations: 3
+  connection:
+    host: "127.0.0.1"
+    port: "8545"
+  explorer:
+    frequency: 5000

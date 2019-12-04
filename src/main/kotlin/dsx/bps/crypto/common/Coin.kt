@@ -1,12 +1,12 @@
 package dsx.bps.crypto.common
 
 import com.uchuhimo.konf.Config
-import java.math.BigDecimal
-import io.reactivex.subjects.PublishSubject
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.rpc.JsonRpcHttpClient
+import io.reactivex.subjects.PublishSubject
+import java.math.BigDecimal
 
 abstract class Coin {
 
@@ -17,6 +17,7 @@ abstract class Coin {
     protected abstract val explorer: Explorer
 
     fun getTxEmitter(): PublishSubject<Tx> = explorer.emitter
+
 
     abstract fun getBalance(): BigDecimal
 
