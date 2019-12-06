@@ -1,51 +1,45 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.BtcTx
-import dsx.bps.DBclasses.BtcTxs
-import dsx.bps.DBclasses.Invoice
-import dsx.bps.DBclasses.Payment
+import dsx.bps.DBclasses.BtcTxEntity
+import dsx.bps.DBclasses.BtcTxTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class BtcService {
-    fun create() { // make  static
-        SchemaUtils.create(BtcTxs)
+    fun create() {
+        Database.connect("jdbc:mysql://localhost:3306/inv?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
+            user = "root", password = "root")
+        transaction { SchemaUtils.create(BtcTxTable) }
     }
 
-    fun add(_amount: Int, _fee: Int,
-               _confirmations: Int, _blockHash: String,
-               _hash: String, _hex: String,
-               _adress: String, _invoiceIndex: Int,
-               _invoice: Invoice?, _payment: Payment?): BtcTx {
+    fun add(_amount: String, _fee: String?,
+            _confirmations: Int, _blockHash: String,
+            _hash: String, _adress: String): BtcTxEntity {
         Database.connect("jdbc:mysql://localhost:3306/exp?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
             user = "root", password = "root")
-        val newBtcTx = transaction{
-            BtcTx.new {
+        val newBtcTxEntity = transaction{
+            BtcTxEntity.new {
                 amount = _amount
                 fee = _fee
                 confirmations = _confirmations
                 blockHash = _blockHash
                 hash = _hash
-                //hex = _hex
-                adress = _adress
-                invoiceIndex = _invoiceIndex
-                invoice = _invoice
-                payment = _payment
+                address = _adress
             }
         }
-        return newBtcTx
+        return newBtcTxEntity
     }
 
-    fun delete(btcTx: BtcTx) {
-        Database.connect("jdbc:mysql://localhost:3306/exp?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
+    fun delete(btcTx: BtcTxEntity) {
+        Database.connect("jdbc:mysql://localhost:3306/exp?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver", //pull conectoв
             user = "root", password = "root")
         transaction {btcTx.delete()}
     }
 
-    fun getByHash(hash: String): BtcTx {
+    fun getByHash(hash: String): BtcTxEntity {
         Database.connect("jdbc:mysql://localhost:3306/exp?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
             user = "root", password = "root")
-        return transaction {BtcTx.find {BtcTxs.hash eq hash}.first()}
+        return transaction {BtcTxEntity.find {BtcTxTable.hash eq hash}.first()}
     }
 }
