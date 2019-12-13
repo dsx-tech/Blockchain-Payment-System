@@ -5,13 +5,15 @@ import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.eth.datamodel.EthBlock
-import dsx.bps.crypto.eth.datamodel.EthTx
-import dsx.bps.crypto.eth.datamodel.EthTxReceipt
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.WalletUtils
+import org.web3j.protocol.core.methods.response.EthBlock
+import org.web3j.protocol.core.methods.response.TransactionReceipt
+import org.web3j.utils.Convert
 import java.io.File
 import java.math.BigDecimal
 
@@ -19,11 +21,11 @@ internal class EthClientUnitTest {
 
     private val ethRpc = Mockito.mock(EthRpc::class.java)
     private val ethBlockchainListener = Mockito.mock(EthExplorer::class.java)
-    private val ethClient = EthCoin(ethRpc, ethBlockchainListener,
-        javaClass.getResource("/TestBpsConfig.yaml").path)
+    private val ethClient : EthCoin
     private val testConfig: Config
 
     init {
+
         val initConfig = Config()
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
         testConfig = with (initConfig) {
@@ -31,26 +33,26 @@ internal class EthClientUnitTest {
             from.yaml.file(configFile)
         }
         testConfig.validateRequired()
+        Mockito.`when`(ethRpc.getTransactionCount(testConfig[EthConfig.Coin.accountAddress])).thenReturn(0.toBigInteger())
+        ethClient = EthCoin(ethRpc, ethBlockchainListener,
+            javaClass.getResource("/TestBpsConfig.yaml").path)
     }
 
     @Test
     @DisplayName("getBalance test")
     fun getBalanceTest() {
-        ethClient.getBalance()
-        Mockito.verify(ethRpc, Mockito.only()).getBalance(testConfig[EthConfig.Coin.accountAddress])
+        Mockito.`when`(ethRpc.getBalance(testConfig[EthConfig.Coin.accountAddress])).thenReturn(BigDecimal.ONE)
+        Assertions.assertEquals(ethClient.getBalance(), BigDecimal.ONE)
     }
 
     @Test
     @DisplayName("getAddress test")
     fun getAddressTest() {
-        Assertions.assertEquals(ethClient.getAddress(), testConfig[EthConfig.Coin.accountAddress])
-    }
+        Mockito.`when`(ethRpc.generateWalletFile(testConfig[EthConfig.Coin.defaultPasswordForNewAddresses],
+            testConfig[EthConfig.Coin.walletsDir])).thenReturn("newAddress")
 
-    @Test
-    @DisplayName("getTag test")
-    fun getTagTest() {
-        val randomInt = ethClient.getTag()
-        Assertions.assertTrue(randomInt is Int)
+        val address = ethClient.getAddress()
+        Assertions.assertEquals("newAddress", address)
     }
 
     @Test
@@ -65,13 +67,13 @@ internal class EthClientUnitTest {
         val ethTxConfirmed = mockForConstructConfirmedTx()
         val ethTxValidating = mockForConstructValidatingTx()
 
-        val latestBlock = Mockito.mock(EthBlock::class.java)
+        val latestBlock = Mockito.mock(EthBlock.Block::class.java)
         Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(latestBlock)
-        Mockito.`when`(latestBlock.number).thenReturn("0x5")
+        Mockito.`when`(latestBlock.number).thenReturn(5.toBigInteger())
 
-        val txRt = Mockito.mock(EthTxReceipt::class.java)
-        Mockito.`when`(ethRpc.getTransactionReceipt("hash1")).thenReturn(txRt)
-        Mockito.`when`(txRt.gasUsed).thenReturn("0x470")
+        val txRt = Mockito.mock(TransactionReceipt::class.java)
+        Mockito.`when`(ethRpc.getTransactionReceiptByHash("hash1")).thenReturn(txRt)
+        Mockito.`when`(txRt.gasUsed).thenReturn(470.toBigInteger())
 
         Mockito.`when`(ethRpc.getTransactionByHash("hash1")).thenReturn(ethTxConfirmed)
         Mockito.`when`(ethRpc.getTransactionByHash("hash2")).thenReturn(ethTxValidating)
@@ -88,32 +90,67 @@ internal class EthClientUnitTest {
     @Test
     @DisplayName("getLatestBlock test")
     fun getLatestBlockTest() {
-        ethClient.getLatestBlock()
-        Mockito.verify(ethRpc, Mockito.only()).getLatestBlock()
+        val lastBlock = Mockito.mock(EthBlock.Block :: class.java)
+        Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(lastBlock)
+        Assertions.assertEquals(ethClient.getLatestBlock(), lastBlock)
     }
 
     @Test
     @DisplayName("getBlockByHash test")
     fun getBlockByHash() {
-        ethClient.getBlockByHash("hash")
-        Mockito.verify(ethRpc, Mockito.only()).getBlockByHash("hash")
+        val block = Mockito.mock(EthBlock.Block :: class.java)
+        Mockito.`when`(ethRpc.getBlockByHash("hash")).thenReturn(block)
+        Assertions.assertEquals(ethClient.getBlockByHash("hash"), block)
     }
 
     @Test
-    @DisplayName("sendPaymentSuccess test")
-    fun sendPaymentSuccessTest() {
+    @DisplayName("sendPayment test")
+    fun sendPaymentTest() {
+        val password = testConfig[EthConfig.Coin.password]
+        val pathToWallet = testConfig[EthConfig.Coin.pathToWallet]
+
         val ethTx = mockForConstructValidatingTx()
+        val rawTx = Mockito.mock(RawTransaction::class.java)
 
-        Mockito.`when`(ethRpc.sendTransaction(__from = testConfig[EthConfig.Coin.accountAddress],
-            __to = "testaddress", __value = BigDecimal.ONE)).thenReturn("hash2")
+        Mockito.`when`(ethRpc.createRawTransaction(0.toBigInteger(), toAddress = "to", value = 1.toBigDecimal()))
+            .thenReturn(rawTx)
+        val credentials = WalletUtils.loadCredentials(password, pathToWallet)
+        Mockito.`when`(ethRpc.signTransaction(rawTx,credentials)).thenReturn("signedHex")
+        Mockito.`when`(ethRpc.sendTransaction("signedHex")).thenReturn("hash2")
 
-        val latestBlock = Mockito.mock(EthBlock::class.java)
+        val latestBlock = Mockito.mock(EthBlock.Block::class.java)
         Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(latestBlock)
-        Mockito.`when`(latestBlock.number).thenReturn("0x5")
+        Mockito.`when`(latestBlock.number).thenReturn(5.toBigInteger())
 
         Mockito.`when`(ethRpc.getTransactionByHash("hash2")).thenReturn(ethTx)
 
-        val resTx = ethClient.sendPayment(BigDecimal.ONE,"testaddress")
+        val resTx = ethClient.sendPayment(BigDecimal.ONE,"to")
+        Assertions.assertEquals(resTx.status(), TxStatus.VALIDATING)
+    }
+
+    @Test
+    @DisplayName("check nonce work")
+    fun sendSecondPayment() {
+        sendPaymentTest()
+        val password = testConfig[EthConfig.Coin.password]
+        val pathToWallet = testConfig[EthConfig.Coin.pathToWallet]
+
+        val ethTx = mockForConstructValidatingTx()
+        val rawTx = Mockito.mock(RawTransaction::class.java)
+
+        Mockito.`when`(ethRpc.createRawTransaction(1.toBigInteger(), toAddress = "to", value = 1.toBigDecimal()))
+            .thenReturn(rawTx)
+        val credentials = WalletUtils.loadCredentials(password, pathToWallet)
+        Mockito.`when`(ethRpc.signTransaction(rawTx,credentials)).thenReturn("signedHex")
+        Mockito.`when`(ethRpc.sendTransaction("signedHex")).thenReturn("hash2")
+
+        val latestBlock = Mockito.mock(EthBlock.Block::class.java)
+        Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(latestBlock)
+        Mockito.`when`(latestBlock.number).thenReturn(5.toBigInteger())
+
+        Mockito.`when`(ethRpc.getTransactionByHash("hash2")).thenReturn(ethTx)
+
+        val resTx = ethClient.sendPayment(BigDecimal.ONE,"to")
         Assertions.assertEquals(resTx.status(), TxStatus.VALIDATING)
     }
 
@@ -122,13 +159,13 @@ internal class EthClientUnitTest {
     fun constructConfirmedTxTest() {
         val ethTx = mockForConstructConfirmedTx()
 
-        val latestBlock = Mockito.mock(EthBlock::class.java)
+        val latestBlock = Mockito.mock(EthBlock.Block::class.java)
         Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(latestBlock)
-        Mockito.`when`(latestBlock.number).thenReturn("0x5")
+        Mockito.`when`(latestBlock.number).thenReturn(5.toBigInteger())
 
-        val txRt = Mockito.mock(EthTxReceipt::class.java)
-        Mockito.`when`(ethRpc.getTransactionReceipt("hash1")).thenReturn(txRt)
-        Mockito.`when`(txRt.gasUsed).thenReturn("0x470")
+        val txRt = Mockito.mock(TransactionReceipt::class.java)
+        Mockito.`when`(ethRpc.getTransactionReceiptByHash("hash1")).thenReturn(txRt)
+        Mockito.`when`(txRt.gasUsed).thenReturn(470.toBigInteger())
 
         Mockito.`when`(ethRpc.getTransactionByHash("hash1")).thenReturn(ethTx)
 
@@ -137,9 +174,9 @@ internal class EthClientUnitTest {
 
         Assertions.assertEquals(resultTx.currency(), ethClient.currency)
         Assertions.assertEquals(resultTx.hash(),"hash1")
-        Assertions.assertEquals((resultTx.amount()).toString(), "1.000000000000000")
+        Assertions.assertEquals((resultTx.amount()).toString(), "1")
         Assertions.assertEquals(resultTx.destination(), "to")
-        Assertions.assertEquals(resultTx.fee(), 1454080.toBigDecimal())
+        Assertions.assertEquals(resultTx.fee(), 235000.toBigDecimal())
         Assertions.assertEquals(resultTx.status(), TxStatus.CONFIRMED)
     }
 
@@ -148,9 +185,9 @@ internal class EthClientUnitTest {
     fun constructValidatingTxTest() {
         val ethTx = mockForConstructValidatingTx()
 
-        val latestBlock = Mockito.mock(EthBlock::class.java)
+        val latestBlock = Mockito.mock(EthBlock.Block::class.java)
         Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(latestBlock)
-        Mockito.`when`(latestBlock.number).thenReturn("0x5")
+        Mockito.`when`(latestBlock.number).thenReturn(5.toBigInteger())
 
 
         Mockito.`when`(ethRpc.getTransactionByHash("hash2")).thenReturn(ethTx)
@@ -160,33 +197,34 @@ internal class EthClientUnitTest {
 
         Assertions.assertEquals(resultTx.currency(), ethClient.currency)
         Assertions.assertEquals(resultTx.hash(),"hash2")
-        Assertions.assertEquals((resultTx.amount()).toString(), "1.000000000000000")
+        Assertions.assertEquals((resultTx.amount()).toString(), "1")
         Assertions.assertEquals(resultTx.destination(), "to")
-        Assertions.assertEquals(resultTx.fee(), 2949120.toBigDecimal())
+        Assertions.assertEquals(resultTx.fee(), 450000.toBigDecimal())
         Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
     }
 
-    private fun mockForConstructConfirmedTx(): EthTx {
-        val ethTx = Mockito.mock(EthTx::class.java)
-        Mockito.`when`(ethTx.blockNumber).thenReturn("0x1")
+    private fun mockForConstructConfirmedTx(): org.web3j.protocol.core.methods.response.Transaction {
+        val ethTx = Mockito.mock(org.web3j.protocol.core.methods.response.Transaction::class.java)
+        Mockito.`when`(ethTx.blockNumber).thenReturn(1.toBigInteger())
         Mockito.`when`(ethTx.hash).thenReturn("hash1")
         Mockito.`when`(ethTx.to).thenReturn("to")
-        Mockito.`when`(ethTx.value).thenReturn("0xDE0B6B3A7640000") //1 ether
-        Mockito.`when`(ethTx.gas).thenReturn("0x900")
-        Mockito.`when`(ethTx.gasPrice).thenReturn("0x500")
+        Mockito.`when`(ethTx.value).thenReturn(Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()) //1 ether
+        Mockito.`when`(ethTx.gas).thenReturn(900.toBigInteger())
+        Mockito.`when`(ethTx.gasPrice).thenReturn(500.toBigInteger())
 
         return ethTx
     }
 
-    private fun mockForConstructValidatingTx(): EthTx {
-        val ethTx = Mockito.mock(EthTx::class.java)
-        Mockito.`when`(ethTx.blockNumber).thenReturn("0x4")
+    private fun mockForConstructValidatingTx(): org.web3j.protocol.core.methods.response.Transaction {
+        val ethTx = Mockito.mock(org.web3j.protocol.core.methods.response.Transaction::class.java)
+        Mockito.`when`(ethTx.blockNumber).thenReturn(4.toBigInteger())
         Mockito.`when`(ethTx.hash).thenReturn("hash2")
         Mockito.`when`(ethTx.to).thenReturn("to")
-        Mockito.`when`(ethTx.value).thenReturn("0xDE0B6B3A7640000") //1 ether
-        Mockito.`when`(ethTx.gas).thenReturn("0x900")
-        Mockito.`when`(ethTx.gasPrice).thenReturn("0x500")
+        Mockito.`when`(ethTx.value).thenReturn(Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()) //1 ether
+        Mockito.`when`(ethTx.gas).thenReturn(900.toBigInteger())
+        Mockito.`when`(ethTx.gasPrice).thenReturn(500.toBigInteger())
 
         return ethTx
     }
+
 }

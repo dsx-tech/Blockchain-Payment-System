@@ -41,17 +41,6 @@ abstract class JsonRpcHttpClient {
     protected open fun constructRequest(method: String, vararg params: Any): RpcRequest {
         val id = Random.nextInt().toString()
         val json : String
-      /*  if (params.contains("\"jsonrpc\":\"2.0\"")) {
-            var cleanedParams = params.filter { x->x != "\"jsonrpc\":\"2.0\""} //говнокод
-            val jsonrpc = "2.0"
-            json = gson.toJson(mapOf(
-                "jsonrpc" to jsonrpc,
-                "method" to method,
-                "params" to cleanedParams,
-                "id"     to id
-            ))
-        } */
-      //  else {
             json = gson.toJson(
                 mapOf(
                     "method" to method,
@@ -59,7 +48,6 @@ abstract class JsonRpcHttpClient {
                     "id" to id
                 )
             )
-       // }
         return RpcRequest(rpcURL, json, id)
     }
 
@@ -68,7 +56,6 @@ abstract class JsonRpcHttpClient {
         conn.doInput = true
         conn.doOutput = true
         conn.requestMethod = "POST"
-        conn.setRequestProperty("Content-Type", "application/json") //только для eth, говнокод
         if (conn is HttpsURLConnection) {
             if (hostnameVerifier != null)
                 conn.hostnameVerifier = hostnameVerifier

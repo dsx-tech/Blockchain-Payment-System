@@ -1,9 +1,13 @@
 package dsx.bps.crypto.eth
 
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.web3j.crypto.WalletUtils
+import java.io.File
+import java.io.FileFilter
 
 @Disabled
 internal class EthRpcTest {
@@ -25,8 +29,39 @@ internal class EthRpcTest {
     }
 
     @Test
+    fun getNewAddress() {
+        assertDoesNotThrow {
+            val oldFile = lastFileModified("./src/test/resources")
+            val address = ethRpc.generateWalletFile("defaultPassword",".src/test/resources")
+            val newFile = lastFileModified("./src/test/resources")
+            Assertions.assertNotEquals(oldFile, newFile)
+            println(address)
+        }
+    }
+
+    @Test
+    fun createRawTransaction() {
+        assertDoesNotThrow {
+            val tx = ethRpc.createRawTransaction(0.toBigInteger(), toAddress = bob,value = 0.1.toBigDecimal())
+            println(tx)
+        }
+    }
+
+    @Test
+    fun sendRawTRansaction(){
+        assertDoesNotThrow{
+            val tx = ethRpc.createRawTransaction(4.toBigInteger(), toAddress = bob,value = 0.1.toBigDecimal())
+            val credentials = WalletUtils.loadCredentials("defaultPassword",
+                "C:\\Users\\Admin\\Documents\\Programming\\DSXT\\ETH\\datadir\\test-dev-03-01\\keystore\\UTC--2019-12-13T10-29-08.310000000Z--9d539f5bd0323455bb9c60f10a1c2ca637141dc4.json")
+            val hash = ethRpc.signTransaction(tx, credentials)
+            val result = ethRpc.sendTransaction(hash)
+            println(result)
+        }
+    }
+
+    @Test
     fun getTransactionByHash() {
-        val hash = "0x2752f62aa49cc0df8f67f3e61709b9762b668aecba6cf6e79f7266af46b75da6"
+        val hash = "0xa6d7d1bea0e8fd13af7b72199575d9b6d80af1aacc1c6eb02be7c7cfade34133"
         assertDoesNotThrow {
             val tx = ethRpc.getTransactionByHash(hash)
             println(tx)
@@ -34,8 +69,17 @@ internal class EthRpcTest {
     }
 
     @Test
+    fun sendTransaction() {  // autocheck tx status
+        assertDoesNotThrow { // need to miner.start(1); admin.sleepBlocks(1); miner.stop() in geth
+            val pathTOWallet = "C:\\Users\\Admin\\Documents\\Programming\\DSXT\\ETH\\datadir\\test-dev-03-01\\keystore\\UTC--2019-12-13T10-29-08.310000000Z--9d539f5bd0323455bb9c60f10a1c2ca637141dc4.json"
+            val txHash = ethRpc.sendTransaction(pathTOWallet, "defaultPassword", alice, 0.1.toBigDecimal())
+            println(txHash)
+        }
+    }
+
+    @Test
     fun getBlockByHash() {
-        val hash = "0x557520108cf59cbe8bd0721e9c6ad0088e60c14fbe67c3e57a097432c409e5a0"
+        val hash = "0x3df2ed8f903bd10d4129d56404c7725399cb68cde825e7a09ebc4c6969f4c563"
         assertDoesNotThrow {
             val block = ethRpc.getBlockByHash(hash)
             println(block)
@@ -46,15 +90,15 @@ internal class EthRpcTest {
     fun getLatestBlock() {
         assertDoesNotThrow {
             val block = ethRpc.getLatestBlock()
-            println(block)
+                println(block.hash)
         }
     }
 
     @Test
-    fun getTransactionReceipt() {
-        val hash = "0x2752f62aa49cc0df8f67f3e61709b9762b668aecba6cf6e79f7266af46b75da6"
+    fun getTransactionReceiptByHash() {
+        val hash = "0xa6d7d1bea0e8fd13af7b72199575d9b6d80af1aacc1c6eb02be7c7cfade34133"
         assertDoesNotThrow {
-            val txRt = ethRpc.getTransactionReceipt(hash)
+            val txRt = ethRpc.getTransactionReceiptByHash(hash)
             println(txRt)
         }
     }
@@ -68,19 +112,37 @@ internal class EthRpcTest {
     }
 
     @Test
-    fun unlockAccount() {
+    fun getAllPendingTransactionsCount() {
         assertDoesNotThrow {
-            val result = ethRpc.unlockAccount(alice, alice_p)
-            println(result)
+            val txCnt = ethRpc.getAllPendingTransactionsCount()
+            println(txCnt)
         }
     }
 
     @Test
-    fun sendTransaction() {
-        unlockAccount()
+    fun getPendingTransactionsCount() {
         assertDoesNotThrow {
-            val txHash = ethRpc.sendTransaction(__from = alice, __to = bob, __value = 1.toBigDecimal())
-            println(txHash)
+            val txCnt = ethRpc.getPendingTransactionsCount(alice)
+            println(txCnt)
         }
     }
+
+    fun lastFileModified(dir: String): File? {
+        val fl = File(dir)
+        val files = fl.listFiles(object : FileFilter {
+            override fun accept(file: File): Boolean {
+                return file.isFile
+            }
+        })
+        var lastMod = java.lang.Long.MIN_VALUE
+        var choice: File? = null
+        for (file in files) {
+            if (file.lastModified() > lastMod) {
+                choice = file
+                lastMod = file.lastModified()
+            }
+        }
+        return choice
+    }
+
 }

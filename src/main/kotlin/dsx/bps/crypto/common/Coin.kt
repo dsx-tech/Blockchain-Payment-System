@@ -4,7 +4,6 @@ import com.uchuhimo.konf.Config
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
-import dsx.bps.rpc.JsonRpcHttpClient
 import io.reactivex.subjects.PublishSubject
 import java.math.BigDecimal
 
@@ -13,7 +12,7 @@ abstract class Coin {
     abstract val currency: Currency
     abstract val config: Config
 
-    protected abstract val rpc: JsonRpcHttpClient
+    protected abstract val rpc: Any
     protected abstract val explorer: Explorer
 
     fun getTxEmitter(): PublishSubject<Tx> = explorer.emitter

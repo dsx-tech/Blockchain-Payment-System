@@ -1,78 +1,126 @@
 package dsx.bps.crypto.eth
 
-import dsx.bps.crypto.eth.datamodel.EthBlock
-import dsx.bps.crypto.eth.datamodel.EthTx
-import dsx.bps.crypto.eth.datamodel.EthTxInfo
-import dsx.bps.crypto.eth.datamodel.EthTxReceipt
-import dsx.bps.rpc.JsonRpcHttpClient
+import org.web3j.crypto.Credentials
+import org.web3j.crypto.RawTransaction
+import org.web3j.crypto.TransactionEncoder
+import org.web3j.crypto.WalletUtils
+import org.web3j.protocol.Web3j
+import org.web3j.protocol.core.DefaultBlockParameter
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.core.methods.response.EthGetBalance
+import org.web3j.protocol.core.methods.response.Transaction
+import org.web3j.protocol.core.methods.response.TransactionReceipt
+import org.web3j.protocol.http.HttpService
+import org.web3j.tx.Transfer
+import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
+import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
 
 
-class EthRpc(url: String) : JsonRpcHttpClient(url) {
+class EthRpc(url : String)  {
 
-    /**
-     * @param address string id of account
-     * @return account balance in ether (15 signs)
-     */
+    private val web3j = Web3j.build(HttpService(url))
+
     fun getBalance(address: String): BigDecimal {
-        val result = query("eth_getBalance", address, "latest").toString()
-        return hexToEth(result)
+        val ethGetBalance : EthGetBalance = web3j.ethGetBalance(address, DefaultBlockParameter.valueOf("latest"))
+            .sendAsync()
+            .get()
+        return Convert.fromWei(ethGetBalance.getBalance().toString(), Convert.Unit.ETHER)
+
     }
 
-    fun getTransactionByHash(hash: String): EthTx {
-        val result = query("eth_getTransactionByHash", hash).toString()
-        return gson.fromJson(result, EthTx::class.java)
+    fun getTransactionByHash(hash: String) : Transaction{
+        val transactionInfo = web3j.ethGetTransactionByHash(hash).sendAsync().get()
+        return  transactionInfo.transaction.get()
     }
 
-    fun getBlockByHash(hash: String): EthBlock {
-        val result = query("eth_getBlockByHash", hash, true).toString()
-        return gson.fromJson(result, EthBlock::class.java)
+
+    fun getBlockByHash(hash: String) : org.web3j.protocol.core.methods.response.EthBlock.Block{
+        val blockInfo = web3j.ethGetBlockByHash(hash, true).sendAsync().get()
+        return  blockInfo.block
     }
 
-    fun getLatestBlock(): EthBlock {
-        val result = query("eth_getBlockByNumber", "latest", true).toString()
-        return gson.fromJson(result, EthBlock::class.java)
+    fun getLatestBlock(): org.web3j.protocol.core.methods.response.EthBlock.Block {
+        val ethBlock = web3j.ethGetBlockByNumber(DefaultBlockParameterName.LATEST,
+            true).sendAsync().get()
+        return ethBlock.block
     }
 
-    fun getTransactionReceipt(hash: String): EthTxReceipt {
-        val result = query("eth_getTransactionReceipt", hash).toString()
-        return gson.fromJson(result, EthTxReceipt::class.java)
+    fun getAllPendingTransactionsCount(): Int {
+        val ethBlock = web3j.ethGetBlockByNumber(DefaultBlockParameterName.PENDING,
+            true).sendAsync().get()
+        return ethBlock.block.transactions.size
     }
 
-    /**
-     * @return account balance in Wei
-     */
+    fun getPendingTransactionsCount(address: String): Int {
+        val ethBlock = web3j.ethGetBlockByNumber(DefaultBlockParameterName.PENDING,
+            true).sendAsync().get()
+        val tx = ethBlock.block.transactions.map { it -> it.get() as org.web3j.protocol.core.methods.response.EthBlock.TransactionObject }
+        return tx.filter { it -> it.from == address }.size
+    }
+
+    fun getAllTransactionsCount(address: String): BigInteger {
+        val ethGetTransactionCount = web3j.ethGetTransactionCount(
+            address, DefaultBlockParameterName.LATEST
+        ).sendAsync().get()
+        return ethGetTransactionCount.getTransactionCount() + getPendingTransactionsCount(address)
+            .toBigInteger()
+    }
+
+    fun getTransactionReceiptByHash(hash: String) : TransactionReceipt{
+        val receiptInfo = web3j.ethGetTransactionReceipt(hash).sendAsync().get()
+        return  receiptInfo.transactionReceipt.get()
+    }
+
     fun getGasPrice(): BigInteger {
-        val result = query("eth_gasPrice").toString()
-        return hexToBigInt(result)
+        val result = web3j.ethGasPrice().sendAsync().get()
+        return result.gasPrice
     }
+
 
     fun getTransactionCount(address: String): BigInteger {
-        val result = query("eth_getTransactionCount", address, "latest").toString()
-        return hexToBigInt(result)
+        val ethGetTransactionCount = web3j.ethGetTransactionCount(
+            address, DefaultBlockParameterName.LATEST
+        ).sendAsync().get()
+        return ethGetTransactionCount.transactionCount
     }
 
-    fun unlockAccount(address: String, password: String): Boolean {
-        return query("personal_unlockAccount", address, password, 3600).toString().toBoolean()
-    }
-
-    /**
-     * @param __value amount of payment in ether
-     * @return account balance in Wei
-     */
-    fun sendTransaction(
-        __from: String, __to: String, __gas: BigInteger = 90000.toBigInteger()
-        , __gasPrice: BigInteger = getGasPrice(), __value: BigDecimal, __data: String = "",
-        __nonce: BigInteger = getTransactionCount(__from)
-    ): String {
-
-        val txInfo = EthTxInfo(
-            __from, __to, bigIntToHex(__gas), bigIntToHex(__gasPrice),
-            bigIntToHex(__value.multiply(Math.pow(10.0, 18.0).toBigDecimal()).toBigInteger()),
-            __data
+    fun generateWalletFile(password: String, pathToWallet: String) : String{
+        val fileName = WalletUtils.generateNewWalletFile(
+            password,
+            File(pathToWallet)
         )
+        val credentials = WalletUtils.loadCredentials(password, pathToWallet + "/" + fileName)
+        return  credentials.address
+    }
 
-        return query("eth_sendTransaction", txInfo).toString()
+    fun createRawTransaction(nonce : BigInteger, gasPrice : BigInteger = getGasPrice(),
+                             gasLimit : BigInteger = 90000.toBigInteger(), toAddress : String,
+                             value : BigDecimal) : RawTransaction{
+        val weiValue = Convert.toWei(value, Convert.Unit.ETHER).toBigInteger()
+        return RawTransaction.createEtherTransaction(
+            nonce, gasPrice, gasLimit, toAddress, weiValue)
+    }
+
+    fun signTransaction(rawTransaction : RawTransaction, credentials : Credentials) : String{
+        val signedMessage = TransactionEncoder.signMessage(rawTransaction, credentials)
+        return Numeric.toHexString(signedMessage)
+    }
+
+    fun sendTransaction(hexValue : String) : String{
+        val ethSendTransaction = web3j.ethSendRawTransaction(hexValue).sendAsync().get()
+        return  ethSendTransaction.transactionHash
+    }
+
+
+    fun sendTransaction(pathToWallet : String, password: String, to : String, value: BigDecimal) : String{
+        val credentials = WalletUtils.loadCredentials(password, pathToWallet)
+        val transactionReceipt = Transfer.sendFunds(
+            web3j, credentials, to,
+            value, Convert.Unit.ETHER
+        ).send()
+        return transactionReceipt.transactionHash
     }
 }
