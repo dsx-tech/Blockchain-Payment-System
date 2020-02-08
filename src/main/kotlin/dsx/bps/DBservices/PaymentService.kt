@@ -5,20 +5,19 @@ import dsx.bps.DBclasses.PaymentTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.transactions.transaction
+import java.math.BigDecimal
 
 class PaymentService {
     fun create() {
-        Database.connect("jdbc:mysql://localhost:3306/inv?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
-            user = "root", password = "root")
+        Database.connect(Datasource().getHicari())
         transaction { SchemaUtils.create(PaymentTable) }
     }
 
-    fun add(_status: String, _fee: String,
+    fun add(_status: String, _fee: BigDecimal,
             _paymentId: String, _currency: String,
-            _amount: String, _address: String,
+            _amount: BigDecimal, _address: String,
             _tag: Int?): PaymentEntity {
-        Database.connect("jdbc:mysql://localhost:3306/exp?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
-            user = "root", password = "root")
+        Database.connect(Datasource().getHicari())
         val newPayment = transaction{
             PaymentEntity.new {
                 status = _status
@@ -34,26 +33,27 @@ class PaymentService {
     }
 
     fun delete(payment: PaymentEntity) {
-        Database.connect("jdbc:mysql://localhost:3306/exp?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
-            user = "root", password = "root")
+        Database.connect(Datasource().getHicari())
         transaction {payment.delete()}
     }
 
     fun getById(id: Int): PaymentEntity? {
-        Database.connect("jdbc:mysql://localhost:3306/exp?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
-            user = "root", password = "root")
+        Database.connect(Datasource().getHicari())
         return transaction { PaymentEntity.findById(id)}
     }
 
+    fun getBySystemId(id: String): PaymentEntity {
+        Database.connect(Datasource().getHicari())// url как поле класса в конструкторе и конфиге
+        return transaction {PaymentEntity.find {PaymentTable.paymentId eq id}.first()}
+    }
+
     fun updateStatus(_status: String, payment: PaymentEntity) {
-        Database.connect("jdbc:mysql://localhost:3306/inv?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
-            user = "root", password = "root")
+        Database.connect(Datasource().getHicari())
         transaction { payment.status = _status }
     }
 
-    fun updateFee(_fee: String, payment: PaymentEntity) {
-        Database.connect("jdbc:mysql://localhost:3306/inv?serverTimezone=UTC", driver = "com.mysql.jdbc.Driver",
-            user = "root", password = "root")
+    fun updateFee(_fee: BigDecimal, payment: PaymentEntity) {
+        Database.connect(Datasource().getHicari())
         transaction { payment.fee = _fee }
     }
 }
