@@ -8,7 +8,6 @@ class TrxTxEntity(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<TrxTxEntity>(TrxTxTable)
 
     var amount by TrxTxTable.amount
-    var hash by TrxTxTable.hash
     var address by TrxTxTable.address
     var contractRet by TrxTxTable.contractRet
     var Tx by TxEntity referencedOn TrxTxTable.TxId

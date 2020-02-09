@@ -15,7 +15,7 @@ class BtcService {
 
     fun add(_amount: BigDecimal, _fee: BigDecimal?,
             _confirmations: Int, _blockHash: String,
-            _hash: String, _adress: String): BtcTxEntity {
+            _adress: String): BtcTxEntity {
         Database.connect(Datasource().getHicari())
         val newBtcTxEntity = transaction{
             BtcTxEntity.new {
@@ -23,7 +23,6 @@ class BtcService {
                 fee = _fee
                 confirmations = _confirmations
                 blockHash = _blockHash
-                hash = _hash
                 address = _adress
             }
         }
@@ -35,8 +34,8 @@ class BtcService {
         transaction {btcTx.delete()}
     }
 
-    fun getByHash(hash: String): BtcTxEntity {
-        Database.connect(Datasource().getHicari())
-        return transaction {BtcTxEntity.find {BtcTxTable.hash eq hash}.first()}
-    }
+//    fun getByHash(hash: String): BtcTxEntity {
+//        Database.connect(Datasource().getHicari())
+//        return transaction {BtcTxEntity.find {BtcTxTable.hash eq hash}.first()}
+//    }
 }

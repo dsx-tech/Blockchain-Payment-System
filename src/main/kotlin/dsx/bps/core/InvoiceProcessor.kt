@@ -1,6 +1,7 @@
 package dsx.bps.core
 
 import com.uchuhimo.konf.Config
+import dsx.bps.DBservices.InvoiceService
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
@@ -13,8 +14,10 @@ import kotlin.concurrent.timer
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config): Observer<Tx> {
 
     // TODO: Implement db-storage for invoices
-    private val unpaid = ConcurrentHashMap.newKeySet<String>()
-    private val invoices = ConcurrentHashMap<String, Invoice>()
+    private val unpaid = InvoiceService().getUnpaid()
+    private val invoices = InvoiceService().getInvoices()
+    //private val unpaid = ConcurrentHashMap.newKeySet<String>()
+    //private val invoices = ConcurrentHashMap<String, Invoice>()
 
     var frequency: Long = config[InvoiceProcessorConfig.frequency]
 
@@ -28,6 +31,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
         val inv = Invoice(id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
+        InvoiceService().add("unpaid", BigDecimal.ZERO, id, currency.toString(), amount, address, tag)
         return inv
     }
 
@@ -49,7 +53,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 .forEach { tx ->
                     when (tx.status()) {
                         TxStatus.REJECTED ->
-                            inv.txids.remove(tx.txid())
+                            inv.txids.remove(tx.txid()) // do we need to store rejected transactions in db?
                         TxStatus.CONFIRMED ->
                             received += tx.amount()
                         else -> {
@@ -57,7 +61,10 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                     }
                 }
         }
-        inv.received = received
+        inv.received = received // why not remove from unpaid if needed?
+        InvoiceService().updateReceived(received, InvoiceService().getBySystemId(inv.id))
+        if (inv.status == InvoiceStatus.PAID)
+            InvoiceService().updateStatus("paid", InvoiceService().getBySystemId(inv.id))
     }
 
     private fun match(inv: Invoice, tx: Tx): Boolean =
@@ -77,12 +84,17 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 recalculate(inv)
 
                 inv.txids.add(tx.txid())
+                InvoiceService().addTx(inv, tx.txid())
 
-                if (tx.status() == TxStatus.CONFIRMED)
+                if (tx.status() == TxStatus.CONFIRMED) {
                     inv.received += tx.amount()
+                    InvoiceService().updateReceived(inv.received, InvoiceService().getBySystemId(inv.id))
+                }
 
-                if (inv.status == InvoiceStatus.PAID)
+                if (inv.status == InvoiceStatus.PAID) {
                     unpaid.remove(inv.id)
+                    InvoiceService().updateStatus("paid", InvoiceService().getBySystemId(inv.id))
+                }
             }
     }
 

@@ -13,13 +13,12 @@ class TrxService {
         transaction { SchemaUtils.create(TrxTxTable) }
     }
 
-    fun add(_amount: BigDecimal, _hash: String,
-            _address: String, _contractRet: String): TrxTxEntity {
+    fun add(_amount: BigDecimal, _address: String,
+            _contractRet: String): TrxTxEntity {
         Database.connect(Datasource().getHicari())
         val newTrxTxEntity = transaction{
             TrxTxEntity.new {
                 amount = _amount
-                hash = _hash
                 address = _address
                 contractRet = _contractRet
             }
@@ -32,8 +31,8 @@ class TrxService {
         transaction {trxTx.delete()}
     }
 
-    fun getByHash(hash: String): TrxTxEntity {
-        Database.connect(Datasource().getHicari())
-        return transaction { TrxTxEntity.find { TrxTxTable.hash eq hash}.first()}
-    }
+//    fun getByHash(hash: String): TrxTxEntity {
+//        Database.connect(Datasource().getHicari())
+//        return transaction { TrxTxEntity.find { TrxTxTable.hash eq hash}.first()}
+//    }
 }

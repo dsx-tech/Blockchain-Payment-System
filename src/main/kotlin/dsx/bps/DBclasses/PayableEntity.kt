@@ -8,5 +8,5 @@ class PayableEntity(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<PayableEntity>(PayableTable)
 
     var type by PayableTable.type
-    val Txs by TxEntity referrersOn TxTable.payableId
+    val txs by TxEntity optionalReferrersOn TxTable.payableId
 }

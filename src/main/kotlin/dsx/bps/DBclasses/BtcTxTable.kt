@@ -9,7 +9,6 @@ object BtcTxTable: IntIdTable() {
     val fee: Column<BigDecimal?> = decimal("fee", 30, 15).nullable()
     val confirmations: Column<Int> = integer("confirmations")
     val blockHash: Column<String> = varchar("blockHash", 500)
-    val hash: Column<String> = varchar("hash", 500)
     val address: Column<String> = varchar("address", 100)
     val TxId = reference("TxId", TxTable)
 }

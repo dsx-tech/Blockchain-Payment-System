@@ -14,15 +14,13 @@ class XrpService {
     }
 
     fun add(_amount: BigDecimal, _fee: BigDecimal,
-            _hash: String, _account: String,
-            _destination: String?, _sequence: Int,
-            _validated: Boolean?): XrpTxEntity {
+            _account: String, _destination: String?,
+            _sequence: Int, _validated: Boolean?): XrpTxEntity {
         Database.connect(Datasource().getHicari())
         val newXrpTxEntity = transaction{
             XrpTxEntity.new {
                 amount = _amount
                 fee = _fee
-                hash = _hash
                 account = _account
                 destination = _destination
                 sequence = _sequence
@@ -37,8 +35,8 @@ class XrpService {
         transaction {xrpTx.delete()}
     }
 
-    fun getByHash(hash: String): XrpTxEntity {
-        Database.connect(Datasource().getHicari())
-        return transaction { XrpTxEntity.find { XrpTxTable.hash eq hash}.first()}
-    }
+//    fun getByHash(hash: String): XrpTxEntity {
+//        Database.connect(Datasource().getHicari())
+//        return transaction { XrpTxEntity.find { XrpTxTable.hash eq hash}.first()}
+//    }
 }

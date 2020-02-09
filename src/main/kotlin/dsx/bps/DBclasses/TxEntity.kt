@@ -8,6 +8,8 @@ class TxEntity(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<TxEntity>(TxTable)
 
     var status by TxTable.status
+    var hash by TxTable.hash
+    var index by TxTable.index
     var currency by TxTable.currency
-    var payable by PayableEntity referencedOn TxTable.payableId
+    var payable by PayableEntity optionalReferencedOn TxTable.payableId
 }

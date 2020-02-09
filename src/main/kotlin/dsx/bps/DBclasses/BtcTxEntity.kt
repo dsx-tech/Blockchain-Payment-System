@@ -11,7 +11,6 @@ class BtcTxEntity(id: EntityID<Int>): IntEntity(id) {
     var fee by BtcTxTable.fee
     var confirmations by BtcTxTable.confirmations
     var blockHash by BtcTxTable.blockHash
-    var hash by BtcTxTable.hash
     var address by BtcTxTable.address
     var Tx by TxEntity referencedOn BtcTxTable.TxId
 }
