@@ -1,6 +1,7 @@
 package dsx.bps.core
 
 import com.uchuhimo.konf.Config
+import dsx.bps.DBservices.PaymentService
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
@@ -15,9 +16,12 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
     var frequency: Long = config[PaymentProcessorConfig.frequency]
 
     // TODO: Implement db-storage for payments
-    private val pending = ConcurrentHashMap.newKeySet<String>()
-    private val processing = ConcurrentHashMap.newKeySet<String>()
-    private val payments = ConcurrentHashMap<String, Payment>()
+    private val pending = PaymentService().getStatusedPayments("pending")
+    private val processing = PaymentService().getStatusedPayments("processing")
+    private val payments = PaymentService().getPayments()
+    //private val pending = ConcurrentHashMap.newKeySet<String>()
+    //private val processing = ConcurrentHashMap.newKeySet<String>()
+    //private val payments = ConcurrentHashMap<String, Payment>()
 
     init {
         check()
@@ -28,6 +32,8 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
         val pay = Payment(id, currency, amount, address, tag)
         payments[pay.id] = pay
         pending.add(pay.id)
+        PaymentService().add("pending", id, currency.toString(), amount, address, tag)
+
         return pay
     }
 
@@ -42,6 +48,9 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
         pending.remove(id)
         payment.status = PaymentStatus.PROCESSING
         processing.add(id)
+        PaymentService().updateStatus("processing", id)
+        PaymentService().updateFee(payment.fee, id)
+        PaymentService().addTx(id, tx.txid())
     }
 
     fun getPayment(id: String): Payment? = payments[id]
@@ -56,13 +65,16 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
                         when (tx.status()){
                             TxStatus.VALIDATING -> {
                                 pay.status = PaymentStatus.PROCESSING
+                                PaymentService().updateStatus("processing", pay.id)
                             }
                             TxStatus.CONFIRMED -> {
                                 pay.status = PaymentStatus.SUCCEED
                                 processing.remove(pay.id)
+                                PaymentService().updateStatus("succeed", pay.id)
                             }
                             TxStatus.REJECTED -> {
                                 pay.status = PaymentStatus.FAILED
+                                PaymentService().updateStatus("failed", pay.id)
                                 // add this payment to resend list if needed
                             }
                         }

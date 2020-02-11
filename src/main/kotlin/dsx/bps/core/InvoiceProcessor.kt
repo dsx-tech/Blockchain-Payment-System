@@ -1,10 +1,12 @@
 package dsx.bps.core
 
 import com.uchuhimo.konf.Config
+import dsx.bps.DBservices.InvoiceService
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -13,8 +15,10 @@ import kotlin.concurrent.timer
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config): Observer<Tx> {
 
     // TODO: Implement db-storage for invoices
-    private val unpaid = ConcurrentHashMap.newKeySet<String>()
-    private val invoices = ConcurrentHashMap<String, Invoice>()
+    private val unpaid = InvoiceService().getUnpaid()
+    private val invoices = InvoiceService().getInvoices()
+    //private val unpaid = ConcurrentHashMap.newKeySet<String>()
+    //private val invoices = ConcurrentHashMap<String, Invoice>()
 
     var frequency: Long = config[InvoiceProcessorConfig.frequency]
 
@@ -24,10 +28,11 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
     }
 
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
-        val id = UUID.randomUUID().toString().replace("-", "")
+        val id = UUID.randomUUID().toString().replace("-", "")//uuid can not be true
         val inv = Invoice(id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
+        InvoiceService().add("unpaid", BigDecimal.ZERO, id, currency.toString(), amount, address, tag)
         return inv
     }
 
@@ -49,7 +54,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 .forEach { tx ->
                     when (tx.status()) {
                         TxStatus.REJECTED ->
-                            inv.txids.remove(tx.txid())
+                            inv.txids.remove(tx.txid()) // do we need to store rejected transactions in db?
                         TxStatus.CONFIRMED ->
                             received += tx.amount()
                         else -> {
@@ -57,7 +62,10 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                     }
                 }
         }
-        inv.received = received
+        inv.received = received // why not remove from unpaid if needed?
+        InvoiceService().updateReceived(received, inv.id)
+        if (inv.status == InvoiceStatus.PAID)
+            InvoiceService().updateStatus("paid", inv.id)
     }
 
     private fun match(inv: Invoice, tx: Tx): Boolean =
@@ -66,7 +74,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
         inv.tag == tx.tag()
 
     /** Check for payment in transaction [tx] */
-    override fun onNext(tx: Tx) {
+    override fun onNext(tx: Tx) {//need to recalculate if failed?
         if (unpaid.isEmpty())
             return
 
@@ -77,12 +85,17 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 recalculate(inv)
 
                 inv.txids.add(tx.txid())
+                InvoiceService().addTx(inv.id, tx.txid())
 
-                if (tx.status() == TxStatus.CONFIRMED)
+                if (tx.status() == TxStatus.CONFIRMED) {
                     inv.received += tx.amount()
+                    InvoiceService().updateReceived(inv.received, inv.id)
+                }
 
-                if (inv.status == InvoiceStatus.PAID)
+                if (inv.status == InvoiceStatus.PAID) {
                     unpaid.remove(inv.id)
+                    InvoiceService().updateStatus("paid", inv.id)
+                }
             }
     }
 
