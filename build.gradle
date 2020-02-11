@@ -32,15 +32,12 @@ dependencies {
     implementation "com.uchuhimo:konf:0.20.0"
     implementation "com.uchuhimo:konf-yaml:0.20.0"
 
-
     testCompile "org.junit.jupiter:junit-jupiter-api:5.3.2"
     testCompile "org.junit.jupiter:junit-jupiter-params:5.3.2"
     testRuntime "org.junit.jupiter:junit-jupiter-engine:5.3.2"
     testCompile "org.mockito:mockito-core:3.1.0"
     testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
     testImplementation 'org.mockito:mockito-inline:3.1.0'
-
-
 }
 
 sourceSets {

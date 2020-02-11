@@ -1,6 +1,7 @@
 package dsx.bps.rpc
 
 import com.google.gson.Gson
+import dsx.bps.crypto.eth.Connector
 import dsx.bps.exception.rpc.BpsRpcException
 import java.net.HttpURLConnection
 import java.net.URI
@@ -11,7 +12,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 import kotlin.random.Random
 
-abstract class JsonRpcHttpClient {
+abstract class JsonRpcHttpClient : Connector {
 
     protected var rpcURL: URL
     protected var auth: String?

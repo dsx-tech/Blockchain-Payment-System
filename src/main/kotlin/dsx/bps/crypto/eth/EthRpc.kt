@@ -19,9 +19,10 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 
-class EthRpc(url : String)  {
+class EthRpc(url : String) : Connector  {
 
     private val web3j = Web3j.build(HttpService(url))
+    private val basicGasLimit  = 90000
 
     fun getBalance(address: String): BigDecimal {
         val ethGetBalance : EthGetBalance = web3j.ethGetBalance(address, DefaultBlockParameter.valueOf("latest"))
@@ -97,7 +98,7 @@ class EthRpc(url : String)  {
     }
 
     fun createRawTransaction(nonce : BigInteger, gasPrice : BigInteger = getGasPrice(),
-                             gasLimit : BigInteger = 90000.toBigInteger(), toAddress : String,
+                             gasLimit : BigInteger = basicGasLimit.toBigInteger(), toAddress : String,
                              value : BigDecimal) : RawTransaction{
         val weiValue = Convert.toWei(value, Convert.Unit.ETHER).toBigInteger()
         return RawTransaction.createEtherTransaction(

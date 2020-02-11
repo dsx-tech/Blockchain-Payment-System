@@ -6,10 +6,12 @@ import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.eth.datamodel.EthTxStandart
 import org.web3j.crypto.WalletUtils
+import org.web3j.protocol.core.methods.response.EthBlock.Block
 import org.web3j.protocol.core.methods.response.Transaction
+import org.web3j.utils.Convert
 import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -98,7 +100,39 @@ class EthCoin : Coin {
      * @return Tx oject - generalized transaction template in the system
      */
     fun constructTx(ethTx: Transaction): Tx {
-        return EthTxStandart(ethTx, rpc,confirmations)
+        return object : Tx {
+            override fun currency() = Currency.ETH
+
+            override fun hash() = ethTx.hash
+
+            override fun amount() = Convert.fromWei(ethTx.value.toBigDecimal(), Convert.Unit.ETHER)
+
+            override fun destination() = ethTx.to
+
+            override fun fee(): BigDecimal {
+                if (this.status() == TxStatus.VALIDATING)
+                {
+                    return ethTx.gasPrice.multiply(ethTx.gas).toBigDecimal()
+                }
+                else
+                {
+                    return ethTx.gasPrice.multiply(rpc.getTransactionReceiptByHash(ethTx.hash).gasUsed).toBigDecimal()
+                }
+            }
+
+            override fun status(): TxStatus {
+                val latestBlock = rpc.getLatestBlock()
+                val conf = latestBlock.number - ethTx.blockNumber
+                if (conf < confirmations.toBigInteger())
+                {
+                    return TxStatus.VALIDATING
+                }
+                else
+                {
+                    return TxStatus.CONFIRMED
+                }
+            }
+        }
     }
 
     /**
@@ -111,15 +145,15 @@ class EthCoin : Coin {
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
         val signedTransaction = rpc.signTransaction(rawTransaction, credentials)
         val resultHash = rpc.sendTransaction(signedTransaction)
-        nonce ++ // разработать безопасную работу с nonce
+        nonce ++ //TODO develop safe interactions with nonce
         return constructTx(rpc.getTransactionByHash(resultHash))
     }
 
-    fun getLatestBlock(): org.web3j.protocol.core.methods.response.EthBlock.Block {
+    fun getLatestBlock(): Block {
         return rpc.getLatestBlock()
     }
 
-    fun getBlockByHash(hash: String): org.web3j.protocol.core.methods.response.EthBlock.Block {
+    fun getBlockByHash(hash: String): Block {
         return rpc.getBlockByHash(hash)
     }
 }
