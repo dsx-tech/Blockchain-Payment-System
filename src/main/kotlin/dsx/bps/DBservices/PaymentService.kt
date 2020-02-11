@@ -43,9 +43,9 @@ class PaymentService {
         return newPayment
     }
 
-    fun delete(payment: PaymentEntity) {
+    fun delete(systemId: String) {
         Database.connect(Datasource().getHicari())
-        transaction {payment.delete()}
+        transaction {getBySystemId(systemId).delete()}
     }
 
     fun getById(id: Int): PaymentEntity? {
@@ -78,11 +78,11 @@ class PaymentService {
         return paymentMap
     }
 
-    fun addTx(payment: Payment,tx: TxId) {
+    fun addTx(systemId: String,tx: TxId) {
         Database.connect(Datasource().getHicari())
         transaction {
             TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index)}.forEach {
-                it.payable = getBySystemId(payment.id).payable
+                it.payable = getBySystemId(systemId).payable
             }
         }
     }
@@ -94,7 +94,8 @@ class PaymentService {
             "XRP" -> Currency.XRP
             else -> Currency.TRX
         }
-        val pay = Payment(payment.paymentId, currency, payment.amount, payment.address, payment.tag)
+        val pay = Payment(payment.paymentId, currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+                          payment.address, payment.tag)
         pay.status = when (payment.status){
             "pending" -> PaymentStatus.PENDING
             "processing" -> PaymentStatus.PROCESSING
@@ -109,13 +110,13 @@ class PaymentService {
         return pay
     }
 
-    fun updateStatus(_status: String, payment: PaymentEntity) {
+    fun updateStatus(_status: String, systemId: String) {
         Database.connect(Datasource().getHicari())
-        transaction { payment.status = _status }
+        transaction { getBySystemId(systemId).status = _status }
     }
 
-    fun updateFee(_fee: BigDecimal, payment: PaymentEntity) {
+    fun updateFee(_fee: BigDecimal, systemId: String) {
         Database.connect(Datasource().getHicari())
-        transaction { payment.fee = _fee }
+        transaction { getBySystemId(systemId).fee = _fee }
     }
 }

@@ -39,12 +39,13 @@ class InvoiceService {
                 payable = PayableEntity.new { type = "invoice" }
             }
         }
+
         return newInvoice
     }
 
-    fun delete(invoice: InvoiceEntity) {
+    fun delete(systemId: String) {
         Database.connect(Datasource().getHicari())
-        transaction {invoice.delete()}
+        transaction {getBySystemId(systemId).delete()}
     }
 
     fun getById(id: Int): InvoiceEntity? {
@@ -82,11 +83,11 @@ class InvoiceService {
         return invoiceMap
     }
 
-    fun addTx(inv: Invoice,tx: TxId) {
+    fun addTx(systemId: String,tx: TxId) {
         Database.connect(Datasource().getHicari())
         transaction {
             TxEntity.find {TxTable.hash eq tx.hash and (TxTable.index eq tx.index)}.forEach {
-                it.payable = getBySystemId(inv.id).payable
+                it.payable = getBySystemId(systemId).payable
             }
         }
     }
@@ -98,19 +99,21 @@ class InvoiceService {
             "XRP" -> Currency.XRP
             else -> Currency.TRX // else is necessarily, throw exception?(which never happen if all right)
         }
-        val inv = Invoice(invoice.invoiceId, currency, invoice.amount, invoice.address, invoice.tag)
+        val inv = Invoice(invoice.invoiceId, currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+                          invoice.address, invoice.tag)//amount zeroes problem better options?
         inv.received = invoice.received
-        invoice.payable.txs.forEach { inv.txids.add(TxId(it.hash, it.index)) }
+        transaction { invoice.payable.txs.forEach { inv.txids.add(TxId(it.hash, it.index)) } }
         return inv
     }
 
-    fun updateStatus(_status: String, invoice: InvoiceEntity) {
+    fun updateStatus(_status: String, systemId: String) {
         Database.connect(Datasource().getHicari())
-        transaction { invoice.status = _status }
+        transaction { getBySystemId(systemId).status = _status
+        }
     }
 
-    fun updateReceived(_received: BigDecimal, invoice: InvoiceEntity) {
+    fun updateReceived(_received: BigDecimal, systemId: String) {
         Database.connect(Datasource().getHicari())
-        transaction { invoice.received = _received }
+        transaction { getBySystemId(systemId).received = _received }
     }
 }

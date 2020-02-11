@@ -48,9 +48,9 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
         pending.remove(id)
         payment.status = PaymentStatus.PROCESSING
         processing.add(id)
-        PaymentService().updateStatus("processing", PaymentService().getBySystemId(id))
-        PaymentService().updateFee(payment.fee, PaymentService().getBySystemId(id))
-        PaymentService().addTx(payment, tx.txid())
+        PaymentService().updateStatus("processing", id)
+        PaymentService().updateFee(payment.fee, id)
+        PaymentService().addTx(id, tx.txid())
     }
 
     fun getPayment(id: String): Payment? = payments[id]
@@ -65,16 +65,16 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
                         when (tx.status()){
                             TxStatus.VALIDATING -> {
                                 pay.status = PaymentStatus.PROCESSING
-                                PaymentService().updateStatus("processing", PaymentService().getBySystemId(pay.id))
+                                PaymentService().updateStatus("processing", pay.id)
                             }
                             TxStatus.CONFIRMED -> {
                                 pay.status = PaymentStatus.SUCCEED
                                 processing.remove(pay.id)
-                                PaymentService().updateStatus("succeed", PaymentService().getBySystemId(pay.id))
+                                PaymentService().updateStatus("succeed", pay.id)
                             }
                             TxStatus.REJECTED -> {
                                 pay.status = PaymentStatus.FAILED
-                                PaymentService().updateStatus("failed", PaymentService().getBySystemId(pay.id))
+                                PaymentService().updateStatus("failed", pay.id)
                                 // add this payment to resend list if needed
                             }
                         }

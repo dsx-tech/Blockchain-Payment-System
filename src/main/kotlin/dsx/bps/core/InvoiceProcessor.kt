@@ -6,6 +6,7 @@ import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -27,7 +28,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
     }
 
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
-        val id = UUID.randomUUID().toString().replace("-", "")
+        val id = UUID.randomUUID().toString().replace("-", "")//uuid can not be true
         val inv = Invoice(id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
@@ -62,9 +63,9 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 }
         }
         inv.received = received // why not remove from unpaid if needed?
-        InvoiceService().updateReceived(received, InvoiceService().getBySystemId(inv.id))
+        InvoiceService().updateReceived(received, inv.id)
         if (inv.status == InvoiceStatus.PAID)
-            InvoiceService().updateStatus("paid", InvoiceService().getBySystemId(inv.id))
+            InvoiceService().updateStatus("paid", inv.id)
     }
 
     private fun match(inv: Invoice, tx: Tx): Boolean =
@@ -73,7 +74,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
         inv.tag == tx.tag()
 
     /** Check for payment in transaction [tx] */
-    override fun onNext(tx: Tx) {
+    override fun onNext(tx: Tx) {//need to recalculate if failed?
         if (unpaid.isEmpty())
             return
 
@@ -84,16 +85,16 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 recalculate(inv)
 
                 inv.txids.add(tx.txid())
-                InvoiceService().addTx(inv, tx.txid())
+                InvoiceService().addTx(inv.id, tx.txid())
 
                 if (tx.status() == TxStatus.CONFIRMED) {
                     inv.received += tx.amount()
-                    InvoiceService().updateReceived(inv.received, InvoiceService().getBySystemId(inv.id))
+                    InvoiceService().updateReceived(inv.received, inv.id)
                 }
 
                 if (inv.status == InvoiceStatus.PAID) {
                     unpaid.remove(inv.id)
-                    InvoiceService().updateStatus("paid", InvoiceService().getBySystemId(inv.id))
+                    InvoiceService().updateStatus("paid", inv.id)
                 }
             }
     }
