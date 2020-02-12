@@ -4,6 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.PaymentService
 import dsx.bps.DBservices.TxService
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.exception.core.payment.PaymentException
@@ -22,6 +23,8 @@ internal class PaymentProcessorUnitTest {
 
     private val manager = Mockito.mock(BlockchainPaymentSystemManager::class.java)
     private val paymentProcessor: PaymentProcessor
+    private val payService: PaymentService
+    private val txService: TxService
     private val testConfig: Config
 
     init {
@@ -29,12 +32,15 @@ internal class PaymentProcessorUnitTest {
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
         testConfig = with (initConfig) {
             addSpec(PaymentProcessorConfig)
+            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
 
         testConfig.validateRequired()
 
         paymentProcessor = PaymentProcessor(manager, testConfig)
+        payService = PaymentService(testConfig[DatabaseConfig.connectionURL], testConfig[DatabaseConfig.driver])
+        txService = TxService(testConfig[DatabaseConfig.connectionURL], testConfig[DatabaseConfig.driver])
     }
 
     @ParameterizedTest
@@ -43,7 +49,7 @@ internal class PaymentProcessorUnitTest {
     fun createPaymentTest(currency: Currency) {
         val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", 1)
         val receivePayment = paymentProcessor.getPayment(payment.id)
-        Assertions.assertEquals(payment, transaction { PaymentService().makePaymentFromDB(PaymentService().getBySystemId(payment.id)) })
+        Assertions.assertEquals(payment, transaction { payService.makePaymentFromDB(payService.getBySystemId(payment.id)) })
         Assertions.assertEquals(payment, receivePayment)
     }
 
@@ -77,16 +83,16 @@ internal class PaymentProcessorUnitTest {
 
             Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
-            TxService().add(tx.status().toString(), tx.destination(), tx.tag(), tx.fee(),
+            txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.fee(),
                 "hash", 1, tx.currency().toString())
             val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
-            Assertions.assertEquals("pending", PaymentService().getBySystemId(payment.id).status)
+            Assertions.assertEquals("pending", payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
             paymentProcessor.updatePayment(payment.id, tx)
-            Assertions.assertEquals("processing", PaymentService().getBySystemId(payment.id).status)
+            Assertions.assertEquals("processing", payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PROCESSING)
-            Assertions.assertTrue(transaction { TxService().getByTxId("hash", 1).payable ==
-                    PaymentService().getBySystemId(payment.id).payable})
+            Assertions.assertTrue(transaction { txService.getByTxId("hash", 1).payable ==
+                    payService.getBySystemId(payment.id).payable})
         }
     }
 }

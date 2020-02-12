@@ -4,19 +4,22 @@ import dsx.bps.DBclasses.BtcTxEntity
 import dsx.bps.DBclasses.BtcTxTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class BtcService {
-    fun create() {
-        Database.connect(Datasource().getHicari())
-        transaction { SchemaUtils.create(BtcTxTable) }
+class BtcService(connectionURL: String, driver: String) {
+    init {
+        Database.connect(Datasource().getHicari(connectionURL, driver))
+        transaction {
+            if (!BtcTxTable.exists())
+                SchemaUtils.create(BtcTxTable)
+        }
     }
 
     fun add(_amount: BigDecimal, _fee: BigDecimal?,
             _confirmations: Int, _blockHash: String,
             _adress: String): BtcTxEntity {
-        Database.connect(Datasource().getHicari())
         val newBtcTxEntity = transaction{
             BtcTxEntity.new {
                 amount = _amount
@@ -30,7 +33,6 @@ class BtcService {
     }
 
     fun delete(btcTx: BtcTxEntity) {
-        Database.connect(Datasource().getHicari())
         transaction {btcTx.delete()}
     }
 

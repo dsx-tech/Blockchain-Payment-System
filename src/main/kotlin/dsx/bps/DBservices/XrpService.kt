@@ -4,19 +4,22 @@ import dsx.bps.DBclasses.XrpTxEntity
 import dsx.bps.DBclasses.XrpTxTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class XrpService {
-    fun create() {
-        Database.connect(Datasource().getHicari())
-        transaction { SchemaUtils.create(XrpTxTable) }
+class XrpService(connectionURL: String, driver: String) {
+    init {
+        Database.connect(Datasource().getHicari(connectionURL, driver))
+        transaction {
+            if (!XrpTxTable.exists())
+                SchemaUtils.create(XrpTxTable)
+        }
     }
 
     fun add(_amount: BigDecimal, _fee: BigDecimal,
             _account: String, _destination: String?,
             _sequence: Int, _validated: Boolean?): XrpTxEntity {
-        Database.connect(Datasource().getHicari())
         val newXrpTxEntity = transaction{
             XrpTxEntity.new {
                 amount = _amount
@@ -31,7 +34,6 @@ class XrpService {
     }
 
     fun delete(xrpTx: XrpTxEntity) {
-        Database.connect(Datasource().getHicari())
         transaction {xrpTx.delete()}
     }
 

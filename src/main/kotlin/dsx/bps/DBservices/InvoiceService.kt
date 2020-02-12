@@ -11,9 +11,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
-class InvoiceService {
+class InvoiceService(connectionURL: String, driver: String) {
     init {
-        Database.connect(Datasource().getHicari())
+        Database.connect(Datasource().getHicari(connectionURL, driver))
         transaction {
             if (!InvoiceTable.exists())
                 SchemaUtils.create(InvoiceTable)
@@ -26,7 +26,6 @@ class InvoiceService {
             _invoiceId: String, _currency: String,
             _amount: BigDecimal, _address: String,
             _tag: Int?): InvoiceEntity {
-        Database.connect(Datasource().getHicari())
         val newInvoice = transaction{
             InvoiceEntity.new {
                 status = _status
@@ -44,17 +43,14 @@ class InvoiceService {
     }
 
     fun delete(systemId: String) {
-        Database.connect(Datasource().getHicari())
         transaction {getBySystemId(systemId).delete()}
     }
 
     fun getById(id: Int): InvoiceEntity? {
-        Database.connect(Datasource().getHicari())// url как поле класса в конструкторе и конфиге
         return transaction { InvoiceEntity.findById(id)}
     }
 
     fun getBySystemId(id: String): InvoiceEntity {
-        Database.connect(Datasource().getHicari())// url как поле класса в конструкторе и конфиге
         return transaction {InvoiceEntity.find {InvoiceTable.invoiceId eq id}.first()}
     }
 
@@ -63,7 +59,6 @@ class InvoiceService {
     }
 
     fun getUnpaid(): ConcurrentHashMap.KeySetView<String, Boolean> {
-        Database.connect(Datasource().getHicari())
         val unpaidInv = transaction { InvoiceEntity.find {InvoiceTable.status eq "unpaid"} }
         val unpaid = ConcurrentHashMap.newKeySet<String>()
         transaction {
@@ -74,7 +69,6 @@ class InvoiceService {
 
     fun getInvoices(): ConcurrentHashMap<String, Invoice> {
         val invoiceMap = ConcurrentHashMap<String, Invoice>()
-        Database.connect(Datasource().getHicari())
         transaction {
             InvoiceEntity.all().forEach {
                 invoiceMap[it.invoiceId] = makeInvFromDB(it)
@@ -84,7 +78,6 @@ class InvoiceService {
     }
 
     fun addTx(systemId: String,tx: TxId) {
-        Database.connect(Datasource().getHicari())
         transaction {
             TxEntity.find {TxTable.hash eq tx.hash and (TxTable.index eq tx.index)}.forEach {
                 it.payable = getBySystemId(systemId).payable
@@ -107,13 +100,11 @@ class InvoiceService {
     }
 
     fun updateStatus(_status: String, systemId: String) {
-        Database.connect(Datasource().getHicari())
         transaction { getBySystemId(systemId).status = _status
         }
     }
 
     fun updateReceived(_received: BigDecimal, systemId: String) {
-        Database.connect(Datasource().getHicari())
         transaction { getBySystemId(systemId).received = _received }
     }
 }

@@ -9,9 +9,9 @@ import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class TxService {
+class TxService(connectionURL: String, driver: String) {
     init {
-        Database.connect(Datasource().getHicari())
+        Database.connect(Datasource().getHicari(connectionURL, driver))
         transaction {
             if (!TxTable.exists())
                 SchemaUtils.create(TxTable)
@@ -22,7 +22,6 @@ class TxService {
             _tag: Int?, _fee: BigDecimal,
             _hash: String, _index: Int,
             _currency: String): TxEntity {
-        Database.connect(Datasource().getHicari())
         val newTx = transaction{
             TxEntity.new {
                 status = _status
@@ -38,12 +37,10 @@ class TxService {
     }
 
     fun getById(id: Int): TxEntity? {
-        Database.connect(Datasource().getHicari())
         return transaction { TxEntity.findById(id)}
     }
 
     fun getByTxId(hash: String, index: Int): TxEntity {
-        Database.connect(Datasource().getHicari())// url как поле класса в конструкторе и конфиге
         return transaction {TxEntity.find {TxTable.hash eq hash and (TxTable.index eq index)}.first()}
     }
 }

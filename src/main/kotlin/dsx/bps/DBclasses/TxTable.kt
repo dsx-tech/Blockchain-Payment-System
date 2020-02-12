@@ -11,6 +11,6 @@ object TxTable: IntIdTable() {
     val fee: Column<BigDecimal> = decimal("fee", 30, 15)
     val hash: Column<String> = varchar("hash", 500)
     val index: Column<Int> = integer("index")
-    val currency: Column<String> = varchar("type", 15)
+    val currency: Column<String> = varchar("currency", 15)
     val payableId = reference("payableId", PayableTable).nullable()
 }

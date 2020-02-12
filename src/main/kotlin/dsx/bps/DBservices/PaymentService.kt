@@ -13,9 +13,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
-class PaymentService {
+class PaymentService(connectionURL: String, driver: String) {
     init {
-        Database.connect(Datasource().getHicari())
+        Database.connect(Datasource().getHicari(connectionURL, driver))
         transaction {
             if (!PaymentTable.exists())
                 SchemaUtils.create(PaymentTable)
@@ -28,7 +28,6 @@ class PaymentService {
             _paymentId: String, _currency: String,
             _amount: BigDecimal, _address: String,
             _tag: Int?): PaymentEntity {
-        Database.connect(Datasource().getHicari())
         val newPayment = transaction{
             PaymentEntity.new {
                 status = _status
@@ -44,22 +43,18 @@ class PaymentService {
     }
 
     fun delete(systemId: String) {
-        Database.connect(Datasource().getHicari())
         transaction {getBySystemId(systemId).delete()}
     }
 
     fun getById(id: Int): PaymentEntity? {
-        Database.connect(Datasource().getHicari())
         return transaction { PaymentEntity.findById(id)}
     }
 
     fun getBySystemId(id: String): PaymentEntity {
-        Database.connect(Datasource().getHicari())// url как поле класса в конструкторе и конфиге
         return transaction {PaymentEntity.find {PaymentTable.paymentId eq id}.first()}
     }
 
     fun getStatusedPayments(status: String): ConcurrentHashMap.KeySetView<String, Boolean> {
-        Database.connect(Datasource().getHicari())
         val payments = transaction { PaymentEntity.find {PaymentTable.status eq status} }
         val keys = ConcurrentHashMap.newKeySet<String>()
         transaction { payments.forEach { keys.add(it.paymentId) } }
@@ -67,7 +62,6 @@ class PaymentService {
     }
 
     fun getPayments(): ConcurrentHashMap<String, Payment> {
-        Database.connect(Datasource().getHicari())
         val paymentMap = ConcurrentHashMap<String, Payment>()
         transaction {
             PaymentEntity.all().forEach {
@@ -79,7 +73,6 @@ class PaymentService {
     }
 
     fun addTx(systemId: String,tx: TxId) {
-        Database.connect(Datasource().getHicari())
         transaction {
             TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index)}.forEach {
                 it.payable = getBySystemId(systemId).payable
@@ -111,12 +104,10 @@ class PaymentService {
     }
 
     fun updateStatus(_status: String, systemId: String) {
-        Database.connect(Datasource().getHicari())
         transaction { getBySystemId(systemId).status = _status }
     }
 
     fun updateFee(_fee: BigDecimal, systemId: String) {
-        Database.connect(Datasource().getHicari())
         transaction { getBySystemId(systemId).fee = _fee }
     }
 }

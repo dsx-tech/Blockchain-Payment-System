@@ -7,6 +7,10 @@ invoiceProcessor:
 paymentProcessor:
   frequency: 3000
 
+database:
+  connectionURL: "jdbc:h2:~/db"
+  driver: "org.h2.Driver"
+
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX
 enabledCurrencies:

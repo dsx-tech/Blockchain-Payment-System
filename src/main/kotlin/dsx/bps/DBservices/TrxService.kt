@@ -4,18 +4,21 @@ import dsx.bps.DBclasses.TrxTxEntity
 import dsx.bps.DBclasses.TrxTxTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class TrxService {
-    fun create() {
-        Database.connect(Datasource().getHicari())
-        transaction { SchemaUtils.create(TrxTxTable) }
+class TrxService(connectionURL: String, driver: String) {
+    init {
+        Database.connect(Datasource().getHicari(connectionURL, driver))
+        transaction {
+            if (!TrxTxTable.exists())
+                SchemaUtils.create(TrxTxTable)
+        }
     }
 
     fun add(_amount: BigDecimal, _address: String,
             _contractRet: String): TrxTxEntity {
-        Database.connect(Datasource().getHicari())
         val newTrxTxEntity = transaction{
             TrxTxEntity.new {
                 amount = _amount
@@ -27,7 +30,6 @@ class TrxService {
     }
 
     fun delete(trxTx: TrxTxEntity) {
-        Database.connect(Datasource().getHicari())
         transaction {trxTx.delete()}
     }
 
