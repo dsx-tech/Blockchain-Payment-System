@@ -1,6 +1,7 @@
 package dsx.bps.rpc
 
 import com.google.gson.Gson
+import dsx.bps.crypto.eth.Connector
 import dsx.bps.exception.rpc.BpsRpcException
 import java.net.HttpURLConnection
 import java.net.URI
@@ -11,7 +12,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 import kotlin.random.Random
 
-abstract class JsonRpcHttpClient {
+abstract class JsonRpcHttpClient : Connector {
 
     protected var rpcURL: URL
     protected var auth: String?
@@ -40,11 +41,14 @@ abstract class JsonRpcHttpClient {
 
     protected open fun constructRequest(method: String, vararg params: Any): RpcRequest {
         val id = Random.nextInt().toString()
-        val json = gson.toJson(mapOf(
-            "method" to method,
-            "params" to params,
-            "id"     to id
-        ))
+        val json : String
+            json = gson.toJson(
+                mapOf(
+                    "method" to method,
+                    "params" to params,
+                    "id" to id
+                )
+            )
         return RpcRequest(rpcURL, json, id)
     }
 
