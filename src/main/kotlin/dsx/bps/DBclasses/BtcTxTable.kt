@@ -5,7 +5,6 @@ import org.jetbrains.exposed.sql.Column
 import java.math.BigDecimal
 
 object BtcTxTable: IntIdTable() {
-    val amount: Column<BigDecimal> = decimal("amount", 30, 15)
     val fee: Column<BigDecimal?> = decimal("fee", 30, 15).nullable()
     val confirmations: Column<Int> = integer("confirmations")
     val blockHash: Column<String> = varchar("blockHash", 500)

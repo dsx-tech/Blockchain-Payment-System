@@ -69,7 +69,7 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx.txid()).thenReturn(TxId("hash1",1))
 
-            txService.add(tx.status().toString(), "testaddress", 1, BigDecimal.ZERO,
+            txService.add(tx.status().toString(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
                 "hash1", 1, tx.currency().toString())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx)
@@ -93,7 +93,7 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash2",2))
 
-            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.ZERO,
+            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
                 "hash2", 2, tx1.currency().toString())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)
@@ -117,7 +117,7 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash3",3))
 
-            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.ZERO,
+            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
                 "hash3", 3, tx1.currency().toString())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)
@@ -142,7 +142,7 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash4",4))
 
-            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.ZERO,
+            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
                 "hash4", 4, tx1.currency().toString())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)
@@ -167,7 +167,7 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(txStatus)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash5",5))
 
-            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.ZERO,
+            txService.add(tx1.status().toString(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
                 "hash5", 5, tx1.currency().toString())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)

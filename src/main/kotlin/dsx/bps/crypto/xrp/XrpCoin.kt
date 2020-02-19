@@ -2,6 +2,9 @@ package dsx.bps.crypto.xrp
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.XrpService
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -45,6 +48,7 @@ class XrpCoin: Coin {
         val configFile = File(configPath)
         config = with (Config()) {
             addSpec(XrpConfig)
+            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         config.validateRequired()
@@ -69,10 +73,14 @@ class XrpCoin: Coin {
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
-        return createTransaction(amount, address, tag)
+        val xrpTx = createTransaction(amount, address, tag)
             .let { rpc.sign(privateKey, it) }
             .let { rpc.submit(it) }
-            .let { constructTx(it) }
+        val tx = constructTx(xrpTx)
+        val new = TxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(tx.status().toString(), tx.destination(), tx.tag(),
+            tx.amount(), tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
+        XrpService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(tx.fee(), xrpTx.account, xrpTx.destination, xrpTx.sequence, xrpTx.validated, new)
+        return tx
     }
 
     private fun createTransaction(amount: BigDecimal, address: String, tag: Int?): XrpTxPayment {

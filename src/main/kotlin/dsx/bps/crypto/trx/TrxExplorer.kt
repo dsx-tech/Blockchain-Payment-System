@@ -1,5 +1,8 @@
 package dsx.bps.crypto.trx
 
+import dsx.bps.DBservices.TrxService
+import dsx.bps.DBservices.TxService
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
@@ -24,6 +27,9 @@ class TrxExplorer(override val coin: TrxCoin, frequency: Long): Explorer(frequen
                     new.transactions
                         .forEach {
                             val tx = coin.constructTx(it)
+                            val new = TxService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                                tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
+                            TrxService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(new)
                             emitter.onNext(tx)
                         }
                     viewed.add(new.hash)

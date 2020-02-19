@@ -7,7 +7,6 @@ import org.jetbrains.exposed.dao.IntEntityClass
 class XrpTxEntity(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<XrpTxEntity>(XrpTxTable)
 
-    var amount by XrpTxTable.amount
     var fee by XrpTxTable.fee
     var account by XrpTxTable.account
     var destination by XrpTxTable.destination

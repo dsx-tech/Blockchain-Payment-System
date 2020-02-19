@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 class PaymentService(connectionURL: String, driver: String) {
     init {
-        Database.connect(Datasource().getHicari(connectionURL, driver))
+        Datasource.getHicari(connectionURL, driver)
         transaction {
             if (!PaymentTable.exists())
                 SchemaUtils.create(PaymentTable)

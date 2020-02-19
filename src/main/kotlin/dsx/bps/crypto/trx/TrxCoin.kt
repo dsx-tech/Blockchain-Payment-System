@@ -2,6 +2,9 @@ package dsx.bps.crypto.trx
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.TrxService
+import dsx.bps.DBservices.TxService
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -51,6 +54,7 @@ class TrxCoin: Coin {
         val configFile = File(configPath)
         config = with (Config()) {
             addSpec(TrxConfig)
+            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         config.validateRequired()
@@ -69,7 +73,7 @@ class TrxCoin: Coin {
 
     override fun getAddress(): String = accountAddress
 
-    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
+    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)//need to store?
 
     override fun getTx(txid: TxId): Tx {
         val trxTx = rpc.getTransactionById(txid.hash)
@@ -85,8 +89,13 @@ class TrxCoin: Coin {
 
         val result = rpc.broadcastTransaction(tx)
 
+        val transaction = constructTx(tx)
+
         if (result.success) {
-            return constructTx(tx)
+            val new = TxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(transaction.status().toString(), transaction.destination(), transaction.tag(),
+                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency().toString())
+            TrxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(new)
+            return transaction
         } else {
             throw TrxException("Unable to broadcast TRX transaction $tx with response $result")
         }

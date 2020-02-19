@@ -13,7 +13,8 @@ import java.util.concurrent.ConcurrentHashMap
 
 class InvoiceService(connectionURL: String, driver: String) {
     init {
-        Database.connect(Datasource().getHicari(connectionURL, driver))
+        Datasource.getHicari(connectionURL, driver)
+        //Database.connect(conn.connector)
         transaction {
             if (!InvoiceTable.exists())
                 SchemaUtils.create(InvoiceTable)

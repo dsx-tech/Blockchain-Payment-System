@@ -10,6 +10,7 @@ class TxEntity(id: EntityID<Int>): IntEntity(id) {
     var status by TxTable.status
     var destination by TxTable.destination
     var tag by TxTable.tag
+    var amount by TxTable.amount
     var fee by TxTable.fee
     var hash by TxTable.hash
     var index by TxTable.index

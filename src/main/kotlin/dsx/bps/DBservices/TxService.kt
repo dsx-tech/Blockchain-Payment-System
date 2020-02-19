@@ -11,7 +11,7 @@ import java.math.BigDecimal
 
 class TxService(connectionURL: String, driver: String) {
     init {
-        Database.connect(Datasource().getHicari(connectionURL, driver))
+        Datasource.getHicari(connectionURL, driver)
         transaction {
             if (!TxTable.exists())
                 SchemaUtils.create(TxTable)
@@ -19,14 +19,15 @@ class TxService(connectionURL: String, driver: String) {
     }
 
     fun add(_status: String, _destination: String,
-            _tag: Int?, _fee: BigDecimal,
-            _hash: String, _index: Int,
-            _currency: String): TxEntity {
+            _tag: Int?, _amount: BigDecimal,
+            _fee: BigDecimal, _hash: String,
+            _index: Int, _currency: String): TxEntity {
         val newTx = transaction{
             TxEntity.new {
                 status = _status
                 destination = _destination
                 tag = _tag
+                amount = _amount
                 fee = _fee
                 hash = _hash
                 index = _index

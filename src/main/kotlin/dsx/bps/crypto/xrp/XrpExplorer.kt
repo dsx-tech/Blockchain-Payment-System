@@ -1,5 +1,8 @@
 package dsx.bps.crypto.xrp
 
+import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.XrpService
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
@@ -26,6 +29,9 @@ class XrpExplorer(override val coin: XrpCoin, frequency: Long): Explorer(frequen
                     }
                     .forEach {
                         val tx = coin.constructTx(it)
+                        val new = TxService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                            tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
+                        XrpService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(tx.fee(), it.tx.account, it.tx.destination, it.tx.sequence, it.validated, new)
                         emitter.onNext(tx)
                     }
                 lastIndex = newIndex

@@ -30,7 +30,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
     }
 
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
-        val id = UUID.randomUUID().toString().replace("-", "")//uuid can not be true
+        val id = UUID.randomUUID().toString().replace("-", "")
         val inv = Invoice(id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)//make atomic or recalculate error

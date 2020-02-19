@@ -2,6 +2,9 @@ package dsx.bps.crypto.btc
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.BtcService
+import dsx.bps.DBservices.TxService
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.BtcConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -42,6 +45,7 @@ class BtcCoin: Coin {
         val configFile = File(configPath)
         config = with (Config()) {
             addSpec(BtcConfig)
+            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         config.validateRequired()
@@ -74,7 +78,11 @@ class BtcCoin: Coin {
             .details
             .single { detail -> match(detail, amount, address) }
 
-        return constructTx(tx, TxId(tx.hash, detail.vout))
+        val transaction = constructTx(tx, TxId(tx.hash, detail.vout))
+        val new = TxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(transaction.status().toString(), transaction.destination(), transaction.tag(),
+            transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency().toString())
+        BtcService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(tx.fee, tx.confirmations, tx.blockhash, detail.address, new)
+        return transaction
     }
 
     private fun match(detail: BtcTxDetail, amount: BigDecimal, address: String): Boolean =

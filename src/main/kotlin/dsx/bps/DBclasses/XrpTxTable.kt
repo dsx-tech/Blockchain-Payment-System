@@ -5,7 +5,6 @@ import org.jetbrains.exposed.sql.Column
 import java.math.BigDecimal
 
 object XrpTxTable: IntIdTable() {
-    val amount: Column<BigDecimal> = decimal("amount", 30, 15)
     val fee: Column<BigDecimal> = decimal("fee", 30, 15)
     val account: Column<String> = varchar("account", 50)// адресс отправителя
     val destination: Column<String?> = varchar("destination", 500).nullable() // may be null адресс получателя

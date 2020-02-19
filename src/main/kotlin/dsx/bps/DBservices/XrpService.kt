@@ -1,5 +1,6 @@
 package dsx.bps.DBservices
 
+import dsx.bps.DBclasses.TxEntity
 import dsx.bps.DBclasses.XrpTxEntity
 import dsx.bps.DBclasses.XrpTxTable
 import org.jetbrains.exposed.sql.Database
@@ -10,24 +11,24 @@ import java.math.BigDecimal
 
 class XrpService(connectionURL: String, driver: String) {
     init {
-        Database.connect(Datasource().getHicari(connectionURL, driver))
+        Datasource.getHicari(connectionURL, driver)
         transaction {
             if (!XrpTxTable.exists())
                 SchemaUtils.create(XrpTxTable)
         }
     }
 
-    fun add(_amount: BigDecimal, _fee: BigDecimal,
-            _account: String, _destination: String?,
-            _sequence: Int, _validated: Boolean?): XrpTxEntity {
+    fun add(_fee: BigDecimal, _account: String,
+            _destination: String?, _sequence: Int,
+            _validated: Boolean?, _tx: TxEntity): XrpTxEntity {
         val newXrpTxEntity = transaction{
             XrpTxEntity.new {
-                amount = _amount
                 fee = _fee
                 account = _account
                 destination = _destination
                 sequence = _sequence
                 validated = _validated
+                Tx = _tx
             }
         }
         return newXrpTxEntity
