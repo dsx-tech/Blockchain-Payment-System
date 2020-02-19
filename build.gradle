@@ -20,7 +20,10 @@ ext {
     logbackVersion = '1.2.3'
 }
 
+
+
 dependencies {
+    def junitJupiterVersion = '5.4.2'
     //compile 'org.web3j: core: 4.5.5'
     implementation "org.web3j:core:4.5.0",
             "ch.qos.logback:logback-core:1.2.3",
@@ -32,12 +35,15 @@ dependencies {
     implementation "com.uchuhimo:konf:0.20.0"
     implementation "com.uchuhimo:konf-yaml:0.20.0"
 
-    testCompile "org.junit.jupiter:junit-jupiter-api:5.3.2"
-    testCompile "org.junit.jupiter:junit-jupiter-params:5.3.2"
-    testRuntime "org.junit.jupiter:junit-jupiter-engine:5.3.2"
+    testCompile "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
+    testCompile "org.junit.jupiter:junit-jupiter-params:$junitJupiterVersion"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
     testCompile "org.mockito:mockito-core:3.1.0"
     testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
+    testCompile "org.testcontainers:testcontainers:1.12.5"
+    testCompile "org.testcontainers:junit-jupiter:1.12.5"
     testImplementation 'org.mockito:mockito-inline:3.1.0'
+    testImplementation "org.testcontainers:junit-jupiter:1.12.5"
 }
 
 sourceSets {

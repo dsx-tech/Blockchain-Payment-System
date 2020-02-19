@@ -16,7 +16,6 @@ import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
 
-
 class EthCoin : Coin {
     override val currency = Currency.ETH
     override val config: Config
