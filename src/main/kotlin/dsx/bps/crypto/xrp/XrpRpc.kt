@@ -2,7 +2,13 @@ package dsx.bps.crypto.xrp
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import dsx.bps.crypto.xrp.datamodel.*
+import dsx.bps.crypto.xrp.datamodel.XrpAccountData
+import dsx.bps.crypto.xrp.datamodel.XrpAccountTxs
+import dsx.bps.crypto.xrp.datamodel.XrpAmount
+import dsx.bps.crypto.xrp.datamodel.XrpLedger
+import dsx.bps.crypto.xrp.datamodel.XrpServerInfo
+import dsx.bps.crypto.xrp.datamodel.XrpTx
+import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
 import dsx.bps.exception.rpc.xrp.XrpRpcException
 import dsx.bps.rpc.JsonRpcHttpClient
 import dsx.bps.rpc.RpcResponse
@@ -52,7 +58,7 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         if (validated) {
             params["ledger_index"] = "validated"
         }
-        val result  = query("account_info", params)
+        val result = query("account_info", params)
         val obj = gson.toJsonTree(result).asJsonObject
         return gson.fromJson(obj["account_data"], XrpAccountData::class.java)
     }
@@ -64,7 +70,7 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
     }
 
     fun getAccountTxs(account: String, indexMin: Long, indexMax: Long): XrpAccountTxs {
-        val params =  mapOf(
+        val params = mapOf(
             "account" to account,
             "ledger_index_min" to indexMin,
             "ledger_index_max" to indexMax
@@ -79,7 +85,8 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         val params = mutableMapOf(
             "secret" to privateKey,
             "tx_json" to tx,
-            "offline" to offline)
+            "offline" to offline
+        )
         val result = query("sign", params)
         val obj = gson.toJsonTree(result).asJsonObject
         return obj["tx_blob"].asString
@@ -92,9 +99,11 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
 
         val engineResult = obj["engine_result"].asString
         if (engineResult != "tesSUCCESS" && !engineResult.startsWith("tec"))
-            throw XrpRpcException("engine_result: ${obj["engine_result"].asString}\n" +
-                    "engine_result_code: ${obj["engine_result_code"].asInt}\n" +
-                    "engine_result_message: ${obj["engine_result_message"].asString}")
+            throw XrpRpcException(
+                "engine_result: ${obj["engine_result"].asString}\n" +
+                "engine_result_code: ${obj["engine_result_code"].asInt}\n" +
+                "engine_result_message: ${obj["engine_result_message"].asString}"
+            )
 
         val tx: XrpTx = gson.fromJson(obj["tx_json"], XrpTx::class.java)
         tx.hex = obj["tx_blob"].asString
@@ -129,8 +138,10 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
             val code = obj["error_code"].asInt
             val error = obj["error"].asString
             val message = obj["error_message"].asString
-            throw XrpRpcException("RPC error \"$error\": code $code, message: \"$message\"," +
-                    "\n for response: ${response.json}")
+            throw XrpRpcException(
+                "RPC error \"$error\": code $code, message: \"$message\"," +
+                "\n for response: ${response.json}"
+            )
         }
 
         return obj

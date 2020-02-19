@@ -7,7 +7,11 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.btc.datamodel.*
+import dsx.bps.crypto.btc.datamodel.BtcBlock
+import dsx.bps.crypto.btc.datamodel.BtcListSinceBlock
+import dsx.bps.crypto.btc.datamodel.BtcTx
+import dsx.bps.crypto.btc.datamodel.BtcTxDetail
+import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
 import dsx.bps.crypto.common.Coin
 import java.io.File
 import java.math.BigDecimal
@@ -40,7 +44,7 @@ class BtcCoin: Coin {
 
     constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String) {
         val configFile = File(configPath)
-        config = with (Config()) {
+        config = with(Config()) {
             addSpec(BtcConfig)
             from.yaml.file(configFile)
         }
@@ -78,9 +82,9 @@ class BtcCoin: Coin {
     }
 
     private fun match(detail: BtcTxDetail, amount: BigDecimal, address: String): Boolean =
-            detail.address == address &&
-            detail.category == "send" &&
-            detail.amount.abs().compareTo(amount.abs()) == 0
+        detail.address == address &&
+        detail.category == "send" &&
+        detail.amount.abs().compareTo(amount.abs()) == 0
 
     fun getBestBlockHash(): String = rpc.getBestBlockHash()
 
@@ -107,9 +111,9 @@ class BtcCoin: Coin {
             override fun fee() = detail.fee.abs()
 
             override fun status() = when {
-                btcTx.confirmations < 0 -> TxStatus.REJECTED
+                btcTx.confirmations < 0             -> TxStatus.REJECTED
                 btcTx.confirmations < confirmations -> TxStatus.VALIDATING
-                else -> TxStatus.CONFIRMED
+                else                                -> TxStatus.CONFIRMED
             }
         }
     }
@@ -129,9 +133,9 @@ class BtcCoin: Coin {
         override fun fee() = btcTxSinceBlock.fee
 
         override fun status() = when {
-            btcTxSinceBlock.confirmations < 0 -> TxStatus.REJECTED
+            btcTxSinceBlock.confirmations < 0             -> TxStatus.REJECTED
             btcTxSinceBlock.confirmations < confirmations -> TxStatus.VALIDATING
-            else -> TxStatus.CONFIRMED
+            else                                          -> TxStatus.CONFIRMED
         }
     }
 }

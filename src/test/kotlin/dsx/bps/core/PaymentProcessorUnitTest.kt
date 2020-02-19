@@ -3,7 +3,11 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.core.datamodel.*
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.PaymentStatus
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.exception.core.payment.PaymentException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -24,7 +28,7 @@ internal class PaymentProcessorUnitTest {
     init {
         val initConfig = Config()
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
-        testConfig = with (initConfig) {
+        testConfig = with(initConfig) {
             addSpec(PaymentProcessorConfig)
             from.yaml.file(configFile)
         }
@@ -45,11 +49,12 @@ internal class PaymentProcessorUnitTest {
 
     @Nested
     inner class UpdatePayment {
+
         @Test
         @DisplayName("update a nonexistent payment")
         fun updatePayment1() {
             Assertions.assertThrows(PaymentException::class.java) {
-                paymentProcessor.updatePayment("",Mockito.mock(Tx::class.java))
+                paymentProcessor.updatePayment("", Mockito.mock(Tx::class.java))
             }
         }
 

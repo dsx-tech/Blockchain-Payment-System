@@ -6,7 +6,9 @@ import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.btc.datamodel.BtcTx
 import dsx.bps.crypto.btc.datamodel.BtcTxDetail
 import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.math.BigDecimal
 
@@ -14,8 +16,7 @@ internal class BtcClientUnitTest {
 
     private val btcRpc = Mockito.mock(BtcRpc::class.java)
     private val btcExplorer = Mockito.mock(BtcExplorer::class.java)
-    private val btcCoin = BtcCoin(btcRpc, btcExplorer,
-        javaClass.getResource("/TestBpsConfig.yaml").path)
+    private val btcCoin = BtcCoin(btcRpc, btcExplorer, javaClass.getResource("/TestBpsConfig.yaml").path)
 
     @Test
     @DisplayName("getBalance test ")
@@ -118,7 +119,7 @@ internal class BtcClientUnitTest {
         val txid: TxId = Mockito.mock(TxId::class.java)
         Mockito.`when`(txid.index).thenReturn(1)
 
-         val result: Tx = btcCoin.constructTx(btcTx,txid)
+        val result: Tx = btcCoin.constructTx(btcTx, txid)
         Assertions.assertEquals(result.currency(), btcCoin.currency)
         Assertions.assertEquals(result.amount(), btcTxDetail.amount)
         Assertions.assertEquals(result.destination(), btcTxDetail.address)

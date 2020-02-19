@@ -14,6 +14,7 @@ data class BtcTx(
     val details: List<BtcTxDetail>,
     val hex: String
 ) {
+
     val fee: BigDecimal
         get() = _fee ?: BigDecimal.ZERO
 }

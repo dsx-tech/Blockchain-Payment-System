@@ -10,6 +10,7 @@ data class TrxBlock(
     @SerializedName("transactions")
     private val _transactions: List<TrxTx>?
 ) {
+
     val transactions: List<TrxTx>
         get() = _transactions ?: listOf()
 }
