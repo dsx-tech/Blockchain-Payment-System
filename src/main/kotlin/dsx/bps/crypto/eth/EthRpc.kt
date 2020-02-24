@@ -115,7 +115,6 @@ class EthRpc(url : String) : Connector  {
         return  ethSendTransaction.transactionHash
     }
 
-
     fun sendTransaction(pathToWallet : String, password: String, to : String, value: BigDecimal) : String{
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
         val transactionReceipt = Transfer.sendFunds(
@@ -123,5 +122,20 @@ class EthRpc(url : String) : Connector  {
             value, Convert.Unit.ETHER
         ).send()
         return transactionReceipt.transactionHash
+    }
+
+    fun waitForSomeBlocksMining()
+    {
+        val latestHash = getLatestBlock()
+        var count = 0
+        while (getLatestBlock() == latestHash && count < 160)
+        {
+            Thread.sleep(5000)
+            count++
+        }
+        if (count >= 160)
+        {
+            throw Exception("Block mining timed out")
+        }
     }
 }

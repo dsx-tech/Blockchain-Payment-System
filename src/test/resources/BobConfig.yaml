@@ -55,12 +55,12 @@ XRP:
 
 ETH:
   coin:
-    accountAddress: "0xacfd9f1452e191fa39ff882e5fea428b999fb2af"
-    pathToWallet: "./src/test/resources/ETH/aliceWallet/UTC--2019-11-26T13-14-22.792555600Z--acfd9f1452e191fa39ff882e5fea428b999fb2af"
-    password: "root"
+    accountAddress: "0x940c955f4072201fd9732bb5000c2d66dec449b6"
+    pathToWallet: "./src/test/resources/ETH/bobWallet/UTC--2019-11-26T13-19-50.774016100Z--940c955f4072201fd9732bb5000c2d66dec449b6"
+    password: "test"
     confirmations: 2
     defaultPasswordForNewAddresses : "newPassword"
-    walletsDir : "./src/test/resources/ETH/aliceWallet/"
+    walletsDir : "./src/test/resources/ETH/bobWallet/"
   connection:
     host: "127.0.0.1"
     port: "8545"

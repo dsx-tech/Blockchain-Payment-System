@@ -14,7 +14,7 @@ class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequen
     }
 
     override fun explore() {
-        var last = coin.getLatestBlock()
+        var last = coin.getLatestBlock() //TODO: last - не последний, надо отсканировать на сколько-то блоков назад
         viewed.add(last.hash)
 
         timer(this::class.toString(), true, 0, frequency) {

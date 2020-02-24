@@ -75,7 +75,7 @@ class EthCoin : Coin {
     }
 
     /**
-     * @return account balance in ether (15 signs).
+     * @return account balance in ether.
      */
     override fun getBalance(): BigDecimal = rpc.getBalance(accountAddress)
 
@@ -83,10 +83,9 @@ class EthCoin : Coin {
      * @return account address.
      */
     override fun getAddress() : String = rpc.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
-        // как и где надо хранить пароли???
 
     /**
-     * @param txid IxId object ( {hash : String, index : Int} )
+     * @param txid TxId object ( {hash : String, index : Int} )
      * @return Tx oject - generalized transaction template in the system
      */
     override fun getTx(txid: TxId): Tx {
@@ -121,14 +120,21 @@ class EthCoin : Coin {
 
             override fun status(): TxStatus {
                 val latestBlock = rpc.getLatestBlock()
-                val conf = latestBlock.number - ethTx.blockNumber
-                if (conf < confirmations.toBigInteger())
+                if (ethTx?.blockHash == null)
                 {
                     return TxStatus.VALIDATING
                 }
                 else
                 {
-                    return TxStatus.CONFIRMED
+                    val conf = BigInteger(latestBlock.numberRaw.toString().substring(2), 16) - ethTx.blockNumber
+                    if (conf < confirmations.toBigInteger())
+                    {
+                        return TxStatus.VALIDATING
+                    }
+                    else
+                    {
+                        return TxStatus.CONFIRMED
+                    }
                 }
             }
         }

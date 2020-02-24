@@ -1,53 +1,47 @@
 package dsx.bps.crypto.eth
 
 
-import com.github.dockerjava.api.model.ExposedPort
-import org.junit.Rule
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
+import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.web3j.crypto.WalletUtils
 import java.io.File
 import java.io.FileFilter
-import org.testcontainers.containers.GenericContainer
-import org.testcontainers.junit.jupiter.Container
-import org.junit.jupiter.api.BeforeEach
-import org.testcontainers.containers.wait.strategy.Wait
 import java.nio.file.Files
 
 
-class KGenericContainer(imageName: String) : GenericContainer<KGenericContainer>(imageName)
-
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
-internal class EthRpcTest {
+    internal class EthRpcTest {
 
-    private var url = "http://127.0.0.1:8545"
-    private var ethRpc = EthRpc(url)
+    private lateinit var url : String
+    private lateinit var ethRpc : EthRpc
 
     private val alice = "0xacfd9f1452e191fa39ff882e5fea428b999fb2af" //eth.accounts[0]
     private val bob = "0x940c955f4072201fd9732bb5000c2d66dec449b6" //eth.accounts[1]
-    private val aliceWalletPath = "./src/test/resources/keystore/UTC--2019-11-26T13-14-22.792555600Z--acfd9f1452e191fa39ff882e5fea428b999fb2af"
+    private val aliceWalletPath = "./src/test/resources/ETH/aliceWallet/UTC--2019-11-26T13-14-22.792555600Z--acfd9f1452e191fa39ff882e5fea428b999fb2af"
     private val alice_p = "root"
 
-    private var address = ""
-    private var port = ""
+    private lateinit var address : String
+    private var port = 0
 
+    companion object{
+        @Container
+        @JvmStatic val container : KGenericContainer = KGenericContainer("siandreev/ethereum-rpc-test:mining")
+            .withExposedPorts(8545, 30303)
+    }
 
-    @Container
-    var redis = KGenericContainer("siandreev/ethereum-rpc-test:mining")
-        .withExposedPorts(8545, 30303)
 
     @BeforeEach
     fun setUp() {
-        val address = redis.containerIpAddress
-        val port = redis.firstMappedPort
+        address = container.containerIpAddress
+        port = container.firstMappedPort
         url = "http://$address:$port"
         ethRpc = EthRpc(url)
     }
 
+    @Order(1)
     @Test
     fun getBalance() {
         println(address + port)
@@ -57,6 +51,7 @@ internal class EthRpcTest {
         }
     }
 
+    @Order(2)
     @Test
     fun getNewAddress() {
         assertDoesNotThrow {
@@ -72,6 +67,7 @@ internal class EthRpcTest {
         }
     }
 
+    @Order(3)
     @Test
     fun createRawTransaction() {
         assertDoesNotThrow {
@@ -80,32 +76,42 @@ internal class EthRpcTest {
         }
     }
 
+    @Order(4)
     @Test
     fun sendRawTransaction(){
         assertDoesNotThrow{
-            val result = sendRawTx()
+            val tx = ethRpc.createRawTransaction(0.toBigInteger(), toAddress = bob,value = 0.01.toBigDecimal())
+            val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
+            val hash = ethRpc.signTransaction(tx, credentials)
+            val result = ethRpc.sendTransaction(hash)
             println(result)
         }
     }
 
+    @Order(5)
     @Test
     fun getTransactionByHash() {
-        val hash = sendRawTx()
+        val tx = ethRpc.createRawTransaction(1.toBigInteger(), toAddress = bob,value = 0.011.toBigDecimal())
+        val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
+        val hash = ethRpc.signTransaction(tx, credentials)
+        val result = ethRpc.sendTransaction(hash)
         assertDoesNotThrow {
-            val tx = ethRpc.getTransactionByHash(hash)
-            println(tx)
+            val trans = ethRpc.getTransactionByHash(result)
+            println(trans)
         }
     }
 
-   /* @Test
-    fun sendTransaction() {  // autocheck tx status
-        assertDoesNotThrow { // need to miner.start(1); admin.sleepBlocks(1); miner.stop() in geth
+    @Order(6)
+    @Test
+    fun sendTransaction() {
+        assertDoesNotThrow {
             val pathTOWallet = aliceWalletPath
-            val txHash = ethRpc.sendTransaction(pathTOWallet, alice_p, alice, 0.1.toBigDecimal())
+            val txHash = ethRpc.sendTransaction(pathTOWallet, alice_p, alice, 0.012.toBigDecimal())
             println(txHash)
         }
-    } */
+    }
 
+    @Order(7)
     @Test
     fun getBlockByHash() {
         val hash = ethRpc.getLatestBlock().hash
@@ -115,6 +121,7 @@ internal class EthRpcTest {
         }
     }
 
+    @Order(8)
     @Test
     fun getLatestBlock() {
         assertDoesNotThrow {
@@ -123,20 +130,21 @@ internal class EthRpcTest {
         }
     }
 
-    /* @Test //TODO: Tests work, but it takes about 6 min; need to reduce working time
+    @Order(9)
+    @Test
     fun getTransactionReceiptByHash() {
-        val block = ethRpc.getLatestBlock()
-        val hash = sendRawTx()
-        while (block == ethRpc.getLatestBlock())
-        {
-            Thread.sleep(10000)
-        }
+        val tx = ethRpc.createRawTransaction(3.toBigInteger(), toAddress = bob,value = 0.013.toBigDecimal())
+        val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
+        val hash = ethRpc.signTransaction(tx, credentials)
+        val result = ethRpc.sendTransaction(hash)
+        ethRpc.waitForSomeBlocksMining()
         assertDoesNotThrow {
-            val txRt = ethRpc.getTransactionReceiptByHash(hash)
+            val txRt = ethRpc.getTransactionReceiptByHash(result)
             println(txRt)
         }
-    } */
+    }
 
+    @Order(10)
     @Test
     fun getTransactionsCount() {
         assertDoesNotThrow {
@@ -145,6 +153,7 @@ internal class EthRpcTest {
         }
     }
 
+    @Order(11)
     @Test
     fun getAllPendingTransactionsCount() {
         assertDoesNotThrow {
@@ -153,6 +162,7 @@ internal class EthRpcTest {
         }
     }
 
+    @Order(12)
     @Test
     fun getPendingTransactionsCount() {
         assertDoesNotThrow {
@@ -179,12 +189,12 @@ internal class EthRpcTest {
         return choice
     }
 
-    fun sendRawTx() : String{
-        val tx = ethRpc.createRawTransaction(4.toBigInteger(), toAddress = bob,value = 0.01.toBigDecimal())
+   /* fun sendRawTx(nonce : Int) : String{
+        val tx = ethRpc.createRawTransaction(nonce.toBigInteger(), toAddress = bob,value = 0.01.toBigDecimal())
         val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
         val hash = ethRpc.signTransaction(tx, credentials)
         val result = ethRpc.sendTransaction(hash)
         return result
-    }
+    } */
 
 }
