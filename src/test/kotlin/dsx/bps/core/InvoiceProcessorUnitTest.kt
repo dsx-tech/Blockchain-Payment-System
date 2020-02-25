@@ -2,6 +2,7 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.CreatingDatabase
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
@@ -34,24 +35,30 @@ internal class InvoiceProcessorUnitTest {
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
         testConfig = with (initConfig) {
             addSpec(InvoiceProcessorConfig)
+            from.yaml.file(configFile)
+        }
+        testConfig.validateRequired()
+
+        val databaseConfig = with (Config()) {
             addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
+        databaseConfig.validateRequired()
 
-        testConfig.validateRequired()
-
+        Datasource.initConnection(databaseConfig)
         invoiceProcessor = InvoiceProcessor(manager, testConfig)
-        invService = InvoiceService(testConfig[DatabaseConfig.connectionURL], testConfig[DatabaseConfig.driver])
-        txService = TxService(testConfig[DatabaseConfig.connectionURL], testConfig[DatabaseConfig.driver])
+        invService = InvoiceService()
+        txService = TxService()
+
     }
 
-    @Test
+    @ParameterizedTest
+    @EnumSource(value = Currency::class)
     @DisplayName("create invoice and get invoice test")
-    fun createInvoiceTest() {
-        val currency = Mockito.mock(Currency::class.java)
+    fun createInvoiceTest(currency: Currency) {
         val invoice = invoiceProcessor.createInvoice(currency, BigDecimal.TEN,"testaddress", 1)
         Assertions.assertNotNull(invService.getBySystemId(invoice.id))
-        Assertions.assertEquals(invoice.address, invService.getBySystemId(invoice.id).address)
+        Assertions.assertEquals(invoice, invService.makeInvFromDB(invService.getBySystemId(invoice.id)))
         Assertions.assertNotNull(invoiceProcessor.getInvoice(invoice.id))
         Assertions.assertEquals(invoice, invoiceProcessor.getInvoice(invoice.id))
     }

@@ -1,6 +1,10 @@
 package dsx.bps.crypto.xrp
 
+import com.uchuhimo.konf.Config
+import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
 import dsx.bps.api.BlockchainPaymentSystemAPI
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
@@ -15,6 +19,17 @@ import java.math.BigDecimal
 @Disabled
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class XrpClientTest {
+
+    init {
+        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val databaseConfig = with (Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
+        Datasource.initConnection(databaseConfig)
+    }
 
     private val cur = Currency.XRP
     private val configDir = System.getProperty("user.home") + File.separator + "bps" + File.separator

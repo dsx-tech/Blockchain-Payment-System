@@ -5,6 +5,7 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.core.datamodel.TxId
+import dsx.bps.exception.DBservices.BpsDatabaseException
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
@@ -13,9 +14,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
-class PaymentService(connectionURL: String, driver: String) {
+class PaymentService() {
     init {
-        Datasource.getHicari(connectionURL, driver)
+        Datasource.getConnection()
         transaction {
             if (!PaymentTable.exists())
                 SchemaUtils.create(PaymentTable)
@@ -82,24 +83,37 @@ class PaymentService(connectionURL: String, driver: String) {
 
     fun makePaymentFromDB (payment: PaymentEntity): Payment {
         val currency: Currency
-        currency = when (payment.currency){
+        currency = when (payment.currency) {
+            "btc" -> Currency.BTC
             "BTC" -> Currency.BTC
+            "xrp" -> Currency.XRP
             "XRP" -> Currency.XRP
-            else -> Currency.TRX
+            "trx" -> Currency.TRX
+            "TRX" -> Currency.TRX
+            else -> throw BpsDatabaseException("wrong currency")
         }
+
         val pay = Payment(payment.paymentId, currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
                           payment.address, payment.tag)
-        pay.status = when (payment.status){
-            "pending" -> PaymentStatus.PENDING
-            "processing" -> PaymentStatus.PROCESSING
-            "succeed" -> PaymentStatus.SUCCEED
-            else -> PaymentStatus.FAILED
-        }
-        if (!payment.payable.txs.empty())
-            pay.txid = TxId (payment.payable.txs.first().hash, payment.payable.txs.first().index)
-        if (payment.fee != null)
-            pay.fee = payment.fee!!
 
+        pay.status = when (payment.status) {
+            "pending" -> PaymentStatus.PENDING
+            "PENDING" -> PaymentStatus.PENDING
+            "processing" -> PaymentStatus.PROCESSING
+            "PROCESSING" -> PaymentStatus.PROCESSING
+            "succeed" -> PaymentStatus.SUCCEED
+            "SUCCEED" -> PaymentStatus.SUCCEED
+            "failed" -> PaymentStatus.FAILED
+            "FAILED" -> PaymentStatus.FAILED
+            else -> throw BpsDatabaseException("wrong payment status")
+        }
+
+        transaction {
+            if (!payment.payable.txs.empty())
+                pay.txid = TxId(payment.payable.txs.first().hash, payment.payable.txs.first().index)
+            if (payment.fee != null)
+                pay.fee = payment.fee!!
+        }
         return pay
     }
 

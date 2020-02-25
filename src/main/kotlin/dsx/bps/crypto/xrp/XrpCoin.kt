@@ -24,6 +24,8 @@ class XrpCoin: Coin {
     private val account: String
     private val privateKey: String
     private val passPhrase: String
+    private val xrpService = XrpService()
+    private val txService = TxService()
 
     override val rpc: XrpRpc
     override val explorer: XrpExplorer
@@ -48,7 +50,6 @@ class XrpCoin: Coin {
         val configFile = File(configPath)
         config = with (Config()) {
             addSpec(XrpConfig)
-            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         config.validateRequired()
@@ -77,9 +78,9 @@ class XrpCoin: Coin {
             .let { rpc.sign(privateKey, it) }
             .let { rpc.submit(it) }
         val tx = constructTx(xrpTx)
-        val new = TxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(tx.status().toString(), tx.destination(), tx.tag(),
+        val new = txService.add(tx.status().toString(), tx.destination(), tx.tag(),
             tx.amount(), tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
-        XrpService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(tx.fee(), xrpTx.account, xrpTx.destination, xrpTx.sequence, xrpTx.validated, new)
+        xrpService.add(tx.fee(), this.account, xrpTx.sequence, xrpTx.validated, new)
         return tx
     }
 

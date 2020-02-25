@@ -9,9 +9,9 @@ import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class XrpService(connectionURL: String, driver: String) {
+class XrpService() {
     init {
-        Datasource.getHicari(connectionURL, driver)
+        Datasource.getConnection()
         transaction {
             if (!XrpTxTable.exists())
                 SchemaUtils.create(XrpTxTable)
@@ -19,13 +19,12 @@ class XrpService(connectionURL: String, driver: String) {
     }
 
     fun add(_fee: BigDecimal, _account: String,
-            _destination: String?, _sequence: Int,
-            _validated: Boolean?, _tx: TxEntity): XrpTxEntity {
+            _sequence: Int, _validated: Boolean?,
+            _tx: TxEntity): XrpTxEntity {
         val newXrpTxEntity = transaction{
             XrpTxEntity.new {
                 fee = _fee
                 account = _account
-                destination = _destination
                 sequence = _sequence
                 validated = _validated
                 Tx = _tx

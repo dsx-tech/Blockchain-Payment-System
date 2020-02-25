@@ -17,7 +17,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
     var frequency: Long = config[PaymentProcessorConfig.frequency]
 
     // TODO: Implement db-storage for payments
-    private val payService = PaymentService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver])
+    private val payService = PaymentService()
     private val pending = payService.getStatusedPayments("pending")
     private val processing = payService.getStatusedPayments("processing")
     private val payments = payService.getPayments()

@@ -8,6 +8,13 @@ class TrxTxEntity(id: EntityID<Int>): IntEntity(id) {
     companion object : IntEntityClass<TrxTxEntity>(TrxTxTable)
 
     var address by TrxTxTable.address
-    var contractRet by TrxTxTable.contractRet
+    val contractRets by ContractRetEntity referrersOn ContractRetTable.trxTable
     var Tx by TxEntity referencedOn TrxTxTable.TxId
+}
+
+class ContractRetEntity(id: EntityID<Int>): IntEntity(id) {
+    companion object : IntEntityClass<ContractRetEntity>(ContractRetTable)
+
+    var contractRet by ContractRetTable.contractRet
+    var trx by TrxTxEntity referencedOn ContractRetTable.trxTable
 }

@@ -11,6 +11,9 @@ class BtcExplorer(override val coin: BtcCoin, frequency: Long): Explorer(frequen
 
     override val currency: Currency = coin.currency
 
+    private val btcService = BtcService()
+    private val txService = TxService()
+
     init {
         explore()
     }
@@ -34,9 +37,9 @@ class BtcExplorer(override val coin: BtcCoin, frequency: Long): Explorer(frequen
                     .transactions
                     .forEach {
                         val tx = coin.constructTx(it)
-                        val new = TxService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                        val newTx = txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
                             tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
-                        BtcService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(it.fee, it.confirmations, blockHash, it.address, new)
+                        btcService.add(it.confirmations, blockHash, it.address, newTx)
                         emitter.onNext(tx)
                     }
             }

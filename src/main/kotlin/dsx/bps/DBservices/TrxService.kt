@@ -1,33 +1,40 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.TrxTxEntity
-import dsx.bps.DBclasses.TrxTxTable
-import dsx.bps.DBclasses.TxEntity
+import dsx.bps.DBclasses.*
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class TrxService(connectionURL: String, driver: String) {
+class TrxService() {
     init {
-        Datasource.getHicari(connectionURL, driver)
+        Datasource.getConnection()
         transaction {
             if (!TrxTxTable.exists())
                 SchemaUtils.create(TrxTxTable)
         }
     }
 
-    fun add(//_address: String, _contractRet: String,
+    fun add(_address: String, _contractRet: List<String>,
             _tx: TxEntity): TrxTxEntity {
         val newTrxTxEntity = transaction{
             TrxTxEntity.new {
-                //address = _address
-                //contractRet = _contractRet
+                address = _address
                 Tx = _tx
+                _contractRet.forEach { addContractRet(it, this) }
             }
         }
         return newTrxTxEntity
+    }
+
+    fun addContractRet(cont: String, trxEntity: TrxTxEntity) {
+        transaction {
+            ContractRetEntity.new {
+                contractRet = cont
+                trx = trxEntity
+            }
+        }
     }
 
     fun delete(trxTx: TrxTxEntity) {

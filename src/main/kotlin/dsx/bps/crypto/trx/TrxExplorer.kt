@@ -11,6 +11,9 @@ class TrxExplorer(override val coin: TrxCoin, frequency: Long): Explorer(frequen
 
     override val currency: Currency = coin.currency
 
+    private val trxService = TrxService()
+    private val txService = TxService()
+
     init {
         explore()
     }
@@ -27,9 +30,10 @@ class TrxExplorer(override val coin: TrxCoin, frequency: Long): Explorer(frequen
                     new.transactions
                         .forEach {
                             val tx = coin.constructTx(it)
-                            val new = TxService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                            val newTx = txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
                                 tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
-                            TrxService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(new)
+                            trxService.add(it.rawData.contract.first().parameter.value.ownerAddress,
+                                it.ret.map { trxTxRet -> trxTxRet.contractRet },  newTx)
                             emitter.onNext(tx)
                         }
                     viewed.add(new.hash)

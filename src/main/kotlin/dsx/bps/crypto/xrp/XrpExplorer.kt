@@ -11,6 +11,9 @@ class XrpExplorer(override val coin: XrpCoin, frequency: Long): Explorer(frequen
 
     override val currency: Currency = coin.currency
 
+    private val xrpService = XrpService()
+    private val txService = TxService()
+
     init {
         explore()
     }
@@ -29,9 +32,9 @@ class XrpExplorer(override val coin: XrpCoin, frequency: Long): Explorer(frequen
                     }
                     .forEach {
                         val tx = coin.constructTx(it)
-                        val new = TxService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                        val newTx = txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
                             tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
-                        XrpService(coin.config[DatabaseConfig.connectionURL], coin.config[DatabaseConfig.driver]).add(tx.fee(), it.tx.account, it.tx.destination, it.tx.sequence, it.validated, new)
+                        xrpService.add(tx.fee(), it.tx.account, it.tx.sequence, it.validated, newTx)
                         emitter.onNext(tx)
                     }
                 lastIndex = newIndex

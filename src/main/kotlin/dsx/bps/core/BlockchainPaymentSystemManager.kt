@@ -2,6 +2,7 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
 import dsx.bps.config.BPSConfig
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
@@ -42,23 +43,28 @@ class BlockchainPaymentSystemManager {
 
         val invoiceProcessorConfig = with(Config()) {
             addSpec(InvoiceProcessorConfig)
-            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         invoiceProcessorConfig.validateRequired()
 
         val paymentProcessorConfig = with(Config()) {
             addSpec(PaymentProcessorConfig)
-            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         paymentProcessorConfig.validateRequired()
 
+        val databaseConfig = with(Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
         invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig)
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
+        Datasource.initConnection(databaseConfig)
     }
 
-    constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor,
+    constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor,//need to add db for this constructor
                 paymentProcessor: PaymentProcessor) {
         this.coinsManager = coinsManager
 

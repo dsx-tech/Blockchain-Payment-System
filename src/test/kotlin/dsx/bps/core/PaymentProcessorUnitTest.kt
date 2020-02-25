@@ -2,6 +2,7 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.PaymentService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.DatabaseConfig
@@ -32,15 +33,20 @@ internal class PaymentProcessorUnitTest {
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
         testConfig = with (initConfig) {
             addSpec(PaymentProcessorConfig)
+            from.yaml.file(configFile)
+        }
+        testConfig.validateRequired()
+
+        val databaseConfig = with (Config()) {
             addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
+        databaseConfig.validateRequired()
 
-        testConfig.validateRequired()
-
+        Datasource.initConnection(databaseConfig)
         paymentProcessor = PaymentProcessor(manager, testConfig)
-        payService = PaymentService(testConfig[DatabaseConfig.connectionURL], testConfig[DatabaseConfig.driver])
-        txService = TxService(testConfig[DatabaseConfig.connectionURL], testConfig[DatabaseConfig.driver])
+        payService = PaymentService()
+        txService = TxService()
     }
 
     @ParameterizedTest
@@ -49,7 +55,7 @@ internal class PaymentProcessorUnitTest {
     fun createPaymentTest(currency: Currency) {
         val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", 1)
         val receivePayment = paymentProcessor.getPayment(payment.id)
-        Assertions.assertEquals(payment, transaction { payService.makePaymentFromDB(payService.getBySystemId(payment.id)) })
+        Assertions.assertEquals(payment, payService.makePaymentFromDB(payService.getBySystemId(payment.id)))
         Assertions.assertEquals(payment, receivePayment)
     }
 

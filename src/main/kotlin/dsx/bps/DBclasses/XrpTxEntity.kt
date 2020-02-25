@@ -9,7 +9,6 @@ class XrpTxEntity(id: EntityID<Int>): IntEntity(id) {
 
     var fee by XrpTxTable.fee
     var account by XrpTxTable.account
-    var destination by XrpTxTable.destination
     var sequence by XrpTxTable.sequence
     var validated by XrpTxTable.validated
     var Tx by TxEntity referencedOn XrpTxTable.TxId

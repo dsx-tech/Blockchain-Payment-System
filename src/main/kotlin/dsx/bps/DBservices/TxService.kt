@@ -9,9 +9,9 @@ import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class TxService(connectionURL: String, driver: String) {
+class TxService() {
     init {
-        Datasource.getHicari(connectionURL, driver)
+        Datasource.getConnection()
         transaction {
             if (!TxTable.exists())
                 SchemaUtils.create(TxTable)

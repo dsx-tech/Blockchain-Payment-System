@@ -2,6 +2,8 @@ package dsx.bps.crypto.trx
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
@@ -20,8 +22,7 @@ internal class TrxClientUnitTest {
 
     private val trxRpc = Mockito.mock(TrxRpc::class.java)
     private val trxBlockchainListener = Mockito.mock(TrxExplorer::class.java)
-    private val trxClient = TrxCoin(trxRpc, trxBlockchainListener,
-        javaClass.getResource("/TestBpsConfig.yaml").path)
+    private val trxClient: TrxCoin
     private val testConfig: Config
 
     init {
@@ -32,6 +33,16 @@ internal class TrxClientUnitTest {
             from.yaml.file(configFile)
         }
         testConfig.validateRequired()
+
+        val databaseConfig = with (Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
+        Datasource.initConnection(databaseConfig)
+        trxClient = TrxCoin(trxRpc, trxBlockchainListener,
+            javaClass.getResource("/TestBpsConfig.yaml").path)
     }
 
     @Test

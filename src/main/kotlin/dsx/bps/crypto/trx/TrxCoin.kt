@@ -26,6 +26,8 @@ class TrxCoin: Coin {
     private val account: String
     private val accountAddress: String
     private val privateKey: String
+    private val trxService = TrxService()
+    private val txService = TxService()
 
     override val rpc: TrxRpc
     override val explorer: TrxExplorer
@@ -54,7 +56,6 @@ class TrxCoin: Coin {
         val configFile = File(configPath)
         config = with (Config()) {
             addSpec(TrxConfig)
-            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         config.validateRequired()
@@ -89,12 +90,11 @@ class TrxCoin: Coin {
 
         val result = rpc.broadcastTransaction(tx)
 
-        val transaction = constructTx(tx)
-
         if (result.success) {
-            val new = TxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(transaction.status().toString(), transaction.destination(), transaction.tag(),
+            val transaction = constructTx(tx)
+            val new = txService.add(transaction.status().toString(), transaction.destination(), transaction.tag(),
                 transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency().toString())
-            TrxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(new)
+            trxService.add(this.getAddress(),tx.ret.map { trxTxRet -> trxTxRet.contractRet }, new)
             return transaction
         } else {
             throw TrxException("Unable to broadcast TRX transaction $tx with response $result")

@@ -6,15 +6,15 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Invoice
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.TxId
+import dsx.bps.exception.DBservices.BpsDatabaseException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
-class InvoiceService(connectionURL: String, driver: String) {
+class InvoiceService() {
     init {
-        Datasource.getHicari(connectionURL, driver)
-        //Database.connect(conn.connector)
+        Datasource.getConnection()
         transaction {
             if (!InvoiceTable.exists())
                 SchemaUtils.create(InvoiceTable)
@@ -76,6 +76,7 @@ class InvoiceService(connectionURL: String, driver: String) {
             }
         }
         return invoiceMap
+
     }
 
     fun addTx(systemId: String,tx: TxId) {
@@ -89,9 +90,13 @@ class InvoiceService(connectionURL: String, driver: String) {
     fun makeInvFromDB (invoice: InvoiceEntity): Invoice {
         val currency: Currency
         currency = when (invoice.currency){
+            "btc" -> Currency.BTC
             "BTC" -> Currency.BTC
+            "xrp" -> Currency.XRP
             "XRP" -> Currency.XRP
-            else -> Currency.TRX // else is necessarily, throw exception?(which never happen if all right)
+            "trx" -> Currency.TRX
+            "TRX" -> Currency.TRX
+            else -> throw BpsDatabaseException("wrong currency")
         }
         val inv = Invoice(invoice.invoiceId, currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
                           invoice.address, invoice.tag)//amount zeroes problem better options?
@@ -101,8 +106,7 @@ class InvoiceService(connectionURL: String, driver: String) {
     }
 
     fun updateStatus(_status: String, systemId: String) {
-        transaction { getBySystemId(systemId).status = _status
-        }
+        transaction { getBySystemId(systemId).status = _status }
     }
 
     fun updateReceived(_received: BigDecimal, systemId: String) {

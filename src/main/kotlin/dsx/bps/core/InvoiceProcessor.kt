@@ -16,7 +16,7 @@ import kotlin.concurrent.timer
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config): Observer<Tx> {
 
     // TODO: Implement db-storage for invoices
-    private val invService = InvoiceService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver])
+    private val invService = InvoiceService()
     private val unpaid = invService.getUnpaid()
     private val invoices = invService.getInvoices()
     //private val unpaid = ConcurrentHashMap.newKeySet<String>()

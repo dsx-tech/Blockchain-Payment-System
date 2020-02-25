@@ -24,6 +24,8 @@ class BtcCoin: Coin {
     override val explorer: BtcExplorer
 
     private val confirmations: Int
+    private val btcService = BtcService()
+    private val txService = TxService()
 
     constructor(conf: Config) {
         config = conf
@@ -45,7 +47,6 @@ class BtcCoin: Coin {
         val configFile = File(configPath)
         config = with (Config()) {
             addSpec(BtcConfig)
-            addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         config.validateRequired()
@@ -79,9 +80,9 @@ class BtcCoin: Coin {
             .single { detail -> match(detail, amount, address) }
 
         val transaction = constructTx(tx, TxId(tx.hash, detail.vout))
-        val new = TxService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(transaction.status().toString(), transaction.destination(), transaction.tag(),
+        val new = txService.add(transaction.status().toString(), transaction.destination(), transaction.tag(),
             transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency().toString())
-        BtcService(config[DatabaseConfig.connectionURL], config[DatabaseConfig.driver]).add(tx.fee, tx.confirmations, tx.blockhash, detail.address, new)
+        btcService.add(tx.confirmations, tx.blockhash, detail.address, new)
         return transaction
     }
 
