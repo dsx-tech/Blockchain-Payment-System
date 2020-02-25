@@ -7,6 +7,7 @@ import dsx.bps.crypto.eth.EthRpc
 import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import org.testcontainers.junit.jupiter.Container
@@ -54,6 +55,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
+    @Disabled
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
@@ -84,6 +86,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
+    @Disabled
     @Test
     fun createInvoice() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.03)
@@ -99,6 +102,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
+    @Disabled
     @Test
     fun createInvoiceWithTwoPayments() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.06)

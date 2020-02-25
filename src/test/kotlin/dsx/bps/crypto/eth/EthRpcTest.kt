@@ -101,6 +101,7 @@ import java.nio.file.Files
         }
     }
 
+    @Disabled
     @Order(6)
     @Test
     fun sendTransaction() {
@@ -130,6 +131,7 @@ import java.nio.file.Files
         }
     }
 
+    @Disabled
     @Order(9)
     @Test
     fun getTransactionReceiptByHash() {
@@ -188,13 +190,4 @@ import java.nio.file.Files
         }
         return choice
     }
-
-   /* fun sendRawTx(nonce : Int) : String{
-        val tx = ethRpc.createRawTransaction(nonce.toBigInteger(), toAddress = bob,value = 0.01.toBigDecimal())
-        val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
-        val hash = ethRpc.signTransaction(tx, credentials)
-        val result = ethRpc.sendTransaction(hash)
-        return result
-    } */
-
 }

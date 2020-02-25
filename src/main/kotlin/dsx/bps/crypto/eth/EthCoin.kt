@@ -126,7 +126,8 @@ class EthCoin : Coin {
                 }
                 else
                 {
-                    val conf = BigInteger(latestBlock.numberRaw.toString().substring(2), 16) - ethTx.blockNumber
+                    val conf = BigInteger(latestBlock.numberRaw.toString().substring(2), 16)
+                        - ethTx.blockNumber
                     if (conf < confirmations.toBigInteger())
                     {
                         return TxStatus.VALIDATING

@@ -70,6 +70,7 @@ internal class EthClientUnitTest {
         val latestBlock = Mockito.mock(EthBlock.Block::class.java)
         Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(latestBlock)
         Mockito.`when`(latestBlock.number).thenReturn(5.toBigInteger())
+        Mockito.`when`(latestBlock.numberRaw).thenReturn("0x5")
 
         val txRt = Mockito.mock(TransactionReceipt::class.java)
         Mockito.`when`(ethRpc.getTransactionReceiptByHash("hash1")).thenReturn(txRt)
@@ -162,6 +163,7 @@ internal class EthClientUnitTest {
         val latestBlock = Mockito.mock(EthBlock.Block::class.java)
         Mockito.`when`(ethRpc.getLatestBlock()).thenReturn(latestBlock)
         Mockito.`when`(latestBlock.number).thenReturn(5.toBigInteger())
+        Mockito.`when`(latestBlock.numberRaw).thenReturn("0x5")
 
         val txRt = Mockito.mock(TransactionReceipt::class.java)
         Mockito.`when`(ethRpc.getTransactionReceiptByHash("hash1")).thenReturn(txRt)
@@ -171,6 +173,8 @@ internal class EthClientUnitTest {
 
         val resultTx = ethClient.constructTx(ethTx)
         println(resultTx.amount())
+        println(resultTx.status())
+        println(resultTx.fee())
 
         Assertions.assertEquals(resultTx.currency(), ethClient.currency)
         Assertions.assertEquals(resultTx.hash(),"hash1")
@@ -211,6 +215,7 @@ internal class EthClientUnitTest {
         Mockito.`when`(ethTx.value).thenReturn(Convert.toWei("1", Convert.Unit.ETHER).toBigInteger()) //1 ether
         Mockito.`when`(ethTx.gas).thenReturn(900.toBigInteger())
         Mockito.`when`(ethTx.gasPrice).thenReturn(500.toBigInteger())
+        Mockito.`when`(ethTx.blockHash).thenReturn("blockHash")
 
         return ethTx
     }
