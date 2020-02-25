@@ -49,7 +49,7 @@ class TrxCoin: Coin {
 
     constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String) {
         val configFile = File(configPath)
-        config = with (Config()) {
+        config = with(Config()) {
             addSpec(TrxConfig)
             from.yaml.file(configFile)
         }

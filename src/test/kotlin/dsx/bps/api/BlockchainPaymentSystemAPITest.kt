@@ -37,10 +37,8 @@ internal class BlockchainPaymentSystemAPITest {
         assertDoesNotThrow {
             val id1 = aliceAPI.sendPayment(Currency.BTC, 50.05, bobBtcAddress)
             Thread.sleep(1000)
-            generator.generate(1)
             Thread.sleep(1000)
             val id2 = bobAPI.sendPayment(Currency.BTC, 25.52, aliceBtcAddress)
-            generator.generate(1)
 
             val pay1 = aliceAPI.getPayment(id1)
             val pay2 = bobAPI.getPayment(id2)
@@ -50,8 +48,7 @@ internal class BlockchainPaymentSystemAPITest {
             println("bob's payment was sent in ${pay2!!.txid}")
             var count = 0
             while (pay1.status != PaymentStatus.SUCCEED ||
-                    pay2.status != PaymentStatus.SUCCEED) {
-                generator.generate(1)
+                pay2.status != PaymentStatus.SUCCEED) {
                 count += 1
                 Thread.sleep(2000)
                 println("alice's payment status: ${pay1.status}")
@@ -72,7 +69,6 @@ internal class BlockchainPaymentSystemAPITest {
 
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
-            generator.generate(1)
             count += 1
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
@@ -88,7 +84,6 @@ internal class BlockchainPaymentSystemAPITest {
         val half = inv!!.amount / BigDecimal(2)
         bobAPI.sendPayment(inv.currency, half, inv.address)
         Thread.sleep(2000)
-        generator.generate(1)
         Thread.sleep(2000)
         println("Received funds: ${inv.received} / ${inv.amount} in tx ${inv.txids}")
 
@@ -96,7 +91,6 @@ internal class BlockchainPaymentSystemAPITest {
         Thread.sleep(2000)
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
-            generator.generate(1)
             count += 1
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")

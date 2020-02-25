@@ -12,7 +12,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 import kotlin.random.Random
 
-abstract class JsonRpcHttpClient : Connector {
+abstract class JsonRpcHttpClient: Connector {
 
     protected var rpcURL: URL
     protected var auth: String?
@@ -41,14 +41,14 @@ abstract class JsonRpcHttpClient : Connector {
 
     protected open fun constructRequest(method: String, vararg params: Any): RpcRequest {
         val id = Random.nextInt().toString()
-        val json : String
-            json = gson.toJson(
-                mapOf(
-                    "method" to method,
-                    "params" to params,
-                    "id" to id
-                )
+        val json: String
+        json = gson.toJson(
+            mapOf(
+                "method" to method,
+                "params" to params,
+                "id" to id
             )
+        )
         return RpcRequest(rpcURL, json, id)
     }
 
@@ -78,7 +78,8 @@ abstract class JsonRpcHttpClient : Connector {
             throw BpsRpcException("$request failed\n" +
                     "Code: ${conn.responseCode}\n" +
                     "Message: ${conn.responseMessage}\n" +
-                    "Response: ${errorStream.use { it.readBytes().toString(charset) }}")
+                    "Response: ${errorStream.use { it.readBytes().toString(charset) }}"
+            )
         }
 
         val response = conn.inputStream

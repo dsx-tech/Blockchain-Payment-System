@@ -3,10 +3,12 @@ package dsx.bps.crypto.eth
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import org.web3j.protocol.core.methods.response.Transaction
+import java.math.BigInteger
 import kotlin.concurrent.timer
 
 class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequency) {
 
+    val scaningCount = 30
     override val currency: Currency = coin.currency
 
     init {
@@ -14,7 +16,13 @@ class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequen
     }
 
     override fun explore() {
-        var last = coin.getLatestBlock() //TODO: last - не последний, надо отсканировать на сколько-то блоков назад
+        var last = coin.getLatestBlock()
+        var scanedBlocks = 0
+        while (last.numberRaw.toBigInteger(16) != BigInteger.ONE && scanedBlocks < scaningCount) {
+            last = coin.getBlockByHash(last.parentHash)
+            scanedBlocks ++
+        }
+
         viewed.add(last.hash)
 
         timer(this::class.toString(), true, 0, frequency) {

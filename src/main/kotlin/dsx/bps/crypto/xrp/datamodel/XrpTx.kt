@@ -24,6 +24,7 @@ data class XrpTx(
     @SerializedName("validated")
     private val _validated: Boolean?
 ) {
+
     lateinit var hex: String
 
     val destination: String

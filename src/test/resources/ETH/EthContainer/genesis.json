@@ -6,14 +6,13 @@
     "eip155Block": 0,
     "eip158Block": 0
   },
-
   "difficulty": "0x20",
   "gasLimit": "0x20000000",
-
   "timestamp": "0x00",
   "extraData": "0x",
-
   "alloc": {
-    "AcfD9f1452E191fA39FF882e5feA428B999Fb2aF": { "balance": "5500000000000000000" }
+    "AcfD9f1452E191fA39FF882e5feA428B999Fb2aF": {
+      "balance": "5500000000000000000"
+    }
   }
 }

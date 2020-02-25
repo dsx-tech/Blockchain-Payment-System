@@ -20,8 +20,10 @@ internal class CoinsManagerUnitTest {
     private val coinsManager: CoinsManager
 
     init {
-        val coinsMap: Map<Currency, Coin> = mapOf(Pair(Currency.BTC, btcCoin),
-            Pair(Currency.XRP, xrpCoin), Pair(Currency.TRX, trxCoin))
+        val coinsMap: Map<Currency, Coin> = mapOf(
+            Pair(Currency.BTC, btcCoin),
+            Pair(Currency.XRP, xrpCoin), Pair(Currency.TRX, trxCoin)
+        )
         coinsManager = CoinsManager(coinsMap)
     }
 

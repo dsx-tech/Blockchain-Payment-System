@@ -21,23 +21,23 @@ internal class BlockchainPaymentSystemAPITestETH {
     private val aliceConfigPath = javaClass.classLoader.getResource("AliceConfig.yaml")?.path
     private val bobConfigPath = javaClass.classLoader.getResource("BobConfig.yaml")?.path
 
-    private lateinit var aliceAPI : BlockchainPaymentSystemAPI
-    private lateinit var bobAPI : BlockchainPaymentSystemAPI
+    private lateinit var aliceAPI: BlockchainPaymentSystemAPI
+    private lateinit var bobAPI: BlockchainPaymentSystemAPI
 
     private val aliceEthAddress = "0xacfd9f1452e191fa39ff882e5fea428b999fb2af"
-    private  val bobEthAddress = "0x940c955f4072201fd9732bb5000c2d66dec449b6"
+    private val bobEthAddress = "0x940c955f4072201fd9732bb5000c2d66dec449b6"
 
-    private lateinit var generator : EthRpc
+    private lateinit var generator: EthRpc
 
-    companion object{
+    companion object {
         @Container
-        @JvmStatic val container = KFixedHostPortGenericContainer("siandreev/ethereum-rpc-test:mining")
+        @JvmStatic
+        val container = KFixedHostPortGenericContainer("siandreev/ethereum-rpc-test:mining")
             .withFixedExposedPort(8545, 8545)
     }
 
-
     @BeforeEach
-    fun setUp(){
+    fun setUp() {
         aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
 
@@ -45,7 +45,6 @@ internal class BlockchainPaymentSystemAPITestETH {
         val url = "http://$address:8545"
         generator = EthRpc(url)
     }
-
 
     @Test
     fun getBalance() {

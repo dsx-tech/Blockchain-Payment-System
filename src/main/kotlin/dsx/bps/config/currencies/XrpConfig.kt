@@ -8,10 +8,12 @@ object XrpConfig: ConfigSpec("XRP") {
         val privateKey by required<String>()
         val passPhrase by required<String>()
     }
+
     object Connection: ConfigSpec("connection") {
         val host by required<String>()
         val port by required<String>()
     }
+
     object Explorer: ConfigSpec("explorer") {
         val frequency by required<Long>()
     }

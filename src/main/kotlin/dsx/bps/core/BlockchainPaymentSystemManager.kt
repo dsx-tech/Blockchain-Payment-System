@@ -5,7 +5,11 @@ import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.BPSConfig
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.core.datamodel.*
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Invoice
+import dsx.bps.core.datamodel.Payment
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.CoinsManager
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -55,8 +59,10 @@ class BlockchainPaymentSystemManager {
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
     }
 
-    constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor,
-                paymentProcessor: PaymentProcessor) {
+    constructor(
+        coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor,
+        paymentProcessor: PaymentProcessor
+    ) {
         this.coinsManager = coinsManager
 
         val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())

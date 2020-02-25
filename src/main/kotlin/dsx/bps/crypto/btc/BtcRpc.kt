@@ -78,7 +78,7 @@ class BtcRpc(url: String): JsonRpcHttpClient(url) {
     @Deprecated(
         "Wil be fully removed in bitcoind v0.19",
         ReplaceWith("generatetoaddress")
-        )
+    )
     fun generate(n: Int): List<String> {
         val result = query("generate", n)
         val json = gson.toJson(result)

@@ -12,9 +12,9 @@ paymentProcessor:
 # Supported сurrencies: BTC, XRP, TRX, ETH
 enabledCurrencies:
   coins:
-  #  - BTC
-  #  - XRP
-  #  - TRX
+    #  - BTC
+    #  - XRP
+    #  - TRX
     - ETH
 
 # Example values
@@ -59,8 +59,8 @@ ETH:
     pathToWallet: "./src/test/resources/ETH/aliceWallet/UTC--2019-11-26T13-14-22.792555600Z--acfd9f1452e191fa39ff882e5fea428b999fb2af"
     password: "root"
     confirmations: 2
-    defaultPasswordForNewAddresses : "newPassword"
-    walletsDir : "./src/test/resources/ETH/aliceWallet/"
+    defaultPasswordForNewAddresses: "newPassword"
+    walletsDir: "./src/test/resources/ETH/aliceWallet/"
   connection:
     host: "127.0.0.1"
     port: "8545"

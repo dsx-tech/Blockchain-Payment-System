@@ -16,21 +16,21 @@ import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
 
-class EthCoin : Coin {
+class EthCoin: Coin {
     override val currency = Currency.ETH
     override val config: Config
 
     private val accountAddress: String
     private val password: String
     private val pathToWallet: String
-    private val defaultPasswordForNewAddresses : String
-    private  val walletsDir : String
+    private val defaultPasswordForNewAddresses: String
+    private val walletsDir: String
 
     override val rpc: EthRpc
     override val explorer: EthExplorer
 
     private val confirmations: Int
-    private var nonce : BigInteger
+    private var nonce: BigInteger
 
     constructor(conf: Config) {
         config = conf
@@ -82,7 +82,7 @@ class EthCoin : Coin {
     /**
      * @return account address.
      */
-    override fun getAddress() : String = rpc.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
+    override fun getAddress(): String = rpc.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
 
     /**
      * @param txid TxId object ( {hash : String, index : Int} )
@@ -98,7 +98,7 @@ class EthCoin : Coin {
      * @return Tx oject - generalized transaction template in the system
      */
     fun constructTx(ethTx: Transaction): Tx {
-        return object : Tx {
+        return object: Tx {
             override fun currency() = Currency.ETH
 
             override fun hash() = ethTx.hash
@@ -108,32 +108,23 @@ class EthCoin : Coin {
             override fun destination() = ethTx.to
 
             override fun fee(): BigDecimal {
-                if (this.status() == TxStatus.VALIDATING)
-                {
+                if (this.status() == TxStatus.VALIDATING) {
                     return ethTx.gasPrice.multiply(ethTx.gas).toBigDecimal()
-                }
-                else
-                {
+                } else {
                     return ethTx.gasPrice.multiply(rpc.getTransactionReceiptByHash(ethTx.hash).gasUsed).toBigDecimal()
                 }
             }
 
             override fun status(): TxStatus {
                 val latestBlock = rpc.getLatestBlock()
-                if (ethTx?.blockHash == null)
-                {
+                if (ethTx.blockHash == null) {
                     return TxStatus.VALIDATING
-                }
-                else
-                {
+                } else {
                     val conf = BigInteger(latestBlock.numberRaw.toString().substring(2), 16)
-                        - ethTx.blockNumber
-                    if (conf < confirmations.toBigInteger())
-                    {
+                    -ethTx.blockNumber
+                    if (conf < confirmations.toBigInteger()) {
                         return TxStatus.VALIDATING
-                    }
-                    else
-                    {
+                    } else {
                         return TxStatus.CONFIRMED
                     }
                 }
@@ -151,7 +142,7 @@ class EthCoin : Coin {
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
         val signedTransaction = rpc.signTransaction(rawTransaction, credentials)
         val resultHash = rpc.sendTransaction(signedTransaction)
-        nonce ++ //TODO develop safe interactions with nonce
+        nonce++ //TODO develop safe interactions with nonce
         return constructTx(rpc.getTransactionByHash(resultHash))
     }
 

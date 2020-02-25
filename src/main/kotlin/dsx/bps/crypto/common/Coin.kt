@@ -18,7 +18,6 @@ abstract class Coin {
 
     fun getTxEmitter(): PublishSubject<Tx> = explorer.emitter
 
-
     abstract fun getBalance(): BigDecimal
 
     abstract fun getAddress(): String
