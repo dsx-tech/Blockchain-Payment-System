@@ -4,25 +4,46 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.btc.BtcRpc
+import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 
-@Disabled
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-internal class BlockchainPaymentSystemAPITest {
+@Testcontainers
+internal class BlockchainPaymentSystemAPITestBTC {
 
-    private val aliceConfigPath = javaClass.classLoader.getResource("alice.properties")?.path
-    private val bobConfigPath = javaClass.classLoader.getResource("bob.properties")?.path
+    private val aliceConfigPath = javaClass.classLoader.getResource("AliceConfigBTC.yaml")?.path
+    private val bobConfigPath = javaClass.classLoader.getResource("BobConfigBTC.yaml")?.path
 
-    private val aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
-    private val bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
-    private val generator = BtcRpc("http://alice:password@127.0.0.1:18443/")
+    private lateinit var aliceAPI : BlockchainPaymentSystemAPI
+    private lateinit var bobAPI : BlockchainPaymentSystemAPI
+    private lateinit var generator : BtcRpc
 
     private val aliceBtcAddress = "2MtYy1RGY2msh9WbRBf5VwUAE4xtGNJ9GQc"
     private val bobBtcAddress = "2NETNm86ug9drkCJ7N4U5crA9B9681HidzX"
+
+    companion object {
+        @Container
+        @JvmStatic
+        val container: KFixedHostPortGenericContainer = KFixedHostPortGenericContainer("siandreev/bitcoind-regtest:alice-bob-regtest")
+            .withFixedExposedPort(18444, 18444)
+            .withFixedExposedPort(18443, 18443)
+    }
+
+    @BeforeEach
+    fun setUp() {
+        val address = container.containerIpAddress
+        generator = BtcRpc("http://bob:password@$address:18444/")
+        Thread.sleep(8000)
+
+        aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
+        bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
+    }
+
+
 
     @Test
     fun getBalance() {
@@ -35,10 +56,12 @@ internal class BlockchainPaymentSystemAPITest {
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
+            generator.generate(101)
             val id1 = aliceAPI.sendPayment(Currency.BTC, 50.05, bobBtcAddress)
             Thread.sleep(1000)
+
+            val id2 = bobAPI.sendPayment(Currency.BTC, 20.52, aliceBtcAddress)
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.BTC, 25.52, aliceBtcAddress)
 
             val pay1 = aliceAPI.getPayment(id1)
             val pay2 = bobAPI.getPayment(id2)
@@ -50,10 +73,11 @@ internal class BlockchainPaymentSystemAPITest {
             while (pay1.status != PaymentStatus.SUCCEED ||
                 pay2.status != PaymentStatus.SUCCEED) {
                 count += 1
+                generator.generate(1)
                 Thread.sleep(2000)
                 println("alice's payment status: ${pay1.status}")
                 println("bob's payment status: ${pay2.status}")
-                assertNotEquals(5, count, "Payment wasn't confirmed or found in 10 blocks")
+                assertNotEquals(10, count, "Payment wasn't confirmed or found in 10 blocks")
             }
         }
     }
@@ -70,13 +94,14 @@ internal class BlockchainPaymentSystemAPITest {
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
             count += 1
+            generator.generate(1)
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
         }
     }
 
     @Test
-    fun createInvoice1() {
+    fun createInvoiceWithTwoPayments() {
         val invId = aliceAPI.createInvoice(Currency.BTC, 100.2)
         val inv = aliceAPI.getInvoice(invId)
         assertNotNull(inv)
@@ -92,6 +117,7 @@ internal class BlockchainPaymentSystemAPITest {
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
             count += 1
+            generator.generate(1)
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
         }

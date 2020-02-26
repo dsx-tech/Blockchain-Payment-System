@@ -18,8 +18,8 @@ import java.math.BigDecimal
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BlockchainPaymentSystemAPITestETH {
 
-    private val aliceConfigPath = javaClass.classLoader.getResource("AliceConfig.yaml")?.path
-    private val bobConfigPath = javaClass.classLoader.getResource("BobConfig.yaml")?.path
+    private val aliceConfigPath = javaClass.classLoader.getResource("AliceConfigETH.yaml")?.path
+    private val bobConfigPath = javaClass.classLoader.getResource("BobConfigETH.yaml")?.path
 
     private lateinit var aliceAPI: BlockchainPaymentSystemAPI
     private lateinit var bobAPI: BlockchainPaymentSystemAPI

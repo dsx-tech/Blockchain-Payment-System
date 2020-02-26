@@ -20,14 +20,14 @@ internal class BtcRpcTest {
         @Container
         @JvmStatic
         val container: KGenericContainer = KGenericContainer("siandreev/bitcoind-regtest:alice-bob-regtest")
-            .withExposedPorts(18444, 18443)
+            .withExposedPorts(18443, 18444)
     }
 
     @BeforeEach
     fun setUp() {
         val address = container.containerIpAddress
         val port = container.firstMappedPort
-        url = "http://bob:password@$address:$port/"
+        url = "http://alice:password@$address:$port/"
         rpc = BtcRpc(url)
         Thread.sleep(4000)
     }
