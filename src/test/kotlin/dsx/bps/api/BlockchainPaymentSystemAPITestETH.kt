@@ -46,6 +46,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         generator = EthRpc(url)
     }
 
+    @Disabled
     @Test
     fun getBalance() {
         assertDoesNotThrow {
