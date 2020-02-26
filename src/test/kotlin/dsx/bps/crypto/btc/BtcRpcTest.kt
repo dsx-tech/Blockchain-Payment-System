@@ -1,17 +1,36 @@
 package dsx.bps.crypto.btc
 
+import dsx.bps.crypto.eth.KGenericContainer
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 import kotlin.math.roundToInt
 
-@Disabled
+@Testcontainers
 internal class BtcRpcTest {
 
-    private val url = "http://bob:password@127.0.0.1:18444/"
-    private val rpc = BtcRpc(url)
+    private lateinit var url: String
+    private lateinit var rpc : BtcRpc
     private val alice = "2N2PDfbH7zRjB1G7MuiVSYYfykME28wKFw6"
+
+    companion object {
+        @Container
+        @JvmStatic
+        val container: KGenericContainer = KGenericContainer("siandreev/bitcoind-regtest:alice-bob-regtest")
+            .withExposedPorts(18444, 18443)
+    }
+
+    @BeforeEach
+    fun setUp() {
+        val address = container.containerIpAddress
+        val port = container.firstMappedPort
+        url = "http://bob:password@$address:$port/"
+        rpc = BtcRpc(url)
+        Thread.sleep(4000)
+    }
 
     @Test
     fun getBalance() {
@@ -134,6 +153,5 @@ internal class BtcRpcTest {
             val r = rpc.generate(1)
             println("btc generate: {n:1}: $r")
         }
-
     }
 }
