@@ -1,11 +1,9 @@
 package dsx.bps.DBservices
 
 import dsx.bps.DBclasses.*
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.math.BigDecimal
 
 class TrxService() {
     init {

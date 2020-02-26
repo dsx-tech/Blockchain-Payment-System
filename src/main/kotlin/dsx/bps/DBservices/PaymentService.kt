@@ -6,7 +6,6 @@ import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.exception.DBservices.BpsDatabaseException
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.exists

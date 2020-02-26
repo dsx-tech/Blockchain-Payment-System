@@ -2,25 +2,21 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import dsx.bps.DBservices.InvoiceService
-import dsx.bps.config.DatabaseConfig
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 
 class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config): Observer<Tx> {
 
-    // TODO: Implement db-storage for invoices
     private val invService = InvoiceService()
+    private val txService = TxService()
     private val unpaid = invService.getUnpaid()
     private val invoices = invService.getInvoices()
-    //private val unpaid = ConcurrentHashMap.newKeySet<String>()
-    //private val invoices = ConcurrentHashMap<String, Invoice>()
 
     var frequency: Long = config[InvoiceProcessorConfig.frequency]
 
@@ -32,9 +28,9 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
         val id = UUID.randomUUID().toString().replace("-", "")
         val inv = Invoice(id, currency, amount, address, tag)
-        invoices[inv.id] = inv
-        unpaid.add(inv.id)//make atomic or recalculate error
         invService.add("unpaid", BigDecimal.ZERO, id, currency.toString(), amount, address, tag)
+        invoices[inv.id] = inv
+        unpaid.add(inv.id)
         return inv
     }
 
@@ -54,20 +50,19 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
             manager
                 .getTxs(inv.currency, inv.txids)
                 .forEach { tx ->
-                    when (tx.status()) {
-                        TxStatus.REJECTED ->
-                            inv.txids.remove(tx.txid()) // do we need to store rejected transactions in db?
-                        TxStatus.CONFIRMED ->
-                            received += tx.amount()
-                        else -> {
-                        }
+                    if (tx.status() == TxStatus.REJECTED) {
+                        txService.updateStatus("REJECTED", tx.hash(), tx.index())
+                        inv.txids.remove(tx.txid())
+                    } else if (tx.status() == TxStatus.CONFIRMED) {
+                        txService.updateStatus("CONFIRMED", tx.hash(), tx.index())
+                        received += tx.amount()
                     }
                 }
         }
-        inv.received = received // why not remove from unpaid if needed?
         invService.updateReceived(received, inv.id)
         if (inv.status == InvoiceStatus.PAID)
             invService.updateStatus("paid", inv.id)
+        inv.received = received
     }
 
     private fun match(inv: Invoice, tx: Tx): Boolean =
@@ -76,7 +71,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
         inv.tag == tx.tag()
 
     /** Check for payment in transaction [tx] */
-    override fun onNext(tx: Tx) {//need to recalculate if failed?
+    override fun onNext(tx: Tx) {
         if (unpaid.isEmpty())
             return
 
@@ -86,17 +81,17 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
             .forEach { inv ->
                 recalculate(inv)
 
-                inv.txids.add(tx.txid())
                 invService.addTx(inv.id, tx.txid())
+                inv.txids.add(tx.txid())
 
                 if (tx.status() == TxStatus.CONFIRMED) {
+                    invService.updateReceived(inv.received + tx.amount(), inv.id)
                     inv.received += tx.amount()
-                    invService.updateReceived(inv.received, inv.id)
                 }
 
                 if (inv.status == InvoiceStatus.PAID) {
-                    unpaid.remove(inv.id)
                     invService.updateStatus("paid", inv.id)
+                    unpaid.remove(inv.id)
                 }
             }
     }

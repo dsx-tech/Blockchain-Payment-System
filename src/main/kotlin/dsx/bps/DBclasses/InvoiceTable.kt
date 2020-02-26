@@ -1,6 +1,5 @@
 package dsx.bps.DBclasses
 
-import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import java.math.BigDecimal

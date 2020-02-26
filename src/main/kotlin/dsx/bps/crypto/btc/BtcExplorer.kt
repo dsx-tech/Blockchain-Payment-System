@@ -2,7 +2,6 @@ package dsx.bps.crypto.btc
 
 import dsx.bps.DBservices.BtcService
 import dsx.bps.DBservices.TxService
-import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer

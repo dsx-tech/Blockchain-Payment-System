@@ -4,7 +4,6 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.TrxService
 import dsx.bps.DBservices.TxService
-import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx

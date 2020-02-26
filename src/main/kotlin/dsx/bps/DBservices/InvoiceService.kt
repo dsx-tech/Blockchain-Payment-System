@@ -4,7 +4,6 @@ import dsx.bps.DBclasses.*
 import dsx.bps.DBclasses.PayableEntity
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.exception.DBservices.BpsDatabaseException
 import org.jetbrains.exposed.sql.*
@@ -60,7 +59,7 @@ class InvoiceService() {
     }
 
     fun getUnpaid(): ConcurrentHashMap.KeySetView<String, Boolean> {
-        val unpaidInv = transaction { InvoiceEntity.find {InvoiceTable.status eq "unpaid"} }
+        val unpaidInv = transaction { InvoiceEntity.find {InvoiceTable.status eq "UNPAID"} }
         val unpaid = ConcurrentHashMap.newKeySet<String>()
         transaction {
             unpaidInv.forEach { unpaid.add(it.invoiceId) }

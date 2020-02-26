@@ -2,28 +2,22 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import dsx.bps.DBservices.PaymentService
-import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.exception.core.payment.PaymentException
 import java.math.BigDecimal
 import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 
 class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, config: Config) {
 
     var frequency: Long = config[PaymentProcessorConfig.frequency]
 
-    // TODO: Implement db-storage for payments
     private val payService = PaymentService()
-    private val pending = payService.getStatusedPayments("pending")
-    private val processing = payService.getStatusedPayments("processing")
+    private val pending = payService.getStatusedPayments("PENDING")
+    private val processing = payService.getStatusedPayments("PROCESSING")
     private val payments = payService.getPayments()
-    //private val pending = ConcurrentHashMap.newKeySet<String>()
-    //private val processing = ConcurrentHashMap.newKeySet<String>()
-    //private val payments = ConcurrentHashMap<String, Payment>()
 
     init {
         check()
@@ -32,9 +26,9 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
     fun createPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Payment {
         val id = UUID.randomUUID().toString().replace("-", "")
         val pay = Payment(id, currency, amount, address, tag)
+        payService.add("PENDING", id, currency.toString(), amount, address, tag)
         payments[pay.id] = pay
         pending.add(pay.id)
-        payService.add("pending", id, currency.toString(), amount, address, tag)
 
         return pay
     }
@@ -47,12 +41,12 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
         payment.txid = tx.txid()
         payment.fee = tx.fee()
 
+        payService.updateStatus("PROCESSING", id)
+        payService.updateFee(payment.fee, id)
+        payService.addTx(id, tx.txid())
         pending.remove(id)
         payment.status = PaymentStatus.PROCESSING
         processing.add(id)
-        payService.updateStatus("processing", id)
-        payService.updateFee(payment.fee, id)
-        payService.addTx(id, tx.txid())
     }
 
     fun getPayment(id: String): Payment? = payments[id]
@@ -66,17 +60,17 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
                     if (match(pay, tx)) {
                         when (tx.status()){
                             TxStatus.VALIDATING -> {
-                                pay.status = PaymentStatus.PROCESSING
                                 payService.updateStatus("processing", pay.id)
+                                pay.status = PaymentStatus.PROCESSING
                             }
                             TxStatus.CONFIRMED -> {
+                                payService.updateStatus("succeed", pay.id)
                                 pay.status = PaymentStatus.SUCCEED
                                 processing.remove(pay.id)
-                                payService.updateStatus("succeed", pay.id)
                             }
                             TxStatus.REJECTED -> {
+                                payService.updateStatus("FAILED", pay.id)
                                 pay.status = PaymentStatus.FAILED
-                                payService.updateStatus("failed", pay.id)
                                 // add this payment to resend list if needed
                             }
                         }

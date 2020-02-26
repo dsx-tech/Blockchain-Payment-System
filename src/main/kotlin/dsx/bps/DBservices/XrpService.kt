@@ -3,7 +3,6 @@ package dsx.bps.DBservices
 import dsx.bps.DBclasses.TxEntity
 import dsx.bps.DBclasses.XrpTxEntity
 import dsx.bps.DBclasses.XrpTxTable
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction

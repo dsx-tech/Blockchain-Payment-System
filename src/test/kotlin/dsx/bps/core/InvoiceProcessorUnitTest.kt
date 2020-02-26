@@ -2,7 +2,7 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.CreatingDatabase
+import dsx.bps.DBservices.DatabaseCreation
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
@@ -16,7 +16,6 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
 import io.reactivex.disposables.Disposable
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Nested
 import java.io.File
@@ -46,6 +45,7 @@ internal class InvoiceProcessorUnitTest {
         databaseConfig.validateRequired()
 
         Datasource.initConnection(databaseConfig)
+        DatabaseCreation().createInvoices()
         invoiceProcessor = InvoiceProcessor(manager, testConfig)
         invService = InvoiceService()
         txService = TxService()
@@ -185,6 +185,31 @@ internal class InvoiceProcessorUnitTest {
             Assertions.assertEquals(invoice.status, InvoiceStatus.UNPAID)
             Assertions.assertEquals(invoice.received, BigDecimal.ZERO)
             Assertions.assertFalse(invoice.txids.contains(TxId("hash5", 5)))
+        }
+
+        @Test
+        @DisplayName("onNextTest: invoices initialisation from db")
+        fun onNextTest6() {
+            val tx = Mockito.mock(Tx::class.java)
+            Mockito.`when`(tx.currency()).thenReturn(Currency.BTC)
+            Mockito.`when`(tx.destination()).thenReturn("addr1")
+            Mockito.`when`(tx.tag()).thenReturn(null)
+            Mockito.`when`(tx.amount()).thenReturn(BigDecimal.ONE)
+            Mockito.`when`(tx.status()).thenReturn(TxStatus.CONFIRMED)
+            Mockito.`when`(tx.txid()).thenReturn(TxId("txhash1",1))
+
+            txService.add(tx.status().toString(), "txhash1", null, BigDecimal.ONE, BigDecimal.ZERO,
+                "txhash1", 1, "BTC")
+            val invoice = invoiceProcessor.getInvoice("inv1")
+            invoiceProcessor.onNext(tx)
+            Assertions.assertEquals("paid", invService.getBySystemId(invoice!!.id).status)
+            Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
+            Assertions.assertTrue(transaction { txService.getByTxId("txhash1", 1).payable ==
+                    invService.getBySystemId(invoice.id).payable})
+            Assertions.assertEquals(invoice.status, InvoiceStatus.PAID)
+            Assertions.assertEquals(invoice.received, BigDecimal.ONE)
+            Assertions.assertTrue(invoice.txids.contains(TxId("txhash1", 1)))
+            Assertions.assertNotNull(invoiceProcessor.getInvoice("inv2"))
         }
     }
 

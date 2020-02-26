@@ -3,12 +3,9 @@ package dsx.bps.DBservices
 import dsx.bps.DBclasses.BtcTxEntity
 import dsx.bps.DBclasses.BtcTxTable
 import dsx.bps.DBclasses.TxEntity
-import dsx.bps.core.datamodel.TxId
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
-import java.math.BigDecimal
 
 class BtcService() {
     init {

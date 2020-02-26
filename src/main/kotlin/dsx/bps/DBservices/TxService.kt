@@ -2,7 +2,6 @@ package dsx.bps.DBservices
 
 import dsx.bps.DBclasses.TxTable
 import dsx.bps.DBclasses.TxEntity
-import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.exists
@@ -43,5 +42,9 @@ class TxService() {
 
     fun getByTxId(hash: String, index: Int): TxEntity {
         return transaction {TxEntity.find {TxTable.hash eq hash and (TxTable.index eq index)}.first()}
+    }
+
+    fun updateStatus(_status: String, hash: String, index: Int) {
+        transaction { getByTxId(hash, index).status = _status }
     }
 }
