@@ -2,8 +2,11 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Payment
+import dsx.bps.core.datamodel.PaymentStatus
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.exception.core.payment.PaymentException
 import java.math.BigDecimal
 import java.util.*
@@ -34,7 +37,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
     fun updatePayment(id: String, tx: Tx) {
         if (!pending.contains(id)) throw PaymentException("There is no pending payment with id = $id")
         val payment = payments[id]
-            ?: throw PaymentException("There is no payment with id = $id")
+                      ?: throw PaymentException("There is no payment with id = $id")
 
         payment.txid = tx.txid()
         payment.fee = tx.fee()
@@ -53,15 +56,15 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 .forEach { pay ->
                     val tx = manager.getTx(pay.currency, pay.txid)
                     if (match(pay, tx)) {
-                        when (tx.status()){
+                        when (tx.status()) {
                             TxStatus.VALIDATING -> {
                                 pay.status = PaymentStatus.PROCESSING
                             }
-                            TxStatus.CONFIRMED -> {
+                            TxStatus.CONFIRMED  -> {
                                 pay.status = PaymentStatus.SUCCEED
                                 processing.remove(pay.id)
                             }
-                            TxStatus.REJECTED -> {
+                            TxStatus.REJECTED   -> {
                                 pay.status = PaymentStatus.FAILED
                                 // add this payment to resend list if needed
                             }
@@ -74,8 +77,8 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
     }
 
     private fun match(pay: Payment, tx: Tx): Boolean =
-            pay.currency == tx.currency() &&
-            pay.amount.compareTo(tx.amount()) == 0 &&
-            pay.address == tx.destination() &&
-            pay.tag == tx.tag()
+        pay.currency == tx.currency() &&
+        pay.amount.compareTo(tx.amount()) == 0 &&
+        pay.address == tx.destination() &&
+        pay.tag == tx.tag()
 }

@@ -1,10 +1,10 @@
 package dsx.bps.api
 
-import java.math.BigDecimal
+import dsx.bps.core.BlockchainPaymentSystemManager
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Invoice
 import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.BlockchainPaymentSystemManager
+import java.math.BigDecimal
 
 class BlockchainPaymentSystemAPI {
 

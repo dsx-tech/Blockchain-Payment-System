@@ -12,9 +12,14 @@ data class XrpAmount(
     val value: BigDecimal = BigDecimal.ZERO,
     val currency: String = Currency.XRP.name
 ) {
+
     companion object {
         class XrpAmountDeserializer: JsonDeserializer<XrpAmount> {
-            override fun deserialize(json: JsonElement?, typeOfT: Type?, context: JsonDeserializationContext?): XrpAmount? {
+            override fun deserialize(
+                json: JsonElement?,
+                typeOfT: Type?,
+                context: JsonDeserializationContext?
+            ): XrpAmount? {
 
                 if (json == null)
                     return null

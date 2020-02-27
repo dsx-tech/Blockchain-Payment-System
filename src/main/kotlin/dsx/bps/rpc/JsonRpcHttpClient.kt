@@ -40,11 +40,13 @@ abstract class JsonRpcHttpClient {
 
     protected open fun constructRequest(method: String, vararg params: Any): RpcRequest {
         val id = Random.nextInt().toString()
-        val json = gson.toJson(mapOf(
-            "method" to method,
-            "params" to params,
-            "id"     to id
-        ))
+        val json = gson.toJson(
+            mapOf(
+                "method" to method,
+                "params" to params,
+                "id" to id
+            )
+        )
         return RpcRequest(rpcURL, json, id)
     }
 
@@ -71,10 +73,12 @@ abstract class JsonRpcHttpClient {
 
         if (conn.responseCode != 200) {
             val errorStream = conn.errorStream
-            throw BpsRpcException("$request failed\n" +
-                    "Code: ${conn.responseCode}\n" +
-                    "Message: ${conn.responseMessage}\n" +
-                    "Response: ${errorStream.use { it.readBytes().toString(charset) }}")
+            throw BpsRpcException(
+                "$request failed\n" +
+                "Code: ${conn.responseCode}\n" +
+                "Message: ${conn.responseMessage}\n" +
+                "Response: ${errorStream.use { it.readBytes().toString(charset) }}"
+            )
         }
 
         val response = conn.inputStream

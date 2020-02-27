@@ -2,7 +2,14 @@ package dsx.bps.core.datamodel
 
 import java.math.BigDecimal
 
-data class Payment(val id: String, val currency: Currency, val amount: BigDecimal, val address: String, val tag: Int? = null) {
+data class Payment(
+    val id: String,
+    val currency: Currency,
+    val amount: BigDecimal,
+    val address: String,
+    val tag: Int? = null
+) {
+
     var status: PaymentStatus = PaymentStatus.PENDING
     lateinit var txid: TxId
     lateinit var fee: BigDecimal

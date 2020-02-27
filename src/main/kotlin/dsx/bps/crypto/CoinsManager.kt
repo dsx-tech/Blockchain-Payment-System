@@ -34,9 +34,9 @@ class CoinsManager {
             }
             coinConfig.validateRequired()
             mutableCoinsMap[enabledCurrency] = when (enabledCurrency) {
-                    Currency.BTC -> BtcCoin(coinConfig)
-                    Currency.TRX -> TrxCoin(coinConfig)
-                    Currency.XRP -> XrpCoin(coinConfig)
+                Currency.BTC -> BtcCoin(coinConfig)
+                Currency.TRX -> TrxCoin(coinConfig)
+                Currency.XRP -> XrpCoin(coinConfig)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()
@@ -47,7 +47,7 @@ class CoinsManager {
     }
 
     private fun getCoin(currency: Currency): Coin = enabledCoins[currency]
-        ?: throw Exception("Currency ${currency.name} isn't specified in configuration file.")
+                                                    ?: throw Exception("Currency ${currency.name} isn't specified in configuration file.")
 
     fun getAddress(currency: Currency): String {
         return getCoin(currency).getAddress()

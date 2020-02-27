@@ -2,7 +2,11 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import dsx.bps.config.InvoiceProcessorConfig
-import dsx.bps.core.datamodel.*
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.Invoice
+import dsx.bps.core.datamodel.InvoiceStatus
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxStatus
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
@@ -48,12 +52,9 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 .getTxs(inv.currency, inv.txids)
                 .forEach { tx ->
                     when (tx.status()) {
-                        TxStatus.REJECTED ->
-                            inv.txids.remove(tx.txid())
-                        TxStatus.CONFIRMED ->
-                            received += tx.amount()
-                        else -> {
-                        }
+                        TxStatus.REJECTED  -> inv.txids.remove(tx.txid())
+                        TxStatus.CONFIRMED -> received += tx.amount()
+                        else               -> {}
                     }
                 }
         }

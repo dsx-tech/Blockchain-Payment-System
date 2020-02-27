@@ -18,7 +18,7 @@ class XrpExplorer(override val coin: XrpCoin, frequency: Long): Explorer(frequen
         timer(this::class.toString(), true, 0, frequency) {
             val newIndex = coin.getLastLedger().index
             if (lastIndex != newIndex) {
-                coin.getAccountTxs(lastIndex+1, newIndex)
+                coin.getAccountTxs(lastIndex + 1, newIndex)
                     .transactions
                     .filter {
                         it.tx.type == "Payment" &&
