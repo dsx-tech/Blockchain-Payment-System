@@ -59,10 +59,7 @@ class BlockchainPaymentSystemManager {
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
     }
 
-    constructor(
-        coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor,
-        paymentProcessor: PaymentProcessor
-    ) {
+    constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor, paymentProcessor: PaymentProcessor) {
         this.coinsManager = coinsManager
 
         val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())

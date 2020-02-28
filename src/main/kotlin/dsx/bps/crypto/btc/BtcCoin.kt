@@ -83,8 +83,8 @@ class BtcCoin: Coin {
 
     private fun match(detail: BtcTxDetail, amount: BigDecimal, address: String): Boolean =
         detail.address == address &&
-                detail.category == "send" &&
-                detail.amount.abs().compareTo(amount.abs()) == 0
+        detail.category == "send" &&
+        detail.amount.abs().compareTo(amount.abs()) == 0
 
     fun getBestBlockHash(): String = rpc.getBestBlockHash()
 
@@ -111,9 +111,9 @@ class BtcCoin: Coin {
             override fun fee() = detail.fee.abs()
 
             override fun status() = when {
-                btcTx.confirmations < 0 -> TxStatus.REJECTED
+                btcTx.confirmations < 0             -> TxStatus.REJECTED
                 btcTx.confirmations < confirmations -> TxStatus.VALIDATING
-                else -> TxStatus.CONFIRMED
+                else                                -> TxStatus.CONFIRMED
             }
         }
     }
@@ -133,9 +133,9 @@ class BtcCoin: Coin {
         override fun fee() = btcTxSinceBlock.fee
 
         override fun status() = when {
-            btcTxSinceBlock.confirmations < 0 -> TxStatus.REJECTED
+            btcTxSinceBlock.confirmations < 0             -> TxStatus.REJECTED
             btcTxSinceBlock.confirmations < confirmations -> TxStatus.VALIDATING
-            else -> TxStatus.CONFIRMED
+            else                                          -> TxStatus.CONFIRMED
         }
     }
 }

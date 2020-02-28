@@ -4,7 +4,6 @@ import com.uchuhimo.konf.Config
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
-import dsx.bps.crypto.eth.Connector
 import io.reactivex.subjects.PublishSubject
 import java.math.BigDecimal
 

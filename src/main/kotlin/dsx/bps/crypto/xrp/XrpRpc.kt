@@ -101,8 +101,8 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
         if (engineResult != "tesSUCCESS" && !engineResult.startsWith("tec"))
             throw XrpRpcException(
                 "engine_result: ${obj["engine_result"].asString}\n" +
-                        "engine_result_code: ${obj["engine_result_code"].asInt}\n" +
-                        "engine_result_message: ${obj["engine_result_message"].asString}"
+                "engine_result_code: ${obj["engine_result_code"].asInt}\n" +
+                "engine_result_message: ${obj["engine_result_message"].asString}"
             )
 
         val tx: XrpTx = gson.fromJson(obj["tx_json"], XrpTx::class.java)
@@ -140,7 +140,7 @@ class XrpRpc(url: String): JsonRpcHttpClient(url) {
             val message = obj["error_message"].asString
             throw XrpRpcException(
                 "RPC error \"$error\": code $code, message: \"$message\"," +
-                        "\n for response: ${response.json}"
+                "\n for response: ${response.json}"
             )
         }
 

@@ -1,5 +1,6 @@
 package dsx.bps.crypto.eth
 
+import dsx.bps.crypto.common.Connector
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder

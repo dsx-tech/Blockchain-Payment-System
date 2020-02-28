@@ -21,10 +21,7 @@ internal class XrpClientUnitTest {
 
     private val xrpRpc = Mockito.mock(XrpRpc::class.java)
     private val xrpBlockchainListener = Mockito.mock(XrpExplorer::class.java)
-    private val xrpClient = XrpCoin(
-        xrpRpc, xrpBlockchainListener,
-        javaClass.getResource("/TestBpsConfig.yaml").path
-    )
+    private val xrpClient = XrpCoin(xrpRpc, xrpBlockchainListener, javaClass.getResource("/TestBpsConfig.yaml").path)
     private val testConfig: Config
 
     init {

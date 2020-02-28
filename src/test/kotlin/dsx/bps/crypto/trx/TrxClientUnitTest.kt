@@ -28,10 +28,7 @@ internal class TrxClientUnitTest {
 
     private val trxRpc = Mockito.mock(TrxRpc::class.java)
     private val trxBlockchainListener = Mockito.mock(TrxExplorer::class.java)
-    private val trxClient = TrxCoin(
-        trxRpc, trxBlockchainListener,
-        javaClass.getResource("/TestBpsConfig.yaml").path
-    )
+    private val trxClient = TrxCoin(trxRpc, trxBlockchainListener, javaClass.getResource("/TestBpsConfig.yaml").path)
     private val testConfig: Config
 
     init {
@@ -87,7 +84,8 @@ internal class TrxClientUnitTest {
             Mockito.`when`(
                 trxRpc.createTransaction(
                     "testaddress",
-                    testConfig[TrxConfig.Coin.accountAddress], BigDecimal.TEN
+                    testConfig[TrxConfig.Coin.accountAddress],
+                    BigDecimal.TEN
                 )
             ).thenReturn(trxTx)
             Mockito.`when`(
@@ -114,11 +112,16 @@ internal class TrxClientUnitTest {
             Mockito.`when`(
                 trxRpc.createTransaction(
                     "testaddress",
-                    testConfig[TrxConfig.Coin.accountAddress], BigDecimal.TEN
+                    testConfig[TrxConfig.Coin.accountAddress],
+                    BigDecimal.TEN
                 )
             ).thenReturn(trxTx)
-            Mockito.`when`(trxRpc.getTransactionSign(testConfig[TrxConfig.Coin.privateKey], trxTx))
-                .thenReturn(trxTx)
+            Mockito.`when`(
+                trxRpc.getTransactionSign(
+                    testConfig[TrxConfig.Coin.privateKey],
+                    trxTx
+                )
+            ).thenReturn(trxTx)
 
             val trxBroadcastTxResult = Mockito.mock(TrxBroadcastTxResult::class.java)
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(false)

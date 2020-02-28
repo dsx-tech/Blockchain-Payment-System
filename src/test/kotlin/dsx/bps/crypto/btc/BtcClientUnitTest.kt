@@ -16,10 +16,7 @@ internal class BtcClientUnitTest {
 
     private val btcRpc = Mockito.mock(BtcRpc::class.java)
     private val btcExplorer = Mockito.mock(BtcExplorer::class.java)
-    private val btcCoin = BtcCoin(
-        btcRpc, btcExplorer,
-        javaClass.getResource("/TestBpsConfig.yaml").path
-    )
+    private val btcCoin = BtcCoin(btcRpc, btcExplorer, javaClass.getResource("/TestBpsConfig.yaml").path)
 
     @Test
     @DisplayName("getBalance test ")

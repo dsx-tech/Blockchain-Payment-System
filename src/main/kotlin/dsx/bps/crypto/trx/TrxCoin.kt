@@ -120,7 +120,7 @@ class TrxCoin: Coin {
                 val conf = lastBlock.blockHeader.rawData.number - txInfo.blockNumber
                 return when {
                     conf < confirmations -> TxStatus.VALIDATING
-                    else -> TxStatus.CONFIRMED
+                    else                 -> TxStatus.CONFIRMED
                 }
             }
 

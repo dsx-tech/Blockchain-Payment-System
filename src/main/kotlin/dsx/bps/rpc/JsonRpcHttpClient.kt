@@ -1,7 +1,7 @@
 package dsx.bps.rpc
 
 import com.google.gson.Gson
-import dsx.bps.crypto.eth.Connector
+import dsx.bps.crypto.common.Connector
 import dsx.bps.exception.rpc.BpsRpcException
 import java.net.HttpURLConnection
 import java.net.URI
@@ -12,7 +12,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 import kotlin.random.Random
 
-abstract class JsonRpcHttpClient: Connector {
+abstract class JsonRpcHttpClient : Connector {
 
     protected var rpcURL: URL
     protected var auth: String?
@@ -41,8 +41,7 @@ abstract class JsonRpcHttpClient: Connector {
 
     protected open fun constructRequest(method: String, vararg params: Any): RpcRequest {
         val id = Random.nextInt().toString()
-        val json: String
-        json = gson.toJson(
+        val json = gson.toJson(
             mapOf(
                 "method" to method,
                 "params" to params,
@@ -75,10 +74,11 @@ abstract class JsonRpcHttpClient: Connector {
 
         if (conn.responseCode != 200) {
             val errorStream = conn.errorStream
-            throw BpsRpcException("$request failed\n" +
-                    "Code: ${conn.responseCode}\n" +
-                    "Message: ${conn.responseMessage}\n" +
-                    "Response: ${errorStream.use { it.readBytes().toString(charset) }}"
+            throw BpsRpcException(
+                "$request failed\n" +
+                "Code: ${conn.responseCode}\n" +
+                "Message: ${conn.responseMessage}\n" +
+                "Response: ${errorStream.use { it.readBytes().toString(charset) }}"
             )
         }
 

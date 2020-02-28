@@ -37,7 +37,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
     fun updatePayment(id: String, tx: Tx) {
         if (!pending.contains(id)) throw PaymentException("There is no pending payment with id = $id")
         val payment = payments[id]
-            ?: throw PaymentException("There is no payment with id = $id")
+                      ?: throw PaymentException("There is no payment with id = $id")
 
         payment.txid = tx.txid()
         payment.fee = tx.fee()
@@ -60,11 +60,11 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
                             TxStatus.VALIDATING -> {
                                 pay.status = PaymentStatus.PROCESSING
                             }
-                            TxStatus.CONFIRMED -> {
+                            TxStatus.CONFIRMED  -> {
                                 pay.status = PaymentStatus.SUCCEED
                                 processing.remove(pay.id)
                             }
-                            TxStatus.REJECTED -> {
+                            TxStatus.REJECTED   -> {
                                 pay.status = PaymentStatus.FAILED
                                 // add this payment to resend list if needed
                             }
@@ -78,7 +78,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
 
     private fun match(pay: Payment, tx: Tx): Boolean =
         pay.currency == tx.currency() &&
-                pay.amount.compareTo(tx.amount()) == 0 &&
-                pay.address == tx.destination() &&
-                pay.tag == tx.tag()
+        pay.amount.compareTo(tx.amount()) == 0 &&
+        pay.address == tx.destination() &&
+        pay.tag == tx.tag()
 }
