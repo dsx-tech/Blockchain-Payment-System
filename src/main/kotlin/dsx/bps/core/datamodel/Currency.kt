@@ -6,13 +6,13 @@ import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.config.currencies.XrpConfig
 
 enum class Currency {
-    BTC{
+    BTC {
         override val coinConfigSpec = BtcConfig
     },
-    XRP{
+    XRP {
         override val coinConfigSpec = XrpConfig
     },
-    TRX{
+    TRX {
         override val coinConfigSpec = TrxConfig
     };
 

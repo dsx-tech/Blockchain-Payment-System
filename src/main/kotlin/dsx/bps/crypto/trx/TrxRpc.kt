@@ -49,10 +49,13 @@ class TrxRpc(url: String): JsonRpcHttpClient(url) {
     }
 
     fun createTransaction(toAddress: String, ownerAddress: String, amount: BigDecimal): TrxTx {
-        val result = query("createtransaction", mapOf(
-            "amount" to amount,
-            "to_address" to toAddress,
-            "owner_address" to ownerAddress)
+        val result = query(
+            "createtransaction",
+            mapOf(
+                "amount" to amount,
+                "to_address" to toAddress,
+                "owner_address" to ownerAddress
+            )
         ) as String
         return gson.fromJson(result, TrxTx::class.java)
     }

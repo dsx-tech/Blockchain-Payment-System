@@ -13,7 +13,9 @@ import dsx.bps.crypto.btc.datamodel.BtcTx
 import dsx.bps.crypto.btc.datamodel.BtcTxDetail
 import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.io.File
 import java.math.BigDecimal
@@ -27,15 +29,17 @@ internal class BtcClientUnitTest {
 
     init {
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
-        val databaseConfig = with (Config()) {
+        val databaseConfig = with(Config()) {
             addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         databaseConfig.validateRequired()
 
         Datasource.initConnection(databaseConfig)
-        btcCoin = BtcCoin(btcRpc, btcExplorer,
-            javaClass.getResource("/TestBpsConfig.yaml").path)
+        btcCoin = BtcCoin(
+            btcRpc, btcExplorer,
+            javaClass.getResource("/TestBpsConfig.yaml").path
+        )
         txService = TxService()
     }
 
@@ -103,10 +107,14 @@ internal class BtcClientUnitTest {
         Assertions.assertEquals(result.destination(), txService.getByTxId("hash", 1).destination)
         Assertions.assertEquals(result.index(), txService.getByTxId("hash", 1).index)
         Assertions.assertEquals(result.hash(), txService.getByTxId("hash", 1).hash)
-        Assertions.assertEquals(result.amount(),
-            txService.getByTxId("hash", 1).amount.stripTrailingZeros().add(BigDecimal.ZERO))
-        Assertions.assertEquals(transaction { BtcService().getByBlockHash("blockhash").Tx.id },
-            txService.getByTxId("hash", 1).id)
+        Assertions.assertEquals(
+            result.amount(),
+            txService.getByTxId("hash", 1).amount.stripTrailingZeros().add(BigDecimal.ZERO)
+        )
+        Assertions.assertEquals(
+            transaction { BtcService().getByBlockHash("blockhash").Tx.id },
+            txService.getByTxId("hash", 1).id
+        )
         Assertions.assertEquals(result.currency(), btcCoin.currency)
         Assertions.assertEquals(result.destination(), btcTxDetail.address)
         Assertions.assertEquals(result.index(), btcTxDetail.vout)
@@ -150,7 +158,7 @@ internal class BtcClientUnitTest {
         val txid: TxId = Mockito.mock(TxId::class.java)
         Mockito.`when`(txid.index).thenReturn(1)
 
-         val result: Tx = btcCoin.constructTx(btcTx,txid)
+        val result: Tx = btcCoin.constructTx(btcTx, txid)
         Assertions.assertEquals(result.currency(), btcCoin.currency)
         Assertions.assertEquals(result.amount(), btcTxDetail.amount)
         Assertions.assertEquals(result.destination(), btcTxDetail.address)

@@ -11,6 +11,7 @@ data class BtcTxDetail(
     @SerializedName("fee")
     private val _fee: BigDecimal?
 ) {
+
     val fee: BigDecimal
         get() = _fee ?: BigDecimal.ZERO
 }

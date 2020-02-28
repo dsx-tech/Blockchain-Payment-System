@@ -70,24 +70,30 @@ internal class XrpClientTest {
         val invId = bob.createInvoice(cur, 373)
         val inv = bob.getInvoice(invId)
         assertNotNull(inv)
-        println("bob's invoice:\n" +
-                "   $inv\n")
+        println(
+            "bob's invoice:\n" +
+            "   $inv\n"
+        )
 
         val payId = alice.sendPayment(inv!!.currency, inv.amount, inv.address, inv.tag)
         Thread.sleep(2000)
         val pay = alice.getPayment(payId)
         assertNotNull(pay)
-        println("alice's payment:" +
-                "   $pay\n" +
-                "   [ ${pay!!.txid} ]")
+        println(
+            "alice's payment:" +
+            "   $pay\n" +
+            "   [ ${pay!!.txid} ]"
+        )
 
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
             rpc.ledgerAccept()
             count += 1
             Thread.sleep(1000)
-            println("inv: ${inv.received} / ${inv.amount}\n" +
-                    "   ${inv.txids}")
+            println(
+                "inv: ${inv.received} / ${inv.amount}\n" +
+                "   ${inv.txids}"
+            )
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 ledgers")
         }
     }

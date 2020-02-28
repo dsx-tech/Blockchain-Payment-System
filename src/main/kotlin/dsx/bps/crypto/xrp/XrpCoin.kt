@@ -11,7 +11,11 @@ import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.xrp.datamodel.*
+import dsx.bps.crypto.xrp.datamodel.XrpAccountTx
+import dsx.bps.crypto.xrp.datamodel.XrpAccountTxs
+import dsx.bps.crypto.xrp.datamodel.XrpLedger
+import dsx.bps.crypto.xrp.datamodel.XrpTx
+import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
 import java.io.File
 import java.math.BigDecimal
 import kotlin.random.Random
@@ -48,7 +52,7 @@ class XrpCoin: Coin {
 
     constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String) {
         val configFile = File(configPath)
-        config = with (Config()) {
+        config = with(Config()) {
             addSpec(XrpConfig)
             from.yaml.file(configFile)
         }

@@ -8,16 +8,20 @@ import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
-import dsx.bps.core.datamodel.*
-import org.junit.jupiter.api.Test
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.InvoiceStatus
+import dsx.bps.core.datamodel.Tx
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.TxStatus
+import io.reactivex.disposables.Disposable
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
-import io.reactivex.disposables.Disposable
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.junit.jupiter.api.Nested
 import java.io.File
 import java.math.BigDecimal
 
@@ -32,7 +36,7 @@ internal class InvoiceProcessorUnitTest {
     init {
         val initConfig = Config()
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
-        testConfig = with (initConfig) {
+        testConfig = with(initConfig) {
             addSpec(InvoiceProcessorConfig)
             from.yaml.file(configFile)
         }
@@ -65,6 +69,7 @@ internal class InvoiceProcessorUnitTest {
 
     @Nested
     inner class OnNextTest {
+
         @Test
         @DisplayName("onNextTest: right tx")
         fun onNextTest1() {

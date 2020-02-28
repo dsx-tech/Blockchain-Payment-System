@@ -53,7 +53,7 @@ class TrxCoin: Coin {
 
     constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String) {
         val configFile = File(configPath)
-        config = with (Config()) {
+        config = with(Config()) {
             addSpec(TrxConfig)
             from.yaml.file(configFile)
         }
@@ -128,7 +128,7 @@ class TrxCoin: Coin {
                 val conf = lastBlock.blockHeader.rawData.number - txInfo.blockNumber
                 return when {
                     conf < confirmations -> TxStatus.VALIDATING
-                    else -> TxStatus.CONFIRMED
+                    else                 -> TxStatus.CONFIRMED
                 }
             }
 

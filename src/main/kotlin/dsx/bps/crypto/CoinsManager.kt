@@ -34,9 +34,9 @@ class CoinsManager {
             }
             coinConfig.validateRequired()
             mutableCoinsMap[enabledCurrency] = when (enabledCurrency) {
-                    Currency.BTC -> BtcCoin(coinConfig)
-                    Currency.TRX -> TrxCoin(coinConfig)
-                    Currency.XRP -> XrpCoin(coinConfig)
+                Currency.BTC -> BtcCoin(coinConfig)
+                Currency.TRX -> TrxCoin(coinConfig)
+                Currency.XRP -> XrpCoin(coinConfig)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()

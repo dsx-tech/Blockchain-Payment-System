@@ -4,7 +4,9 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.btc.BtcRpc
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -50,7 +52,7 @@ internal class BlockchainPaymentSystemAPITest {
             println("bob's payment was sent in ${pay2!!.txid}")
             var count = 0
             while (pay1.status != PaymentStatus.SUCCEED ||
-                    pay2.status != PaymentStatus.SUCCEED) {
+                   pay2.status != PaymentStatus.SUCCEED) {
                 generator.generate(1)
                 count += 1
                 Thread.sleep(2000)

@@ -14,6 +14,7 @@ data class TrxTx(
     @SerializedName("ret")
     private val _ret: List<TrxTxRet>?
 ) {
+
     val ret: List<TrxTxRet>
         get() = _ret ?: listOf()
 

@@ -7,7 +7,15 @@ import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.trx.datamodel.*
+import dsx.bps.crypto.trx.datamodel.TrxBlock
+import dsx.bps.crypto.trx.datamodel.TrxBlockHeader
+import dsx.bps.crypto.trx.datamodel.TrxBlockRawData
+import dsx.bps.crypto.trx.datamodel.TrxBroadcastTxResult
+import dsx.bps.crypto.trx.datamodel.TrxTx
+import dsx.bps.crypto.trx.datamodel.TrxTxContract
+import dsx.bps.crypto.trx.datamodel.TrxTxParameter
+import dsx.bps.crypto.trx.datamodel.TrxTxRawData
+import dsx.bps.crypto.trx.datamodel.TrxTxValue
 import dsx.bps.crypto.xrp.datamodel.TrxTxInfo
 import dsx.bps.exception.crypto.trx.TrxException
 import org.junit.jupiter.api.Assertions
@@ -28,7 +36,7 @@ internal class TrxClientUnitTest {
     init {
         val initConfig = Config()
         val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
-        testConfig = with (initConfig) {
+        testConfig = with(initConfig) {
             addSpec(TrxConfig)
             from.yaml.file(configFile)
         }
@@ -79,21 +87,31 @@ internal class TrxClientUnitTest {
 
     @Nested
     inner class SendPaymentTest {
+
         @Test
         @DisplayName("sendPayment test: success broadcast result")
         fun sendPaymentTest1() {
             val trxTx = mockForConstructTx()
 
-            Mockito.`when`(trxRpc.createTransaction("testaddress",
-                testConfig[TrxConfig.Coin.accountAddress], BigDecimal.TEN)).thenReturn(trxTx)
-            Mockito.`when`(trxRpc.getTransactionSign(testConfig[TrxConfig.Coin.privateKey],
-                trxTx)).thenReturn(trxTx)
+            Mockito.`when`(
+                trxRpc.createTransaction(
+                    "testaddress",
+                    testConfig[TrxConfig.Coin.accountAddress],
+                    BigDecimal.TEN
+                )
+            ).thenReturn(trxTx)
+            Mockito.`when`(
+                trxRpc.getTransactionSign(
+                    testConfig[TrxConfig.Coin.privateKey],
+                    trxTx
+                )
+            ).thenReturn(trxTx)
 
             val trxBroadcastTxResult = Mockito.mock(TrxBroadcastTxResult::class.java)
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(true)
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
 
-            trxClient.sendPayment(BigDecimal.TEN,"testaddress",1)
+            trxClient.sendPayment(BigDecimal.TEN, "testaddress", 1)
         }
 
         @Test
@@ -103,17 +121,26 @@ internal class TrxClientUnitTest {
             val trxTx = Mockito.mock(TrxTx::class.java)
             Mockito.`when`(trxTx.rawData).thenReturn(trxTxRawData)
 
-            Mockito.`when`(trxRpc.createTransaction("testaddress",
-                testConfig[TrxConfig.Coin.accountAddress], BigDecimal.TEN)).thenReturn(trxTx)
-            Mockito.`when`(trxRpc.getTransactionSign(testConfig[TrxConfig.Coin.privateKey], trxTx))
-                .thenReturn(trxTx)
+            Mockito.`when`(
+                trxRpc.createTransaction(
+                    "testaddress",
+                    testConfig[TrxConfig.Coin.accountAddress],
+                    BigDecimal.TEN
+                )
+            ).thenReturn(trxTx)
+            Mockito.`when`(
+                trxRpc.getTransactionSign(
+                    testConfig[TrxConfig.Coin.privateKey],
+                    trxTx
+                )
+            ).thenReturn(trxTx)
 
             val trxBroadcastTxResult = Mockito.mock(TrxBroadcastTxResult::class.java)
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(false)
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
 
             Assertions.assertThrows(TrxException::class.java) {
-                trxClient.sendPayment(BigDecimal.TEN,"testaddress",1)
+                trxClient.sendPayment(BigDecimal.TEN, "testaddress", 1)
             }
         }
     }
@@ -170,12 +197,12 @@ internal class TrxClientUnitTest {
 
         val resultTx = trxClient.constructTx(trxTx)
         Assertions.assertEquals(resultTx.currency(), trxClient.currency)
-        Assertions.assertEquals(resultTx.hash(),"hash")
+        Assertions.assertEquals(resultTx.hash(), "hash")
         Assertions.assertEquals(resultTx.amount(), trxTxValue.amount)
         Assertions.assertEquals(resultTx.destination(), trxTxValue.toAddress)
         Assertions.assertEquals(resultTx.fee(), BigDecimal.ZERO)
         Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
-        Assertions.assertEquals(resultTx.tag(),trxTxRawData.data?.toInt(16))
+        Assertions.assertEquals(resultTx.tag(), trxTxRawData.data?.toInt(16))
     }
 
     private fun mockForConstructTx(): TrxTx {
