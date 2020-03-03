@@ -36,6 +36,7 @@ sourceSets {
 }
 
 test {
+    systemProperty 'java.library.path', file( 'src/main/jniLibs' )
     useJUnitPlatform()
 }
 

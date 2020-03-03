@@ -7,11 +7,7 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.btc.datamodel.BtcBlock
-import dsx.bps.crypto.btc.datamodel.BtcListSinceBlock
-import dsx.bps.crypto.btc.datamodel.BtcTx
-import dsx.bps.crypto.btc.datamodel.BtcTxDetail
-import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
+import dsx.bps.crypto.btc.datamodel.*
 import dsx.bps.crypto.common.Coin
 import java.io.File
 import java.math.BigDecimal
@@ -21,7 +17,7 @@ class BtcCoin: Coin {
     override val currency = Currency.BTC
     override val config: Config
 
-    override val rpc: BtcRpc
+    override val connection: BtcRpc
     override val explorer: BtcExplorer
 
     private val confirmations: Int
@@ -34,7 +30,7 @@ class BtcCoin: Coin {
         val host = config[BtcConfig.Connection.host]
         val port = config[BtcConfig.Connection.port]
         val url = "http://$user:$pass@$host:$port/"
-        rpc = BtcRpc(url)
+        connection = BtcRpc(url)
 
         confirmations = config[BtcConfig.Coin.confirmations]
 
@@ -51,28 +47,28 @@ class BtcCoin: Coin {
         config.validateRequired()
 
         confirmations = config[BtcConfig.Coin.confirmations]
-        rpc = btcRpc
+        connection = btcRpc
         explorer = btcExplorer
     }
 
-    override fun getBalance(): BigDecimal = rpc.getBalance()
+    override fun getBalance(): BigDecimal = connection.getBalance()
 
-    override fun getAddress(): String = rpc.getNewAddress()
+    override fun getAddress(): String = connection.getNewAddress()
 
     override fun getTag(): Int? = null
 
     override fun getTx(txid: TxId): Tx {
-        val btcTx = rpc.getTransaction(txid.hash)
+        val btcTx = connection.getTransaction(txid.hash)
         return constructTx(btcTx, txid)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
-        val tx = rpc.createRawTransaction(amount, address)
-            .let { rpc.fundRawTransaction(it) }
+        val tx = connection.createRawTransaction(amount, address)
+            .let { connection.fundRawTransaction(it) }
             // TODO: implement local tx sign
-            .let { rpc.signRawTransactionWithWallet(it) }
-            .let { rpc.sendRawTransaction(it) }
-            .let { rpc.getTransaction(it) }
+            .let { connection.signRawTransactionWithWallet(it) }
+            .let { connection.sendRawTransaction(it) }
+            .let { connection.getTransaction(it) }
 
         val detail = tx
             .details
@@ -86,11 +82,11 @@ class BtcCoin: Coin {
         detail.category == "send" &&
         detail.amount.abs().compareTo(amount.abs()) == 0
 
-    fun getBestBlockHash(): String = rpc.getBestBlockHash()
+    fun getBestBlockHash(): String = connection.getBestBlockHash()
 
-    fun getBlock(hash: String): BtcBlock = rpc.getBlock(hash)
+    fun getBlock(hash: String): BtcBlock = connection.getBlock(hash)
 
-    fun listSinceBlock(hash: String): BtcListSinceBlock = rpc.listSinceBlock(hash)
+    fun listSinceBlock(hash: String): BtcListSinceBlock = connection.listSinceBlock(hash)
 
     fun constructTx(btcTx: BtcTx, txid: TxId): Tx {
         val detail = btcTx

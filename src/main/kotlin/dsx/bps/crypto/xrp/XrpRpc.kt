@@ -2,16 +2,10 @@ package dsx.bps.crypto.xrp
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import dsx.bps.crypto.xrp.datamodel.XrpAccountData
-import dsx.bps.crypto.xrp.datamodel.XrpAccountTxs
-import dsx.bps.crypto.xrp.datamodel.XrpAmount
-import dsx.bps.crypto.xrp.datamodel.XrpLedger
-import dsx.bps.crypto.xrp.datamodel.XrpServerInfo
-import dsx.bps.crypto.xrp.datamodel.XrpTx
-import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
+import dsx.bps.connection.rpc.JsonRpcHttpClient
+import dsx.bps.connection.rpc.RpcResponse
+import dsx.bps.crypto.xrp.datamodel.*
 import dsx.bps.exception.rpc.xrp.XrpRpcException
-import dsx.bps.rpc.JsonRpcHttpClient
-import dsx.bps.rpc.RpcResponse
 import java.math.BigDecimal
 
 class XrpRpc(url: String): JsonRpcHttpClient(url) {

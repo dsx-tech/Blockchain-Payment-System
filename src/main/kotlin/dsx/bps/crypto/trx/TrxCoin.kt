@@ -24,7 +24,7 @@ class TrxCoin: Coin {
     private val accountAddress: String
     private val privateKey: String
 
-    override val rpc: TrxRpc
+    override val connection: TrxRpc
     override val explorer: TrxExplorer
 
     private val confirmations: Int
@@ -39,7 +39,7 @@ class TrxCoin: Coin {
         val host = config[TrxConfig.Connection.host]
         val port = config[TrxConfig.Connection.port]
         val url = "http://$host:$port/wallet/"
-        rpc = TrxRpc(url)
+        connection = TrxRpc(url)
 
         confirmations = config[TrxConfig.Coin.confirmations]
 
@@ -61,29 +61,29 @@ class TrxCoin: Coin {
 
         confirmations = config[TrxConfig.Coin.confirmations]
 
-        rpc = trxRpc
+        connection = trxRpc
         explorer = trxExplorer
     }
 
-    override fun getBalance(): BigDecimal = rpc.getBalance(accountAddress)
+    override fun getBalance(): BigDecimal = connection.getBalance(accountAddress)
 
     override fun getAddress(): String = accountAddress
 
     override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
 
     override fun getTx(txid: TxId): Tx {
-        val trxTx = rpc.getTransactionById(txid.hash)
+        val trxTx = connection.getTransactionById(txid.hash)
         return constructTx(trxTx)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
-        val tx = rpc.createTransaction(address, accountAddress, amount)
+        val tx = connection.createTransaction(address, accountAddress, amount)
             .let {
                 it.rawData.data = tag?.toString(16)
-                rpc.getTransactionSign(privateKey, it)
+                connection.getTransactionSign(privateKey, it)
             }
 
-        val result = rpc.broadcastTransaction(tx)
+        val result = connection.broadcastTransaction(tx)
 
         if (result.success) {
             return constructTx(tx)
@@ -92,20 +92,20 @@ class TrxCoin: Coin {
         }
     }
 
-    fun getNowBlock(): TrxBlock = rpc.getNowBlock()
+    fun getNowBlock(): TrxBlock = connection.getNowBlock()
 
-    fun getBlockByNum(num: Int): TrxBlock = rpc.getBlockByNum(num)
+    fun getBlockByNum(num: Int): TrxBlock = connection.getBlockByNum(num)
 
-    fun getBlockById(hash: String): TrxBlock = rpc.getBlockById(hash)
+    fun getBlockById(hash: String): TrxBlock = connection.getBlockById(hash)
 
     fun constructTx(trxTx: TrxTx): Tx {
         val contract = trxTx.rawData.contract.first()
         val value = contract.parameter.value
 
-        val txInfo = rpc.getTransactionInfoById(trxTx.hash)
-        val lastBlock = rpc.getNowBlock()
+        val txInfo = connection.getTransactionInfoById(trxTx.hash)
+        val lastBlock = connection.getNowBlock()
 
-        return object: Tx {
+        return object : Tx {
             override fun currency() = Currency.TRX
 
             override fun hash() = trxTx.hash

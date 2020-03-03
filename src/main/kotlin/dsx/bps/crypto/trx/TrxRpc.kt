@@ -1,13 +1,9 @@
 package dsx.bps.crypto.trx
 
-import dsx.bps.crypto.trx.datamodel.TrxAccount
-import dsx.bps.crypto.trx.datamodel.TrxBlock
-import dsx.bps.crypto.trx.datamodel.TrxBroadcastTxResult
-import dsx.bps.crypto.trx.datamodel.TrxTx
-import dsx.bps.crypto.xrp.datamodel.TrxTxInfo
-import dsx.bps.rpc.JsonRpcHttpClient
-import dsx.bps.rpc.RpcRequest
-import dsx.bps.rpc.RpcResponse
+import dsx.bps.connection.rpc.JsonRpcHttpClient
+import dsx.bps.connection.rpc.RpcRequest
+import dsx.bps.connection.rpc.RpcResponse
+import dsx.bps.crypto.trx.datamodel.*
 import java.math.BigDecimal
 import java.net.URL
 

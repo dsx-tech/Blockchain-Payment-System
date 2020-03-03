@@ -8,11 +8,7 @@ import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.xrp.datamodel.XrpAccountTx
-import dsx.bps.crypto.xrp.datamodel.XrpAccountTxs
-import dsx.bps.crypto.xrp.datamodel.XrpLedger
-import dsx.bps.crypto.xrp.datamodel.XrpTx
-import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
+import dsx.bps.crypto.xrp.datamodel.*
 import java.io.File
 import java.math.BigDecimal
 import kotlin.random.Random
@@ -26,7 +22,7 @@ class XrpCoin: Coin {
     private val privateKey: String
     private val passPhrase: String
 
-    override val rpc: XrpRpc
+    override val connection: XrpRpc
     override val explorer: XrpExplorer
 
     constructor(conf: Config) {
@@ -39,7 +35,7 @@ class XrpCoin: Coin {
         val host = config[XrpConfig.Connection.host]
         val port = config[XrpConfig.Connection.port]
         val url = "http://$host:$port/"
-        rpc = XrpRpc(url)
+        connection = XrpRpc(url)
 
         val frequency = config[XrpConfig.Explorer.frequency]
         explorer = XrpExplorer(this, frequency)
@@ -57,39 +53,40 @@ class XrpCoin: Coin {
         privateKey = config[XrpConfig.Coin.privateKey]
         passPhrase = config[XrpConfig.Coin.passPhrase]
 
-        rpc = xrpRpc
+        connection = xrpRpc
         explorer = xrpExplorer
     }
 
-    override fun getBalance(): BigDecimal = rpc.getBalance(account)
+    override fun getBalance(): BigDecimal = connection.getBalance(account)
 
     override fun getAddress(): String = account
 
     override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
 
     override fun getTx(txid: TxId): Tx {
-        val xrtTx = rpc.getTransaction(txid.hash)
+        val xrtTx = connection.getTransaction(txid.hash)
         return constructTx(xrtTx)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
         return createTransaction(amount, address, tag)
-            .let { rpc.sign(privateKey, it) }
-            .let { rpc.submit(it) }
+            .let { connection.sign(privateKey, it) }
+            .let { connection.submit(it) }
             .let { constructTx(it) }
     }
 
     private fun createTransaction(amount: BigDecimal, address: String, tag: Int?): XrpTxPayment {
-        val fee = rpc.getTxCost()
-        val seq = rpc.getSequence(account)
+        val fee = connection.getTxCost()
+        val seq = connection.getSequence(account)
         return XrpTxPayment(account, amount, address, fee.toPlainString(), seq, tag)
     }
 
-    fun getLastLedger(): XrpLedger = rpc.getLastLedger()
+    fun getLastLedger(): XrpLedger = connection.getLastLedger()
 
-    fun getLedger(hash: String): XrpLedger = rpc.getLedger(hash)
+    fun getLedger(hash: String): XrpLedger = connection.getLedger(hash)
 
-    fun getAccountTxs(indexMin: Long, indexMax: Long): XrpAccountTxs = rpc.getAccountTxs(account, indexMin, indexMax)
+    fun getAccountTxs(indexMin: Long, indexMax: Long): XrpAccountTxs =
+        connection.getAccountTxs(account, indexMin, indexMax)
 
     fun constructTx(xrpAccountTx: XrpAccountTx): Tx {
         val tx = xrpAccountTx.tx
@@ -98,7 +95,7 @@ class XrpCoin: Coin {
         if (delivered?.currency == currency.name)
             amount = delivered.value
 
-        return object: Tx {
+        return object : Tx {
 
             override fun currency() = Currency.XRP
 
