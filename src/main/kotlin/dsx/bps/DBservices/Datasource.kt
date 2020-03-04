@@ -8,21 +8,19 @@ import dsx.bps.exception.DBservices.BpsDatabaseException
 import org.jetbrains.exposed.sql.Database
 
 class Datasource() {
-    companion object{
-        var conn: Database? = null
+    var conn: Database? = null
 
-        fun initConnection(conf: Config) {
-            val config = HikariConfig()
-            config.driverClassName = conf[DatabaseConfig.driver]
-            config.jdbcUrl = conf[DatabaseConfig.connectionURL]
-            config.maximumPoolSize = conf[DatabaseConfig.maximumPoolSize].toInt()
-            config.validate()
-            conn = Database.Companion.connect(HikariDataSource(config))
-        }
+    fun initConnection(conf: Config) {
+        val config = HikariConfig()
+        config.driverClassName = conf[DatabaseConfig.driver]
+        config.jdbcUrl = conf[DatabaseConfig.connectionURL]
+        config.maximumPoolSize = conf[DatabaseConfig.maximumPoolSize].toInt()
+        config.validate()
+        conn = Database.Companion.connect(HikariDataSource(config))
+    }
 
-        fun getConnection(): Database {
-            return conn
-                ?: throw BpsDatabaseException("connection was not initialized")
-        }
+    fun getConnection(): Database {
+        return conn
+            ?: throw BpsDatabaseException("connection was not initialized")
     }
 }

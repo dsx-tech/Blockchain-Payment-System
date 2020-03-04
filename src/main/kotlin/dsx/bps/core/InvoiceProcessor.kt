@@ -1,6 +1,7 @@
 package dsx.bps.core
 
 import com.uchuhimo.konf.Config
+import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.InvoiceProcessorConfig
@@ -15,10 +16,10 @@ import java.math.BigDecimal
 import java.util.UUID
 import kotlin.concurrent.timer
 
-class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config): Observer<Tx> {
+class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config, datasource: Datasource): Observer<Tx> {
 
-    private val invService = InvoiceService()
-    private val txService = TxService()
+    private val invService = InvoiceService(datasource)
+    private val txService = TxService(datasource)
     private val unpaid = invService.getUnpaid()
     private val invoices = invService.getInvoices()
 
@@ -32,7 +33,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
         val id = UUID.randomUUID().toString().replace("-", "")
         val inv = Invoice(id, currency, amount, address, tag)
-        invService.add("unpaid", BigDecimal.ZERO, id, currency.toString(), amount, address, tag)
+        invService.add("unpaid", BigDecimal.ZERO, id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
         return inv

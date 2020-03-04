@@ -7,9 +7,9 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class BtcService() {
+class BtcService(datasource: Datasource) {
     init {
-        Datasource.getConnection()
+        datasource.getConnection()
         transaction {
             if (!BtcTxTable.exists())
                 SchemaUtils.create(BtcTxTable)

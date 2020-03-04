@@ -1,8 +1,8 @@
 package dsx.bps.DBclasses
 
 import org.jetbrains.exposed.dao.IntIdTable
-import org.jetbrains.exposed.sql.Column
+import dsx.bps.core.datamodel.Type
 
 object PayableTable: IntIdTable() {
-    val type: Column<String> = varchar("type", 10)
+    val type = enumeration("type", Type::class)
 }

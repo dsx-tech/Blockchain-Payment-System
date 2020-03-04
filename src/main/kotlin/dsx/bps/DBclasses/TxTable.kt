@@ -1,5 +1,6 @@
 package dsx.bps.DBclasses
 
+import dsx.bps.core.datamodel.Currency
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
 import java.math.BigDecimal
@@ -12,6 +13,6 @@ object TxTable: IntIdTable() {
     val fee: Column<BigDecimal> = decimal("fee", 30, 15)
     val hash: Column<String> = varchar("hash", 500)
     val index: Column<Int> = integer("index")
-    val currency: Column<String> = varchar("currency", 15)
+    val currency = enumeration("currency", Currency::class)
     val payableId = reference("payableId", PayableTable).nullable()
 }

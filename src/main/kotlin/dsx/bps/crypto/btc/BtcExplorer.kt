@@ -1,17 +1,18 @@
 package dsx.bps.crypto.btc
 
 import dsx.bps.DBservices.BtcService
+import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
-class BtcExplorer(override val coin: BtcCoin, frequency: Long): Explorer(frequency) {
+class BtcExplorer(override val coin: BtcCoin, datasource: Datasource, frequency: Long): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
 
-    private val btcService = BtcService()
-    private val txService = TxService()
+    private val btcService = BtcService(datasource)
+    private val txService = TxService(datasource)
 
     init {
         explore()
@@ -36,8 +37,10 @@ class BtcExplorer(override val coin: BtcCoin, frequency: Long): Explorer(frequen
                     .transactions
                     .forEach {
                         val tx = coin.constructTx(it)
-                        val newTx = txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
-                            tx.fee(), tx.hash(), tx.index(), tx.currency().toString())
+                        val newTx = txService.add(
+                            tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                            tx.fee(), tx.hash(), tx.index(), tx.currency()
+                        )
                         btcService.add(it.confirmations, blockHash, it.address, newTx)
                         emitter.onNext(tx)
                     }

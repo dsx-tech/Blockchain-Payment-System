@@ -2,15 +2,16 @@ package dsx.bps.DBservices
 
 import dsx.bps.DBclasses.TxTable
 import dsx.bps.DBclasses.TxEntity
+import dsx.bps.core.datamodel.Currency
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class TxService() {
+class TxService(datasource: Datasource) {
     init {
-        Datasource.getConnection()
+        datasource.getConnection()
         transaction {
             if (!TxTable.exists())
                 SchemaUtils.create(TxTable)
@@ -20,7 +21,7 @@ class TxService() {
     fun add(_status: String, _destination: String,
             _tag: Int?, _amount: BigDecimal,
             _fee: BigDecimal, _hash: String,
-            _index: Int, _currency: String): TxEntity {
+            _index: Int, _currency: Currency): TxEntity {
         val newTx = transaction{
             TxEntity.new {
                 status = _status

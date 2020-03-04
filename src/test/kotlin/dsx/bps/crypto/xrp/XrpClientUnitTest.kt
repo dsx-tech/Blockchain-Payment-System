@@ -23,6 +23,7 @@ internal class XrpClientUnitTest {
 
     private val xrpRpc = Mockito.mock(XrpRpc::class.java)
     private val xrpBlockchainListener = Mockito.mock(XrpExplorer::class.java)
+    private val datasource = Datasource()
     private val xrpClient: XrpCoin
     private val testConfig: Config
 
@@ -41,9 +42,9 @@ internal class XrpClientUnitTest {
         }
         databaseConfig.validateRequired()
 
-        Datasource.initConnection(databaseConfig)
+        datasource.initConnection(databaseConfig)
         xrpClient = XrpCoin(xrpRpc, xrpBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path)
+            javaClass.getResource("/TestBpsConfig.yaml").path, datasource)
     }
 
     @Test

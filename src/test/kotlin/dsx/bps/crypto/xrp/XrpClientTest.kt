@@ -20,18 +20,8 @@ import java.math.BigDecimal
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class XrpClientTest {
 
-    init {
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
-        val databaseConfig = with (Config()) {
-            addSpec(DatabaseConfig)
-            from.yaml.file(configFile)
-        }
-        databaseConfig.validateRequired()
-
-        Datasource.initConnection(databaseConfig)
-    }
-
     private val cur = Currency.XRP
+
     private val configDir = System.getProperty("user.home") + File.separator + "bps" + File.separator
     private val aliceConfigPath = configDir + "alice.properties"
     private val bobConfigPath = configDir + "bob.properties"

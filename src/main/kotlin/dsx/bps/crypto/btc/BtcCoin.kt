@@ -3,6 +3,7 @@ package dsx.bps.crypto.btc
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.BtcService
+import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.BtcConfig
 import dsx.bps.core.datamodel.Currency
@@ -27,11 +28,13 @@ class BtcCoin: Coin {
     override val explorer: BtcExplorer
 
     private val confirmations: Int
-    private val btcService = BtcService()
-    private val txService = TxService()
+    private val btcService: BtcService
+    private val txService: TxService
 
-    constructor(conf: Config) {
+    constructor(conf: Config, datasource: Datasource) {
         config = conf
+        btcService = BtcService(datasource)
+        txService = TxService(datasource)
 
         val user = config[BtcConfig.Coin.user]
         val pass = config[BtcConfig.Coin.password]
@@ -43,10 +46,12 @@ class BtcCoin: Coin {
         confirmations = config[BtcConfig.Coin.confirmations]
 
         val frequency = config[BtcConfig.Explorer.frequency]
-        explorer = BtcExplorer(this, frequency)
+        explorer = BtcExplorer(this, datasource, frequency)
     }
 
-    constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String) {
+    constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String, datasource: Datasource) {
+        btcService = BtcService(datasource)
+        txService = TxService(datasource)
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(BtcConfig)
@@ -84,7 +89,7 @@ class BtcCoin: Coin {
 
         val transaction = constructTx(tx, TxId(tx.hash, detail.vout))
         val new = txService.add(transaction.status().toString(), transaction.destination(), transaction.tag(),
-            transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency().toString())
+            transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
         btcService.add(tx.confirmations, tx.blockhash, detail.address, new)
         return transaction
     }

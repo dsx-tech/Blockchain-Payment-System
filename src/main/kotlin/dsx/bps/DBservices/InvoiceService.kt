@@ -5,15 +5,16 @@ import dsx.bps.DBclasses.PayableEntity
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Invoice
 import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.Type
 import dsx.bps.exception.DBservices.BpsDatabaseException
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
-class InvoiceService() {
+class InvoiceService(datasource: Datasource) {
     init {
-        Datasource.getConnection()
+        datasource.getConnection()
         transaction {
             if (!InvoiceTable.exists())
                 SchemaUtils.create(InvoiceTable)
@@ -23,7 +24,7 @@ class InvoiceService() {
     }
 
     fun add(_status: String, _received: BigDecimal,
-            _invoiceId: String, _currency: String,
+            _invoiceId: String, _currency: Currency,
             _amount: BigDecimal, _address: String,
             _tag: Int?): InvoiceEntity {
         val newInvoice = transaction{
@@ -35,7 +36,7 @@ class InvoiceService() {
                 amount = _amount
                 address = _address
                 tag = _tag
-                payable = PayableEntity.new { type = "invoice" }
+                payable = PayableEntity.new { type = Type.Invoice }
             }
         }
 
@@ -87,17 +88,7 @@ class InvoiceService() {
     }
 
     fun makeInvFromDB (invoice: InvoiceEntity): Invoice {
-        val currency: Currency
-        currency = when (invoice.currency){
-            "btc" -> Currency.BTC
-            "BTC" -> Currency.BTC
-            "xrp" -> Currency.XRP
-            "XRP" -> Currency.XRP
-            "trx" -> Currency.TRX
-            "TRX" -> Currency.TRX
-            else -> throw BpsDatabaseException("wrong currency")
-        }
-        val inv = Invoice(invoice.invoiceId, currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+        val inv = Invoice(invoice.invoiceId, invoice.currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
                           invoice.address, invoice.tag)//amount zeroes problem better options?
         inv.received = invoice.received
         transaction { invoice.payable.txs.forEach { inv.txids.add(TxId(it.hash, it.index)) } }

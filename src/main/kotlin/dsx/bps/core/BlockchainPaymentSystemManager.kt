@@ -20,6 +20,7 @@ import java.io.File
 import java.math.BigDecimal
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import javax.xml.crypto.Data
 
 class BlockchainPaymentSystemManager {
 
@@ -29,13 +30,21 @@ class BlockchainPaymentSystemManager {
 
     private val coinsManager: CoinsManager
     private val emitter: Observable<Tx>
+    private val datasource = Datasource()
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
     constructor(confPath: String = DEFAULT_CONFIG_PATH) {
         val configFile = File(confPath)
 
-        coinsManager = CoinsManager(configFile)
+        val databaseConfig = with(Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
+        datasource.initConnection(databaseConfig)
+        coinsManager = CoinsManager(configFile, datasource)
 
         val bpsConfig = with(Config()) {
             addSpec(BPSConfig)
@@ -57,15 +66,8 @@ class BlockchainPaymentSystemManager {
         }
         paymentProcessorConfig.validateRequired()
 
-        val databaseConfig = with(Config()) {
-            addSpec(DatabaseConfig)
-            from.yaml.file(configFile)
-        }
-        databaseConfig.validateRequired()
-
-        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig)
-        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
-        Datasource.initConnection(databaseConfig)
+        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource)
+        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource)
     }
 
     constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor, paymentProcessor: PaymentProcessor) {

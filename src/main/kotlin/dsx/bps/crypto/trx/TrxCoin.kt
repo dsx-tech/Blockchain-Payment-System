@@ -2,6 +2,7 @@ package dsx.bps.crypto.trx
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TrxService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.TrxConfig
@@ -25,16 +26,18 @@ class TrxCoin: Coin {
     private val account: String
     private val accountAddress: String
     private val privateKey: String
-    private val trxService = TrxService()
-    private val txService = TxService()
+    private val trxService: TrxService
+    private val txService: TxService
 
     override val rpc: TrxRpc
     override val explorer: TrxExplorer
 
     private val confirmations: Int
 
-    constructor(conf: Config) {
+    constructor(conf: Config, datasource: Datasource) {
         config = conf
+        trxService = TrxService(datasource)
+        txService = TxService(datasource)
 
         account = config[TrxConfig.Coin.account]
         accountAddress = config[TrxConfig.Coin.accountAddress]
@@ -48,10 +51,12 @@ class TrxCoin: Coin {
         confirmations = config[TrxConfig.Coin.confirmations]
 
         val frequency = config[TrxConfig.Explorer.frequency]
-        explorer = TrxExplorer(this, frequency)
+        explorer = TrxExplorer(this,datasource, frequency)
     }
 
-    constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String) {
+    constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String, datasource: Datasource) {
+        trxService = TrxService(datasource)
+        txService = TxService(datasource)
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(TrxConfig)
@@ -73,7 +78,7 @@ class TrxCoin: Coin {
 
     override fun getAddress(): String = accountAddress
 
-    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)//need to store?
+    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
 
     override fun getTx(txid: TxId): Tx {
         val trxTx = rpc.getTransactionById(txid.hash)
@@ -92,7 +97,7 @@ class TrxCoin: Coin {
         if (result.success) {
             val transaction = constructTx(tx)
             val new = txService.add(transaction.status().toString(), transaction.destination(), transaction.tag(),
-                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency().toString())
+                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
             trxService.add(this.getAddress(),tx.ret.map { trxTxRet -> trxTxRet.contractRet }, new)
             return transaction
         } else {

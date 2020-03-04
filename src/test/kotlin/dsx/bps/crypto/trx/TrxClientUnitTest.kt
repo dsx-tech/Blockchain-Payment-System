@@ -30,6 +30,7 @@ internal class TrxClientUnitTest {
 
     private val trxRpc = Mockito.mock(TrxRpc::class.java)
     private val trxBlockchainListener = Mockito.mock(TrxExplorer::class.java)
+    private val datasource = Datasource()
     private val trxClient: TrxCoin
     private val testConfig: Config
 
@@ -48,9 +49,9 @@ internal class TrxClientUnitTest {
         }
         databaseConfig.validateRequired()
 
-        Datasource.initConnection(databaseConfig)
+        datasource.initConnection(databaseConfig)
         trxClient = TrxCoin(trxRpc, trxBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path)
+            javaClass.getResource("/TestBpsConfig.yaml").path, datasource)
     }
 
     @Test

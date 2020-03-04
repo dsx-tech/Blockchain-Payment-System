@@ -5,6 +5,7 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.Type
 import dsx.bps.exception.DBservices.BpsDatabaseException
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
@@ -13,9 +14,9 @@ import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 import java.util.concurrent.ConcurrentHashMap
 
-class PaymentService() {
+class PaymentService(datasource: Datasource) {
     init {
-        Datasource.getConnection()
+        datasource.getConnection()
         transaction {
             if (!PaymentTable.exists())
                 SchemaUtils.create(PaymentTable)
@@ -24,8 +25,8 @@ class PaymentService() {
         }
     }
 
-    fun add(_status: String,
-            _paymentId: String, _currency: String,
+    fun add(_status: PaymentStatus,
+            _paymentId: String, _currency: Currency,
             _amount: BigDecimal, _address: String,
             _tag: Int?): PaymentEntity {
         val newPayment = transaction{
@@ -36,7 +37,7 @@ class PaymentService() {
                 amount = _amount
                 address = _address
                 tag = _tag
-                payable = PayableEntity.new { type = "payment" }
+                payable = PayableEntity.new { type = Type.Payment }
             }
         }
         return newPayment
@@ -54,7 +55,7 @@ class PaymentService() {
         return transaction {PaymentEntity.find {PaymentTable.paymentId eq id}.first()}
     }
 
-    fun getStatusedPayments(status: String): ConcurrentHashMap.KeySetView<String, Boolean> {
+    fun getStatusedPayments(status: PaymentStatus): ConcurrentHashMap.KeySetView<String, Boolean> {
         val payments = transaction { PaymentEntity.find {PaymentTable.status eq status} }
         val keys = ConcurrentHashMap.newKeySet<String>()
         transaction { payments.forEach { keys.add(it.paymentId) } }
@@ -81,31 +82,10 @@ class PaymentService() {
     }
 
     fun makePaymentFromDB (payment: PaymentEntity): Payment {
-        val currency: Currency
-        currency = when (payment.currency) {
-            "btc" -> Currency.BTC
-            "BTC" -> Currency.BTC
-            "xrp" -> Currency.XRP
-            "XRP" -> Currency.XRP
-            "trx" -> Currency.TRX
-            "TRX" -> Currency.TRX
-            else -> throw BpsDatabaseException("wrong currency")
-        }
-
-        val pay = Payment(payment.paymentId, currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+        val pay = Payment(payment.paymentId, payment.currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
                           payment.address, payment.tag)
 
-        pay.status = when (payment.status) {
-            "pending" -> PaymentStatus.PENDING
-            "PENDING" -> PaymentStatus.PENDING
-            "processing" -> PaymentStatus.PROCESSING
-            "PROCESSING" -> PaymentStatus.PROCESSING
-            "succeed" -> PaymentStatus.SUCCEED
-            "SUCCEED" -> PaymentStatus.SUCCEED
-            "failed" -> PaymentStatus.FAILED
-            "FAILED" -> PaymentStatus.FAILED
-            else -> throw BpsDatabaseException("wrong payment status")
-        }
+        pay.status = payment.status
 
         transaction {
             if (!payment.payable.txs.empty())
@@ -116,7 +96,7 @@ class PaymentService() {
         return pay
     }
 
-    fun updateStatus(_status: String, systemId: String) {
+    fun updateStatus(_status: PaymentStatus, systemId: String) {
         transaction { getBySystemId(systemId).status = _status }
     }
 

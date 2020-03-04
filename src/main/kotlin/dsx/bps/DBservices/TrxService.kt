@@ -5,9 +5,9 @@ import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class TrxService() {
+class TrxService(datasource: Datasource) {
     init {
-        Datasource.getConnection()
+        datasource.getConnection()
         transaction {
             if (!TrxTxTable.exists())
                 SchemaUtils.create(TrxTxTable)
@@ -38,9 +38,4 @@ class TrxService() {
     fun delete(trxTx: TrxTxEntity) {
         transaction {trxTx.delete()}
     }
-
-//    fun getByHash(hash: String): TrxTxEntity {
-//        Database.connect(Datasource().getHicari())
-//        return transaction { TrxTxEntity.find { TrxTxTable.hash eq hash}.first()}
-//    }
 }

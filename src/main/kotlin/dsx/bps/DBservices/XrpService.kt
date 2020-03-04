@@ -8,9 +8,9 @@ import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class XrpService() {
+class XrpService(datasource: Datasource) {
     init {
-        Datasource.getConnection()
+        datasource.getConnection()
         transaction {
             if (!XrpTxTable.exists())
                 SchemaUtils.create(XrpTxTable)
@@ -35,9 +35,4 @@ class XrpService() {
     fun delete(xrpTx: XrpTxEntity) {
         transaction {xrpTx.delete()}
     }
-
-//    fun getByHash(hash: String): XrpTxEntity {
-//        Database.connect(Datasource().getHicari())
-//        return transaction { XrpTxEntity.find { XrpTxTable.hash eq hash}.first()}
-//    }
 }

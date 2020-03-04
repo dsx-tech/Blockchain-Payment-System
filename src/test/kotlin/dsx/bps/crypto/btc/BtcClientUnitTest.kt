@@ -24,6 +24,7 @@ internal class BtcClientUnitTest {
 
     private val btcRpc = Mockito.mock(BtcRpc::class.java)
     private val btcExplorer = Mockito.mock(BtcExplorer::class.java)
+    private val datasource = Datasource()
     private val btcCoin: BtcCoin
     private val txService: TxService
 
@@ -35,12 +36,13 @@ internal class BtcClientUnitTest {
         }
         databaseConfig.validateRequired()
 
-        Datasource.initConnection(databaseConfig)
+        datasource.initConnection(databaseConfig)
         btcCoin = BtcCoin(
             btcRpc, btcExplorer,
-            javaClass.getResource("/TestBpsConfig.yaml").path
+            javaClass.getResource("/TestBpsConfig.yaml").path,
+            datasource
         )
-        txService = TxService()
+        txService = TxService(datasource)
     }
 
     @Test
@@ -112,7 +114,7 @@ internal class BtcClientUnitTest {
             txService.getByTxId("hash", 1).amount.stripTrailingZeros().add(BigDecimal.ZERO)
         )
         Assertions.assertEquals(
-            transaction { BtcService().getByBlockHash("blockhash").Tx.id },
+            transaction { BtcService(datasource).getByBlockHash("blockhash").Tx.id },
             txService.getByTxId("hash", 1).id
         )
         Assertions.assertEquals(result.currency(), btcCoin.currency)

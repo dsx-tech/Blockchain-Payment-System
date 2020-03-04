@@ -29,6 +29,7 @@ internal class PaymentProcessorUnitTest {
 
     private val manager = Mockito.mock(BlockchainPaymentSystemManager::class.java)
     private val paymentProcessor: PaymentProcessor
+    private val datasource = Datasource()
     private val payService: PaymentService
     private val txService: TxService
     private val testConfig: Config
@@ -48,11 +49,11 @@ internal class PaymentProcessorUnitTest {
         }
         databaseConfig.validateRequired()
 
-        Datasource.initConnection(databaseConfig)
-        DatabaseCreation().createPayments()
-        paymentProcessor = PaymentProcessor(manager, testConfig)
-        payService = PaymentService()
-        txService = TxService()
+        datasource.initConnection(databaseConfig)
+        DatabaseCreation(datasource).createPayments()
+        paymentProcessor = PaymentProcessor(manager, testConfig, datasource)
+        payService = PaymentService(datasource)
+        txService = TxService(datasource)
     }
 
     @ParameterizedTest
@@ -86,7 +87,7 @@ internal class PaymentProcessorUnitTest {
         Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
         txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
-            "txhash1", 1, tx.currency().toString())
+            "txhash1", 1, tx.currency())
         val payment = paymentProcessor.getPayment("pay1")
         Assertions.assertEquals("PENDING", payService.getBySystemId(payment!!.id).status)
         Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
@@ -130,7 +131,7 @@ internal class PaymentProcessorUnitTest {
             Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
             txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
-                "hash", 1, tx.currency().toString())
+                "hash", 1, tx.currency())
             val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             Assertions.assertEquals("PENDING", payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
