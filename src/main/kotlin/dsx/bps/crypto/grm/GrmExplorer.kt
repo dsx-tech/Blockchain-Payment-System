@@ -25,7 +25,9 @@ class GrmExplorer(override val coin: GrmCoin, frequency: Long) : Explorer(freque
                             && it.inMsg.msgData.body.isNotEmpty()
                 }.forEach {
                     val tx = coin.constructTx(it)
-                    emitter.onNext(tx)
+                    when (tx.tag()) {
+                        checkNotNull(tx.tag()) -> emitter.onNext(tx)
+                    }
                 }
                 lastTxId = newTransactionId
             }

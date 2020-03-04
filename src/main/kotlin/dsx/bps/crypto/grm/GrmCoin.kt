@@ -94,7 +94,7 @@ class GrmCoin : Coin {
 
             override fun destination() = grmTx.inMsg.destination
 
-            override fun tag() = grmTx.inMsg.msgData.body.toString().toInt()
+            override fun tag() = grmTx.inMsg.msgData.body.toString(Charsets.UTF_8).toIntOrNull()
 
             override fun fee() = BigDecimal(grmTx.fee)
 
