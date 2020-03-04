@@ -37,7 +37,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
     fun setUp() {
         val address = container.containerIpAddress
         generator = BtcRpc("http://bob:password@$address:18444/")
-        Thread.sleep(8000)
+        Thread.sleep(10000)
 
         aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
@@ -48,8 +48,8 @@ internal class BlockchainPaymentSystemAPITestBTC {
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            println("alice balance: ${aliceAPI.getBalance(Currency.BTC)}")
-            println("bob balance: ${bobAPI.getBalance(Currency.BTC)}")
+           assertNotEquals(aliceAPI.getBalance(Currency.BTC), "0")
+           assertNotEquals(bobAPI.getBalance(Currency.BTC),"0")
         }
     }
 
@@ -57,26 +57,23 @@ internal class BlockchainPaymentSystemAPITestBTC {
     fun sendPayment() {
         assertDoesNotThrow {
             generator.generate(101)
-            val id1 = aliceAPI.sendPayment(Currency.BTC, 50.05, bobBtcAddress)
+            val id1 = aliceAPI.sendPayment(Currency.BTC, 5.05, bobBtcAddress)
             Thread.sleep(1000)
 
-            val id2 = bobAPI.sendPayment(Currency.BTC, 20.52, aliceBtcAddress)
+            val id2 = bobAPI.sendPayment(Currency.BTC, 2.52, aliceBtcAddress)
             Thread.sleep(1000)
 
             val pay1 = aliceAPI.getPayment(id1)
             val pay2 = bobAPI.getPayment(id2)
             assertNotNull(pay1)
             assertNotNull(pay2)
-            println("alice's payment was sent in ${pay1!!.txid}")
-            println("bob's payment was sent in ${pay2!!.txid}")
+
             var count = 0
-            while (pay1.status != PaymentStatus.SUCCEED ||
-                pay2.status != PaymentStatus.SUCCEED) {
+            while (pay1!!.status != PaymentStatus.SUCCEED ||
+                pay2!!.status != PaymentStatus.SUCCEED) {
                 count += 1
                 generator.generate(1)
                 Thread.sleep(2000)
-                println("alice's payment status: ${pay1.status}")
-                println("bob's payment status: ${pay2.status}")
                 assertNotEquals(10, count, "Payment wasn't confirmed or found in 10 blocks")
             }
         }
@@ -102,7 +99,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
 
     @Test
     fun createInvoiceWithTwoPayments() {
-        val invId = aliceAPI.createInvoice(Currency.BTC, 100.2)
+        val invId = aliceAPI.createInvoice(Currency.BTC, 10.2)
         val inv = aliceAPI.getInvoice(invId)
         assertNotNull(inv)
 
@@ -110,7 +107,6 @@ internal class BlockchainPaymentSystemAPITestBTC {
         bobAPI.sendPayment(inv.currency, half, inv.address)
         Thread.sleep(2000)
         Thread.sleep(2000)
-        println("Received funds: ${inv.received} / ${inv.amount} in tx ${inv.txids}")
 
         bobAPI.sendPayment(inv.currency, half, inv.address)
         Thread.sleep(2000)
@@ -121,8 +117,6 @@ internal class BlockchainPaymentSystemAPITestBTC {
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
         }
-        println("$inv :")
-        println("   txs ${inv.txids}")
-    }
+      }
 
 }

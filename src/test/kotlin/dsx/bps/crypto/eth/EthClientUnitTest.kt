@@ -91,8 +91,6 @@ internal class EthClientUnitTest {
         Assertions.assertNotEquals(txConfirmed.fee(), txValidating.fee())
         Assertions.assertEquals(txConfirmed.status(), TxStatus.CONFIRMED)
         Assertions.assertEquals(txValidating.status(), TxStatus.VALIDATING)
-        println("expected fee is ${txValidating.fee()} Wei")
-        println("real fee is ${txConfirmed.fee()} Wei")
     }
 
     @Test
@@ -179,9 +177,6 @@ internal class EthClientUnitTest {
         Mockito.`when`(ethRpc.getTransactionByHash("hash1")).thenReturn(ethTx)
 
         val resultTx = ethClient.constructTx(ethTx)
-        println(resultTx.amount())
-        println(resultTx.status())
-        println(resultTx.fee())
 
         Assertions.assertEquals(resultTx.currency(), ethClient.currency)
         Assertions.assertEquals(resultTx.hash(), "hash1")
@@ -204,7 +199,6 @@ internal class EthClientUnitTest {
         Mockito.`when`(ethRpc.getTransactionByHash("hash2")).thenReturn(ethTx)
 
         val resultTx = ethClient.constructTx(ethTx)
-        println(resultTx.amount())
 
         Assertions.assertEquals(resultTx.currency(), ethClient.currency)
         Assertions.assertEquals(resultTx.hash(), "hash2")

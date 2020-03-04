@@ -22,6 +22,7 @@ ETH:
     confirmations: 2
     defaultPasswordForNewAddresses: "newPassword"
     walletsDir: "./src/test/resources/ETH/bobWallet/"
+    scanningCount: 30
   connection:
     host: "127.0.0.1"
     port: "8545"

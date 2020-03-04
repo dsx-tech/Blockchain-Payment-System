@@ -50,8 +50,8 @@ internal class BlockchainPaymentSystemAPITestETH {
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            println("alice balance: ${aliceAPI.getBalance(Currency.ETH)} eth")
-            println("bob balance: ${bobAPI.getBalance(Currency.ETH)} eth")
+            assertNotEquals(aliceAPI.getBalance(Currency.ETH), "0")
+            //TODO: create another etherbase account
         }
     }
 
@@ -61,28 +61,23 @@ internal class BlockchainPaymentSystemAPITestETH {
         assertDoesNotThrow {
             val id1 = aliceAPI.sendPayment(Currency.ETH, 1.0, bobEthAddress)
             Thread.sleep(1000)
-            generator.waitForSomeBlocksMining()
+            waitForSomeBlocksMining()
             Thread.sleep(1000)
             val id2 = bobAPI.sendPayment(Currency.ETH, 0.2, aliceEthAddress)
-            generator.waitForSomeBlocksMining()
+            waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)
             val pay2 = bobAPI.getPayment(id2)
             assertNotNull(pay1)
             assertNotNull(pay2)
-            println("alice's payment was sent in ${pay1!!.txid}")
-            println("bob's payment was sent in ${pay2!!.txid}")
+
             var count = 0
-            while (pay1.status != PaymentStatus.SUCCEED ||
-                pay2.status != PaymentStatus.SUCCEED) {
+            while (pay1!!.status != PaymentStatus.SUCCEED ||
+                pay2!!.status != PaymentStatus.SUCCEED) {
                 count += 1
-                println("alice's payment status: ${pay1.status}")
-                println("bob's payment status: ${pay2.status}")
-                generator.waitForSomeBlocksMining()
+                waitForSomeBlocksMining()
                 assertNotEquals(5, count, "Payment wasn't confirmed or found in >= 5 blocks")
             }
-            println("alice's payment status: ${pay1.status}")
-            println("bob's payment status: ${pay2.status}")
         }
     }
 
@@ -96,7 +91,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         aliceAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
-            generator.waitForSomeBlocksMining()
+            waitForSomeBlocksMining()
             count += 1
             assertNotEquals(10, count, "Invoice wasn't paid or found in >= 10 blocks")
         }
@@ -111,19 +106,28 @@ internal class BlockchainPaymentSystemAPITestETH {
 
         val half = inv!!.amount / BigDecimal(2)
         aliceAPI.sendPayment(inv.currency, half, inv.address)
-        generator.waitForSomeBlocksMining()
-        println("Received funds: ${inv.received} / ${inv.amount} in tx ${inv.txids}")
+        waitForSomeBlocksMining()
 
         aliceAPI.sendPayment(inv.currency, half, inv.address)
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
-            generator.waitForSomeBlocksMining()
+            waitForSomeBlocksMining()
             count += 1
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in >= 10 blocks")
         }
-        println("$inv :")
-        println("   txs ${inv.txids}")
+    }
+
+    fun waitForSomeBlocksMining() {
+        val latestHash = generator.getLatestBlock()
+        var count = 0
+        while (generator.getLatestBlock() == latestHash && count < 160) {
+            Thread.sleep(5000)
+            count++
+        }
+        if (count >= 160) {
+            throw Exception("Block mining timed out")
+        }
     }
 
 }

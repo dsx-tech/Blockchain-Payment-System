@@ -1,7 +1,7 @@
 package dsx.bps.crypto.eth
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.MethodOrderer
@@ -49,10 +49,10 @@ internal class EthRpcTest {
     @Order(1)
     @Test
     fun getBalance() {
-        println(address + port)
         assertDoesNotThrow {
             val bal = ethRpc.getBalance(alice)
-            println(bal)
+            assertNotEquals(bal, 0.toBigDecimal())
+            //TODO: create another etherbase account
         }
     }
 
@@ -63,11 +63,10 @@ internal class EthRpcTest {
             val oldFile = lastFileModified("./src/test/resources")
             val address = ethRpc.generateWalletFile("defaultPassword", "./src/test/resources")
             val newFile = lastFileModified("./src/test/resources")
-            Assertions.assertNotEquals(oldFile, newFile)
+            assertNotEquals(oldFile, newFile)
             if (oldFile != newFile && newFile != null) {
                 Files.delete(newFile.toPath())
             }
-            println(address)
         }
     }
 
@@ -76,7 +75,6 @@ internal class EthRpcTest {
     fun createRawTransaction() {
         assertDoesNotThrow {
             val tx = ethRpc.createRawTransaction(0.toBigInteger(), toAddress = bob, value = 0.01.toBigDecimal())
-            println(tx)
         }
     }
 
@@ -88,7 +86,6 @@ internal class EthRpcTest {
             val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
             val hash = ethRpc.signTransaction(tx, credentials)
             val result = ethRpc.sendTransaction(hash)
-            println(result)
         }
     }
 
@@ -101,7 +98,6 @@ internal class EthRpcTest {
         val result = ethRpc.sendTransaction(hash)
         assertDoesNotThrow {
             val trans = ethRpc.getTransactionByHash(result)
-            println(trans)
         }
     }
 
@@ -112,7 +108,6 @@ internal class EthRpcTest {
         assertDoesNotThrow {
             val pathTOWallet = aliceWalletPath
             val txHash = ethRpc.sendTransaction(pathTOWallet, alice_p, alice, 0.012.toBigDecimal())
-            println(txHash)
         }
     }
 
@@ -122,7 +117,6 @@ internal class EthRpcTest {
         val hash = ethRpc.getLatestBlock().hash
         assertDoesNotThrow {
             val block = ethRpc.getBlockByHash(hash)
-            println(block)
         }
     }
 
@@ -131,7 +125,6 @@ internal class EthRpcTest {
     fun getLatestBlock() {
         assertDoesNotThrow {
             val block = ethRpc.getLatestBlock()
-            println(block.hash)
         }
     }
 
@@ -143,10 +136,9 @@ internal class EthRpcTest {
         val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
         val hash = ethRpc.signTransaction(tx, credentials)
         val result = ethRpc.sendTransaction(hash)
-        ethRpc.waitForSomeBlocksMining()
+        waitForSomeBlocksMining()
         assertDoesNotThrow {
             val txRt = ethRpc.getTransactionReceiptByHash(result)
-            println(txRt)
         }
     }
 
@@ -155,7 +147,6 @@ internal class EthRpcTest {
     fun getTransactionsCount() {
         assertDoesNotThrow {
             val txCnt = ethRpc.getTransactionCount(alice)
-            println(txCnt)
         }
     }
 
@@ -164,7 +155,6 @@ internal class EthRpcTest {
     fun getAllPendingTransactionsCount() {
         assertDoesNotThrow {
             val txCnt = ethRpc.getAllPendingTransactionsCount()
-            println(txCnt)
         }
     }
 
@@ -173,7 +163,6 @@ internal class EthRpcTest {
     fun getPendingTransactionsCount() {
         assertDoesNotThrow {
             val txCnt = ethRpc.getPendingTransactionsCount(alice)
-            println(txCnt)
         }
     }
 
@@ -193,5 +182,17 @@ internal class EthRpcTest {
             }
         }
         return choice
+    }
+
+    fun waitForSomeBlocksMining() {
+        val latestHash = ethRpc.getLatestBlock()
+        var count = 0
+        while (ethRpc.getLatestBlock() == latestHash && count < 160) {
+            Thread.sleep(5000)
+            count++
+        }
+        if (count >= 160) {
+            throw Exception("Block mining timed out")
+        }
     }
 }

@@ -20,6 +20,7 @@ class EthCoin: Coin {
     override val currency = Currency.ETH
     override val config: Config
 
+    val scanningCount : Int
     private val accountAddress: String
     private val password: String
     private val pathToWallet: String
@@ -35,6 +36,7 @@ class EthCoin: Coin {
     constructor(conf: Config) {
         config = conf
 
+        scanningCount = config[EthConfig.Coin.scanningCount]
         accountAddress = config[EthConfig.Coin.accountAddress]
         password = config[EthConfig.Coin.password]
         pathToWallet = config[EthConfig.Coin.pathToWallet]
@@ -61,6 +63,7 @@ class EthCoin: Coin {
         }
         config.validateRequired()
 
+        scanningCount = config[EthConfig.Coin.scanningCount]
         accountAddress = config[EthConfig.Coin.accountAddress]
         password = config[EthConfig.Coin.password]
         pathToWallet = config[EthConfig.Coin.pathToWallet]
@@ -120,8 +123,7 @@ class EthCoin: Coin {
                 if (ethTx.blockHash == null) {
                     return TxStatus.VALIDATING
                 } else {
-                    val conf = BigInteger(latestBlock.numberRaw.toString().substring(2), 16)
-                    -ethTx.blockNumber
+                    val conf = latestBlock.number - ethTx.blockNumber
                     if (conf < confirmations.toBigInteger()) {
                         return TxStatus.VALIDATING
                     } else {

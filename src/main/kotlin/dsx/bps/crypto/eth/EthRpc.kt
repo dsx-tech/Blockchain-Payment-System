@@ -8,6 +8,7 @@ import org.web3j.crypto.WalletUtils
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.DefaultBlockParameter
 import org.web3j.protocol.core.DefaultBlockParameterName
+import org.web3j.protocol.core.methods.response.EthBlock
 import org.web3j.protocol.core.methods.response.EthGetBalance
 import org.web3j.protocol.core.methods.response.Transaction
 import org.web3j.protocol.core.methods.response.TransactionReceipt
@@ -37,12 +38,12 @@ class EthRpc(url: String): Connector {
         return transactionInfo.transaction.get()
     }
 
-    fun getBlockByHash(hash: String): org.web3j.protocol.core.methods.response.EthBlock.Block {
+    fun getBlockByHash(hash: String): EthBlock.Block {
         val blockInfo = web3j.ethGetBlockByHash(hash, true).sendAsync().get()
         return blockInfo.block
     }
 
-    fun getLatestBlock(): org.web3j.protocol.core.methods.response.EthBlock.Block {
+    fun getLatestBlock(): EthBlock.Block {
         val ethBlock = web3j.ethGetBlockByNumber(
             DefaultBlockParameterName.LATEST,
             true
@@ -64,8 +65,8 @@ class EthRpc(url: String): Connector {
             true
         ).sendAsync().get()
         val tx =
-            ethBlock.block.transactions.map { it -> it.get() as org.web3j.protocol.core.methods.response.EthBlock.TransactionObject }
-        return tx.filter { it -> it.from == address }.size
+            ethBlock.block.transactions.map { it.get() as EthBlock.TransactionObject }
+        return tx.filter { it.from == address }.size
     }
 
     fun getAllTransactionsCount(address: String): BigInteger {
@@ -130,17 +131,5 @@ class EthRpc(url: String): Connector {
             value, Convert.Unit.ETHER
         ).send()
         return transactionReceipt.transactionHash
-    }
-
-    fun waitForSomeBlocksMining() {
-        val latestHash = getLatestBlock()
-        var count = 0
-        while (getLatestBlock() == latestHash && count < 160) {
-            Thread.sleep(5000)
-            count++
-        }
-        if (count >= 160) {
-            throw Exception("Block mining timed out")
-        }
     }
 }

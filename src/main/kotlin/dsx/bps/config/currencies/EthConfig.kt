@@ -10,6 +10,7 @@ object EthConfig: ConfigSpec("ETH") {
         val defaultPasswordForNewAddresses by required<String>()
         val walletsDir by required<String>()
         val confirmations by required<Int>()
+        val scanningCount by required<Int>()
     }
 
     object Connection: ConfigSpec("connection") {

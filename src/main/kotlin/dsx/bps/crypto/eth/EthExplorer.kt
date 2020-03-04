@@ -8,7 +8,6 @@ import kotlin.concurrent.timer
 
 class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequency) {
 
-    val scaningCount = 30
     override val currency: Currency = coin.currency
 
     init {
@@ -18,7 +17,7 @@ class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequen
     override fun explore() {
         var last = coin.getLatestBlock()
         var scanedBlocks = 0
-        while (last.numberRaw.substring(2).toBigInteger(16) != BigInteger.ZERO && scanedBlocks < scaningCount) {
+        while (last.number != BigInteger.ZERO && scanedBlocks < coin.scanningCount) {
             last = coin.getBlockByHash(last.parentHash)
             scanedBlocks ++
         }
