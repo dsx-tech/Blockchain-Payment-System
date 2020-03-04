@@ -33,7 +33,7 @@ class XrpExplorer(override val coin: XrpCoin, datasource: Datasource, frequency:
                     }
                     .forEach {
                         val tx = coin.constructTx(it)
-                        val newTx = txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                        val newTx = txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(),
                             tx.fee(), tx.hash(), tx.index(), tx.currency())
                         xrpService.add(tx.fee(), it.tx.account, it.tx.sequence, it.validated, newTx)
                         emitter.onNext(tx)

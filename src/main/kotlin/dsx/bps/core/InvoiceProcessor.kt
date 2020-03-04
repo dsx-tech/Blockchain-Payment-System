@@ -56,10 +56,10 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 .getTxs(inv.currency, inv.txids)
                 .forEach { tx ->
                     if (tx.status() == TxStatus.REJECTED) {
-                        txService.updateStatus("REJECTED", tx.hash(), tx.index())
+                        txService.updateStatus(TxStatus.REJECTED, tx.hash(), tx.index())
                         inv.txids.remove(tx.txid())
                     } else if (tx.status() == TxStatus.CONFIRMED) {
-                        txService.updateStatus("CONFIRMED", tx.hash(), tx.index())
+                        txService.updateStatus(TxStatus.CONFIRMED, tx.hash(), tx.index())
                         received += tx.amount()
                     }
                 }

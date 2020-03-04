@@ -38,7 +38,7 @@ class BtcExplorer(override val coin: BtcCoin, datasource: Datasource, frequency:
                     .forEach {
                         val tx = coin.constructTx(it)
                         val newTx = txService.add(
-                            tx.status().toString(), tx.destination(), tx.tag(), tx.amount(),
+                            tx.status(), tx.destination(), tx.tag(), tx.amount(),
                             tx.fee(), tx.hash(), tx.index(), tx.currency()
                         )
                         btcService.add(it.confirmations, blockHash, it.address, newTx)

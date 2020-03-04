@@ -86,7 +86,7 @@ internal class PaymentProcessorUnitTest {
 
         Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
-        txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
+        txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
             "txhash1", 1, tx.currency())
         val payment = paymentProcessor.getPayment("pay1")
         Assertions.assertEquals("PENDING", payService.getBySystemId(payment!!.id).status)
@@ -130,7 +130,7 @@ internal class PaymentProcessorUnitTest {
 
             Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
-            txService.add(tx.status().toString(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
+            txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
                 "hash", 1, tx.currency())
             val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             Assertions.assertEquals("PENDING", payService.getBySystemId(payment.id).status)

@@ -1,8 +1,10 @@
 package dsx.bps.DBservices
 
+import com.sun.xml.internal.txw2.output.TXWSerializer
 import dsx.bps.DBclasses.TxTable
 import dsx.bps.DBclasses.TxEntity
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.TxStatus
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.exists
@@ -18,7 +20,7 @@ class TxService(datasource: Datasource) {
         }
     }
 
-    fun add(_status: String, _destination: String,
+    fun add(_status: TxStatus, _destination: String,
             _tag: Int?, _amount: BigDecimal,
             _fee: BigDecimal, _hash: String,
             _index: Int, _currency: Currency): TxEntity {
@@ -45,7 +47,7 @@ class TxService(datasource: Datasource) {
         return transaction {TxEntity.find {TxTable.hash eq hash and (TxTable.index eq index)}.first()}
     }
 
-    fun updateStatus(_status: String, hash: String, index: Int) {
+    fun updateStatus(_status: TxStatus, hash: String, index: Int) {
         transaction { getByTxId(hash, index).status = _status }
     }
 }

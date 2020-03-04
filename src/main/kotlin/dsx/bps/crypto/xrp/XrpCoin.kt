@@ -87,7 +87,7 @@ class XrpCoin: Coin {
             .let { rpc.sign(privateKey, it) }
             .let { rpc.submit(it) }
         val tx = constructTx(xrpTx)
-        val new = txService.add(tx.status().toString(), tx.destination(), tx.tag(),
+        val new = txService.add(tx.status(), tx.destination(), tx.tag(),
             tx.amount(), tx.fee(), tx.hash(), tx.index(), tx.currency())
         xrpService.add(tx.fee(), this.account, xrpTx.sequence, xrpTx.validated, new)
         return tx
