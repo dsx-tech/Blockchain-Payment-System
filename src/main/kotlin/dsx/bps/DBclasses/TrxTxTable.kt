@@ -5,7 +5,7 @@ import org.jetbrains.exposed.sql.Column
 
 object TrxTxTable: IntIdTable() {
     val address: Column<String> = varchar("address", 100)
-    val TxId = reference("TxId", TxTable)
+    val txId = reference("TxId", TxTable)
 }
 
 object ContractRetTable: IntIdTable() {

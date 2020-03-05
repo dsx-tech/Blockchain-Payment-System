@@ -17,22 +17,24 @@ class XrpService(datasource: Datasource) {
         }
     }
 
-    fun add(_fee: BigDecimal, _account: String,
-            _sequence: Int, _validated: Boolean?,
-            _tx: TxEntity): XrpTxEntity {
-        val newXrpTxEntity = transaction{
+    fun add(
+        fee: BigDecimal, account: String,
+        sequence: Int, validated: Boolean?,
+        tx: TxEntity
+    ): XrpTxEntity {
+        val newXrpTxEntity = transaction {
             XrpTxEntity.new {
-                fee = _fee
-                account = _account
-                sequence = _sequence
-                validated = _validated
-                Tx = _tx
+                this.fee = fee
+                this.account = account
+                this.sequence = sequence
+                this.validated = validated
+                this.tx = tx
             }
         }
         return newXrpTxEntity
     }
 
     fun delete(xrpTx: XrpTxEntity) {
-        transaction {xrpTx.delete()}
+        transaction { xrpTx.delete() }
     }
 }

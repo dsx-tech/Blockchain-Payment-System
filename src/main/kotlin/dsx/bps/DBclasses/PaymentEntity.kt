@@ -5,7 +5,7 @@ import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass
 
 class PaymentEntity(id: EntityID<Int>): IntEntity(id) {
-    companion object : IntEntityClass<PaymentEntity>(PaymentTable)
+    companion object: IntEntityClass<PaymentEntity>(PaymentTable)
 
     var status by PaymentTable.status
     var fee by PaymentTable.fee

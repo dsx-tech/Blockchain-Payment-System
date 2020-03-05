@@ -2,7 +2,6 @@ package dsx.bps.crypto.btc
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.BtcService
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.DatabaseConfig
@@ -12,7 +11,6 @@ import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.btc.datamodel.BtcTx
 import dsx.bps.crypto.btc.datamodel.BtcTxDetail
 import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -95,7 +93,6 @@ internal class BtcClientUnitTest {
         val btcTx: BtcTx = Mockito.mock(BtcTx::class.java)
         Mockito.`when`(btcTx.details).thenReturn(listOf(btcTxDetail))
         Mockito.`when`(btcTx.hash).thenReturn("hash")
-        Mockito.`when`(btcTx.blockhash).thenReturn("blockhash")
 
         Mockito.`when`(btcRpc.getTransaction("hash")).thenReturn(btcTx)
         Mockito.`when`(btcRpc.createRawTransaction(BigDecimal.TEN, "testaddress")).thenReturn("rawTx")
@@ -105,17 +102,13 @@ internal class BtcClientUnitTest {
         Mockito.`when`(btcRpc.getTransaction("hash")).thenReturn(btcTx)
 
         val result = btcCoin.sendPayment(BigDecimal.TEN, "testaddress", null)
-        Assertions.assertEquals(result.currency().toString(), txService.getByTxId("hash", 1).currency)
+        Assertions.assertEquals(result.currency(), txService.getByTxId("hash", 1).currency)
         Assertions.assertEquals(result.destination(), txService.getByTxId("hash", 1).destination)
         Assertions.assertEquals(result.index(), txService.getByTxId("hash", 1).index)
         Assertions.assertEquals(result.hash(), txService.getByTxId("hash", 1).hash)
         Assertions.assertEquals(
             result.amount(),
             txService.getByTxId("hash", 1).amount.stripTrailingZeros().add(BigDecimal.ZERO)
-        )
-        Assertions.assertEquals(
-            transaction { BtcService(datasource).getByBlockHash("blockhash").Tx.id },
-            txService.getByTxId("hash", 1).id
         )
         Assertions.assertEquals(result.currency(), btcCoin.currency)
         Assertions.assertEquals(result.destination(), btcTxDetail.address)

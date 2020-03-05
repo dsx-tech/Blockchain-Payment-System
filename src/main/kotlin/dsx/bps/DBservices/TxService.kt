@@ -1,6 +1,5 @@
 package dsx.bps.DBservices
 
-import com.sun.xml.internal.txw2.output.TXWSerializer
 import dsx.bps.DBclasses.TxTable
 import dsx.bps.DBclasses.TxEntity
 import dsx.bps.core.datamodel.Currency
@@ -20,34 +19,36 @@ class TxService(datasource: Datasource) {
         }
     }
 
-    fun add(_status: TxStatus, _destination: String,
-            _tag: Int?, _amount: BigDecimal,
-            _fee: BigDecimal, _hash: String,
-            _index: Int, _currency: Currency): TxEntity {
-        val newTx = transaction{
+    fun add(
+        status: TxStatus, destination: String,
+        tag: Int?, amount: BigDecimal,
+        fee: BigDecimal, hash: String,
+        index: Int, currency: Currency
+    ): TxEntity {
+        val newTx = transaction {
             TxEntity.new {
-                status = _status
-                destination = _destination
-                tag = _tag
-                amount = _amount
-                fee = _fee
-                hash = _hash
-                index = _index
-                currency = _currency
+                this.status = status
+                this.destination = destination
+                this.tag = tag
+                this.amount = amount
+                this.fee = fee
+                this.hash = hash
+                this.index = index
+                this.currency = currency
             }
         }
         return newTx
     }
 
     fun getById(id: Int): TxEntity? {
-        return transaction { TxEntity.findById(id)}
+        return transaction { TxEntity.findById(id) }
     }
 
     fun getByTxId(hash: String, index: Int): TxEntity {
-        return transaction {TxEntity.find {TxTable.hash eq hash and (TxTable.index eq index)}.first()}
+        return transaction { TxEntity.find { TxTable.hash eq hash and (TxTable.index eq index) }.first() }
     }
 
-    fun updateStatus(_status: TxStatus, hash: String, index: Int) {
-        transaction { getByTxId(hash, index).status = _status }
+    fun updateStatus(status: TxStatus, hash: String, index: Int) {
+        transaction { getByTxId(hash, index).status = status }
     }
 }

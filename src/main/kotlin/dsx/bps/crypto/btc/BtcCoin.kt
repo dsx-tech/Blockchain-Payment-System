@@ -90,7 +90,7 @@ class BtcCoin: Coin {
         val transaction = constructTx(tx, TxId(tx.hash, detail.vout))
         val new = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
             transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
-        btcService.add(tx.confirmations, tx.blockhash, detail.address, new)
+        btcService.add(tx.confirmations, detail.address, new)
         return transaction
     }
 

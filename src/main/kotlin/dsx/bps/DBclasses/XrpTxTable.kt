@@ -9,5 +9,5 @@ object XrpTxTable: IntIdTable() {
     val account: Column<String> = varchar("account", 50)
     val sequence: Column<Int> = integer("sequence")
     val validated: Column<Boolean?> = bool("validated").nullable()
-    val TxId = reference("TxId", TxTable)
+    val txId = reference("TxId", TxTable)
 }

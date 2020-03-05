@@ -33,7 +33,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
         val id = UUID.randomUUID().toString().replace("-", "")
         val inv = Invoice(id, currency, amount, address, tag)
-        invService.add("unpaid", BigDecimal.ZERO, id, currency, amount, address, tag)
+        invService.add(InvoiceStatus.UNPAID, BigDecimal.ZERO, id, currency, amount, address, tag)
         invoices[inv.id] = inv
         unpaid.add(inv.id)
         return inv
@@ -66,7 +66,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
         }
         invService.updateReceived(received, inv.id)
         if (inv.status == InvoiceStatus.PAID)
-            invService.updateStatus("paid", inv.id)
+            invService.updateStatus(InvoiceStatus.PAID, inv.id)
         inv.received = received
     }
 
@@ -95,7 +95,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
                 }
 
                 if (inv.status == InvoiceStatus.PAID) {
-                    invService.updateStatus("paid", inv.id)
+                    invService.updateStatus(InvoiceStatus.PAID, inv.id)
                     unpaid.remove(inv.id)
                 }
             }

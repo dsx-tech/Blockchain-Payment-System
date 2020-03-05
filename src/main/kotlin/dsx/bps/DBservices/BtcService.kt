@@ -16,25 +16,21 @@ class BtcService(datasource: Datasource) {
         }
     }
 
-    fun add( _confirmations: Int,
-             _blockHash: String, _address: String,
-             _tx: TxEntity): BtcTxEntity {
-        val newBtcTxEntity = transaction{
+    fun add(
+        confirmations: Int, address: String,
+        tx: TxEntity
+    ): BtcTxEntity {
+        val newBtcTxEntity = transaction {
             BtcTxEntity.new {
-                confirmations = _confirmations
-                blockHash = _blockHash
-                address = _address
-                Tx = _tx
+                this.confirmations = confirmations
+                this.address = address
+                this.tx = tx
             }
         }
         return newBtcTxEntity
     }
 
     fun delete(btcTx: BtcTxEntity) {
-        transaction {btcTx.delete()}
-    }
-
-    fun getByBlockHash(blockHash: String): BtcTxEntity {
-        return transaction {BtcTxEntity.find {BtcTxTable.blockHash eq blockHash}.first()}
+        transaction { btcTx.delete() }
     }
 }

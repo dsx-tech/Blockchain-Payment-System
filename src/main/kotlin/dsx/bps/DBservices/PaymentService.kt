@@ -25,18 +25,20 @@ class PaymentService(datasource: Datasource) {
         }
     }
 
-    fun add(_status: PaymentStatus,
-            _paymentId: String, _currency: Currency,
-            _amount: BigDecimal, _address: String,
-            _tag: Int?): PaymentEntity {
-        val newPayment = transaction{
+    fun add(
+        status: PaymentStatus,
+        paymentId: String, currency: Currency,
+        amount: BigDecimal, address: String,
+        tag: Int?
+    ): PaymentEntity {
+        val newPayment = transaction {
             PaymentEntity.new {
-                status = _status
-                paymentId = _paymentId
-                currency = _currency
-                amount = _amount
-                address = _address
-                tag = _tag
+                this.status = status
+                this.paymentId = paymentId
+                this.currency = currency
+                this.amount = amount
+                this.address = address
+                this.tag = tag
                 payable = PayableEntity.new { type = Type.Payment }
             }
         }
@@ -44,46 +46,46 @@ class PaymentService(datasource: Datasource) {
     }
 
     fun delete(systemId: String) {
-        transaction {getBySystemId(systemId).delete()}
+        transaction { getBySystemId(systemId).delete() }
     }
 
     fun getById(id: Int): PaymentEntity? {
-        return transaction { PaymentEntity.findById(id)}
+        return transaction { PaymentEntity.findById(id) }
     }
 
     fun getBySystemId(id: String): PaymentEntity {
-        return transaction {PaymentEntity.find {PaymentTable.paymentId eq id}.first()}
+        return transaction { PaymentEntity.find { PaymentTable.paymentId eq id }.first() }
     }
 
-    fun getStatusedPayments(status: PaymentStatus): ConcurrentHashMap.KeySetView<String, Boolean> {
-        val payments = transaction { PaymentEntity.find {PaymentTable.status eq status} }
-        val keys = ConcurrentHashMap.newKeySet<String>()
-        transaction { payments.forEach { keys.add(it.paymentId) } }
+    fun getStatusedPayments(status: PaymentStatus): MutableList<String> {
+        val keys = mutableListOf<String>()
+        transaction { PaymentEntity.find { PaymentTable.status eq status }.forEach { keys.add(it.paymentId) } }
         return keys
     }
 
-    fun getPayments(): ConcurrentHashMap<String, Payment> {
-        val paymentMap = ConcurrentHashMap<String, Payment>()
+    fun getPayments(): MutableMap<String, Payment> {
+        val paymentMap = mutableMapOf<String, Payment>()
         transaction {
             PaymentEntity.all().forEach {
-                paymentMap[it.paymentId] =  makePaymentFromDB(it)
+                paymentMap[it.paymentId] = makePaymentFromDB(it)
             }
         }
-
         return paymentMap
     }
 
-    fun addTx(systemId: String,tx: TxId) {
+    fun addTx(systemId: String, tx: TxId) {
         transaction {
-            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index)}.forEach {
+            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index) }.forEach {
                 it.payable = getBySystemId(systemId).payable
             }
         }
     }
 
-    fun makePaymentFromDB (payment: PaymentEntity): Payment {
-        val pay = Payment(payment.paymentId, payment.currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
-                          payment.address, payment.tag)
+    fun makePaymentFromDB(payment: PaymentEntity): Payment {
+        val pay = Payment(
+            payment.paymentId, payment.currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+            payment.address, payment.tag
+        )
 
         pay.status = payment.status
 
@@ -96,11 +98,11 @@ class PaymentService(datasource: Datasource) {
         return pay
     }
 
-    fun updateStatus(_status: PaymentStatus, systemId: String) {
-        transaction { getBySystemId(systemId).status = _status }
+    fun updateStatus(status: PaymentStatus, systemId: String) {
+        transaction { getBySystemId(systemId).status = status }
     }
 
-    fun updateFee(_fee: BigDecimal, systemId: String) {
-        transaction { getBySystemId(systemId).fee = _fee }
+    fun updateFee(fee: BigDecimal, systemId: String) {
+        transaction { getBySystemId(systemId).fee = fee }
     }
 }

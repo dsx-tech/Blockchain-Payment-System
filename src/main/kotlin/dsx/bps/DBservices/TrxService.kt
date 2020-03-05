@@ -14,13 +14,15 @@ class TrxService(datasource: Datasource) {
         }
     }
 
-    fun add(_address: String, _contractRet: List<String>,
-            _tx: TxEntity): TrxTxEntity {
-        val newTrxTxEntity = transaction{
+    fun add(
+        address: String, contractRet: List<String>,
+        tx: TxEntity
+    ): TrxTxEntity {
+        val newTrxTxEntity = transaction {
             TrxTxEntity.new {
-                address = _address
-                Tx = _tx
-                _contractRet.forEach { addContractRet(it, this) }
+                this.address = address
+                this.tx = tx
+                contractRet.forEach { addContractRet(it, this) }
             }
         }
         return newTrxTxEntity
@@ -36,6 +38,6 @@ class TrxService(datasource: Datasource) {
     }
 
     fun delete(trxTx: TrxTxEntity) {
-        transaction {trxTx.delete()}
+        transaction { trxTx.delete() }
     }
 }

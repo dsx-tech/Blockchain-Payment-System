@@ -2,7 +2,6 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.DatabaseCreation
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
@@ -86,10 +85,8 @@ internal class InvoiceProcessorUnitTest {
                 "hash1", 1, tx.currency())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx)
-            Assertions.assertEquals("paid", invService.getBySystemId(invoice.id).status)
+            Assertions.assertEquals(InvoiceStatus.PAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
-            Assertions.assertTrue(transaction { txService.getByTxId("hash1", 1).payable ==
-                    invService.getBySystemId(invoice.id).payable})
             Assertions.assertEquals(invoice.status, InvoiceStatus.PAID)
             Assertions.assertEquals(invoice.received, BigDecimal.TEN)
             Assertions.assertTrue(invoice.txids.contains(TxId("hash1", 1)))
@@ -110,7 +107,7 @@ internal class InvoiceProcessorUnitTest {
                 "hash2", 2, tx1.currency())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)
-            Assertions.assertEquals("unpaid", invService.getBySystemId(invoice.id).status)
+            Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
             Assertions.assertFalse(transaction { txService.getByTxId("hash2", 2).payable ==
                     invService.getBySystemId(invoice.id).payable})
@@ -134,7 +131,7 @@ internal class InvoiceProcessorUnitTest {
                 "hash3", 3, tx1.currency())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)
-            Assertions.assertEquals("unpaid", invService.getBySystemId(invoice.id).status)
+            Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
             Assertions.assertFalse(transaction { txService.getByTxId("hash3", 3).payable ==
                     invService.getBySystemId(invoice.id).payable})
@@ -159,7 +156,7 @@ internal class InvoiceProcessorUnitTest {
                 "hash4", 4, tx1.currency())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)
-            Assertions.assertEquals("unpaid", invService.getBySystemId(invoice.id).status)
+            Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
             Assertions.assertFalse(transaction { txService.getByTxId("hash4", 4).payable ==
                     invService.getBySystemId(invoice.id).payable})
@@ -184,7 +181,7 @@ internal class InvoiceProcessorUnitTest {
                 "hash5", 5, tx1.currency())
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
             invoiceProcessor.onNext(tx1)
-            Assertions.assertEquals("unpaid", invService.getBySystemId(invoice.id).status)
+            Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
             Assertions.assertFalse(transaction { txService.getByTxId("hash5", 5).payable ==
                     invService.getBySystemId(invoice.id).payable})
@@ -208,7 +205,7 @@ internal class InvoiceProcessorUnitTest {
                 "txhash1", 1, Currency.BTC)
             val invoice = invoiceProcessor.getInvoice("inv1")
             invoiceProcessor.onNext(tx)
-            Assertions.assertEquals("paid", invService.getBySystemId(invoice!!.id).status)
+            Assertions.assertEquals(InvoiceStatus.PAID, invService.getBySystemId(invoice!!.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
             Assertions.assertTrue(transaction { txService.getByTxId("txhash1", 1).payable ==
                     invService.getBySystemId(invoice.id).payable})

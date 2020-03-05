@@ -26,12 +26,10 @@ class BtcExplorer(override val coin: BtcCoin, datasource: Datasource, frequency:
             var new = coin.getBestBlockHash()
             if (last != new) {
                 last = new
-                var blockHash = ""
                 while (!viewed.contains(new)) {
                     viewed.add(new)
                     val block = coin.getBlock(new)
                     new = block.previousblockhash
-                    blockHash = block.hash
                 }
                 coin.listSinceBlock(new)
                     .transactions
@@ -41,7 +39,7 @@ class BtcExplorer(override val coin: BtcCoin, datasource: Datasource, frequency:
                             tx.status(), tx.destination(), tx.tag(), tx.amount(),
                             tx.fee(), tx.hash(), tx.index(), tx.currency()
                         )
-                        btcService.add(it.confirmations, blockHash, it.address, newTx)
+                        btcService.add(it.confirmations, it.address, newTx)
                         emitter.onNext(tx)
                     }
             }

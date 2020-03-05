@@ -2,7 +2,6 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.DatabaseCreation
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.PaymentService
 import dsx.bps.DBservices.TxService
@@ -89,10 +88,10 @@ internal class PaymentProcessorUnitTest {
         txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
             "txhash1", 1, tx.currency())
         val payment = paymentProcessor.getPayment("pay1")
-        Assertions.assertEquals("PENDING", payService.getBySystemId(payment!!.id).status)
+        Assertions.assertEquals(PaymentStatus.PENDING, payService.getBySystemId(payment!!.id).status)
         Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
         paymentProcessor.updatePayment(payment.id, tx)
-        Assertions.assertEquals("PROCESSING", payService.getBySystemId(payment.id).status)
+        Assertions.assertEquals(PaymentStatus.PROCESSING, payService.getBySystemId(payment.id).status)
         Assertions.assertEquals(payment.status, PaymentStatus.PROCESSING)
         Assertions.assertTrue(transaction { txService.getByTxId("txhash1", 1).payable ==
                 payService.getBySystemId(payment.id).payable})
@@ -133,10 +132,10 @@ internal class PaymentProcessorUnitTest {
             txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
                 "hash", 1, tx.currency())
             val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
-            Assertions.assertEquals("PENDING", payService.getBySystemId(payment.id).status)
+            Assertions.assertEquals(PaymentStatus.PENDING, payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
             paymentProcessor.updatePayment(payment.id, tx)
-            Assertions.assertEquals("PROCESSING", payService.getBySystemId(payment.id).status)
+            Assertions.assertEquals(PaymentStatus.PROCESSING, payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PROCESSING)
             Assertions.assertTrue(transaction { txService.getByTxId("hash", 1).payable ==
                     payService.getBySystemId(payment.id).payable})
