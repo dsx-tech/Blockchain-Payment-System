@@ -5,7 +5,6 @@ import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
 import dsx.bps.DBservices.XrpService
-import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -35,10 +34,10 @@ class XrpCoin: Coin {
     override val rpc: XrpRpc
     override val explorer: XrpExplorer
 
-    constructor(conf: Config, datasource: Datasource) {
+    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
         xrpService = XrpService(datasource)
-        txService = TxService(datasource)
+        txService = txServ
 
         account = config[XrpConfig.Coin.account]
         privateKey = config[XrpConfig.Coin.privateKey]
@@ -50,12 +49,12 @@ class XrpCoin: Coin {
         rpc = XrpRpc(url)
 
         val frequency = config[XrpConfig.Explorer.frequency]
-        explorer = XrpExplorer(this, datasource, frequency)
+        explorer = XrpExplorer(this, datasource, txServ, frequency)
     }
 
-    constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String, datasource: Datasource) {
+    constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
         xrpService = XrpService(datasource)
-        txService = TxService(datasource)
+        txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(XrpConfig)

@@ -1,6 +1,6 @@
 package dsx.bps.core.datamodel
 
-enum class Type {
+enum class PayableType {
     Invoice,
     Payment
 }

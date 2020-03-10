@@ -3,6 +3,7 @@ package dsx.bps.crypto.trx
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.TxId
@@ -51,7 +52,8 @@ internal class TrxClientUnitTest {
 
         datasource.initConnection(databaseConfig)
         trxClient = TrxCoin(trxRpc, trxBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path, datasource)
+            javaClass.getResource("/TestBpsConfig.yaml").path, datasource, TxService(datasource)
+        )
     }
 
     @Test

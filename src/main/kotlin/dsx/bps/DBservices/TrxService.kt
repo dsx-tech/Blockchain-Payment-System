@@ -7,8 +7,7 @@ import org.jetbrains.exposed.sql.transactions.transaction
 
 class TrxService(datasource: Datasource) {
     init {
-        datasource.getConnection()
-        transaction {
+        transaction(datasource.getConnection()) {
             if (!TrxTxTable.exists())
                 SchemaUtils.create(TrxTxTable)
         }

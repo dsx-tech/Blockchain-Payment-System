@@ -12,8 +12,7 @@ import java.math.BigDecimal
 
 class TxService(datasource: Datasource) {
     init {
-        datasource.getConnection()
-        transaction {
+        transaction(datasource.getConnection()) {
             if (!TxTable.exists())
                 SchemaUtils.create(TxTable)
         }

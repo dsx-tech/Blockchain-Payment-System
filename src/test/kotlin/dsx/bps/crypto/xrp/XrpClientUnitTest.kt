@@ -3,6 +3,7 @@ package dsx.bps.crypto.xrp
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.TxId
@@ -36,15 +37,17 @@ internal class XrpClientUnitTest {
         }
         testConfig.validateRequired()
 
-        val databaseConfig = with (Config()) {
+        val databaseConfig = with(Config()) {
             addSpec(DatabaseConfig)
             from.yaml.file(configFile)
         }
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        xrpClient = XrpCoin(xrpRpc, xrpBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path, datasource)
+        xrpClient = XrpCoin(
+            xrpRpc, xrpBlockchainListener,
+            javaClass.getResource("/TestBpsConfig.yaml").path, datasource, TxService(datasource)
+        )
     }
 
     @Test

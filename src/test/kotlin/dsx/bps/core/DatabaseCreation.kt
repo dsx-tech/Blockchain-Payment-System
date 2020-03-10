@@ -10,7 +10,7 @@ import java.math.BigDecimal
 
 class DatabaseCreation(datasource: Datasource) {
     private val invService = InvoiceService(datasource)
-    private val paeService = PaymentService(datasource)
+    private val payService = PaymentService(datasource)
 
     fun createInvoices() {
         invService.add(InvoiceStatus.UNPAID, BigDecimal.ZERO, "inv1", Currency.BTC, BigDecimal.ONE, "addr1", null)
@@ -18,6 +18,6 @@ class DatabaseCreation(datasource: Datasource) {
     }
 
     fun createPayments() {
-        paeService.add(PaymentStatus.PENDING, "pay1", Currency.BTC, BigDecimal.ONE, "addr1", null)
+        payService.add(PaymentStatus.PENDING, "pay1", Currency.BTC, BigDecimal.ONE, "addr1", null)
     }
 }

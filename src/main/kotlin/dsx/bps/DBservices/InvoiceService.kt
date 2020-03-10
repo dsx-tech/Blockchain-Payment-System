@@ -6,17 +6,14 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Invoice
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.TxId
-import dsx.bps.core.datamodel.Type
-import dsx.bps.exception.DBservices.BpsDatabaseException
+import dsx.bps.core.datamodel.PayableType
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
-import java.util.concurrent.ConcurrentHashMap
 
 class InvoiceService(datasource: Datasource) {
     init {
-        datasource.getConnection()
-        transaction {
+        transaction(datasource.getConnection()) {
             if (!InvoiceTable.exists())
                 SchemaUtils.create(InvoiceTable)
             if (!TxTable.exists())
@@ -39,7 +36,7 @@ class InvoiceService(datasource: Datasource) {
                 this.amount = amount
                 this.address = address
                 this.tag = tag
-                payable = PayableEntity.new { type = Type.Invoice }
+                payable = PayableEntity.new { type = PayableType.Invoice }
             }
         }
 

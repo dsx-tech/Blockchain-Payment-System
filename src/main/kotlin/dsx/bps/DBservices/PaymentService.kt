@@ -5,19 +5,16 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.core.datamodel.TxId
-import dsx.bps.core.datamodel.Type
-import dsx.bps.exception.DBservices.BpsDatabaseException
+import dsx.bps.core.datamodel.PayableType
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
-import java.util.concurrent.ConcurrentHashMap
 
 class PaymentService(datasource: Datasource) {
     init {
-        datasource.getConnection()
-        transaction {
+        transaction(datasource.getConnection()) {
             if (!PaymentTable.exists())
                 SchemaUtils.create(PaymentTable)
             if (!TxTable.exists())
@@ -39,7 +36,7 @@ class PaymentService(datasource: Datasource) {
                 this.amount = amount
                 this.address = address
                 this.tag = tag
-                payable = PayableEntity.new { type = Type.Payment }
+                payable = PayableEntity.new { type = PayableType.Payment }
             }
         }
         return newPayment

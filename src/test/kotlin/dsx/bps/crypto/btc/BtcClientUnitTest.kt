@@ -35,12 +35,12 @@ internal class BtcClientUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
+        txService = TxService(datasource)
         btcCoin = BtcCoin(
             btcRpc, btcExplorer,
             javaClass.getResource("/TestBpsConfig.yaml").path,
-            datasource
+            datasource, txService
         )
-        txService = TxService(datasource)
     }
 
     @Test

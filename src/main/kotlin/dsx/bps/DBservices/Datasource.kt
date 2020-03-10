@@ -16,7 +16,8 @@ class Datasource() {
         config.jdbcUrl = conf[DatabaseConfig.connectionURL]
         config.maximumPoolSize = conf[DatabaseConfig.maximumPoolSize].toInt()
         config.validate()
-        conn = Database.Companion.connect(HikariDataSource(config))
+        conn = Database.connect(HikariDataSource(config))
+        conn!!.useNestedTransactions = true
     }
 
     fun getConnection(): Database {

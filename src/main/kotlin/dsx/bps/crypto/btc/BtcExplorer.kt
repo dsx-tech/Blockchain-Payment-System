@@ -7,12 +7,12 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
-class BtcExplorer(override val coin: BtcCoin, datasource: Datasource, frequency: Long): Explorer(frequency) {
+class BtcExplorer(override val coin: BtcCoin, datasource: Datasource, txServ: TxService, frequency: Long): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
 
     private val btcService = BtcService(datasource)
-    private val txService = TxService(datasource)
+    private val txService = txServ
 
     init {
         explore()

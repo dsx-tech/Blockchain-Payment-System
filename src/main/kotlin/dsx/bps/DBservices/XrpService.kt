@@ -10,8 +10,7 @@ import java.math.BigDecimal
 
 class XrpService(datasource: Datasource) {
     init {
-        datasource.getConnection()
-        transaction {
+        transaction(datasource.getConnection()) {
             if (!XrpTxTable.exists())
                 SchemaUtils.create(XrpTxTable)
         }

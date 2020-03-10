@@ -3,6 +3,7 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.BPSConfig
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
@@ -20,7 +21,6 @@ import java.io.File
 import java.math.BigDecimal
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import javax.xml.crypto.Data
 
 class BlockchainPaymentSystemManager {
 
@@ -44,7 +44,8 @@ class BlockchainPaymentSystemManager {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        coinsManager = CoinsManager(configFile, datasource)
+        val txService = TxService(datasource)
+        coinsManager = CoinsManager(configFile, datasource, txService)
 
         val bpsConfig = with(Config()) {
             addSpec(BPSConfig)
@@ -66,7 +67,7 @@ class BlockchainPaymentSystemManager {
         }
         paymentProcessorConfig.validateRequired()
 
-        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource)
+        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource, txService)
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource)
     }
 

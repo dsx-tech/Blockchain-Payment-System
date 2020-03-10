@@ -1,10 +1,6 @@
 package dsx.bps.crypto.xrp
 
-import com.uchuhimo.konf.Config
-import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.Datasource
 import dsx.bps.api.BlockchainPaymentSystemAPI
-import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus

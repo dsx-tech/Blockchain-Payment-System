@@ -31,10 +31,10 @@ class BtcCoin: Coin {
     private val btcService: BtcService
     private val txService: TxService
 
-    constructor(conf: Config, datasource: Datasource) {
+    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
         btcService = BtcService(datasource)
-        txService = TxService(datasource)
+        txService = txServ
 
         val user = config[BtcConfig.Coin.user]
         val pass = config[BtcConfig.Coin.password]
@@ -46,12 +46,12 @@ class BtcCoin: Coin {
         confirmations = config[BtcConfig.Coin.confirmations]
 
         val frequency = config[BtcConfig.Explorer.frequency]
-        explorer = BtcExplorer(this, datasource, frequency)
+        explorer = BtcExplorer(this, datasource, txServ, frequency)
     }
 
-    constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String, datasource: Datasource) {
+    constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
         btcService = BtcService(datasource)
-        txService = TxService(datasource)
+        txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(BtcConfig)

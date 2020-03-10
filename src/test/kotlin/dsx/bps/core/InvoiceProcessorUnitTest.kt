@@ -49,11 +49,10 @@ internal class InvoiceProcessorUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        DatabaseCreation(datasource).createInvoices()
-        invoiceProcessor = InvoiceProcessor(manager, testConfig, datasource)
-        invService = InvoiceService(datasource)
         txService = TxService(datasource)
-
+        DatabaseCreation(datasource).createInvoices()
+        invoiceProcessor = InvoiceProcessor(manager, testConfig, datasource, txService)
+        invService = InvoiceService(datasource)
     }
 
     @ParameterizedTest

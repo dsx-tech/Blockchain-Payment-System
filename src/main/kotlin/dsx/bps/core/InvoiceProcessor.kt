@@ -16,10 +16,10 @@ import java.math.BigDecimal
 import java.util.UUID
 import kotlin.concurrent.timer
 
-class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config, datasource: Datasource): Observer<Tx> {
+class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config, datasource: Datasource, txServ: TxService): Observer<Tx> {
 
     private val invService = InvoiceService(datasource)
-    private val txService = TxService(datasource)
+    private val txService = txServ
     private val unpaid = invService.getUnpaid()
     private val invoices = invService.getInvoices()
 
