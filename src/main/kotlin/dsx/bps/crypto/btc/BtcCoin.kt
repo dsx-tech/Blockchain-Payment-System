@@ -2,6 +2,9 @@ package dsx.bps.crypto.btc
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.BtcService
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.BtcConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -25,9 +28,13 @@ class BtcCoin: Coin {
     override val explorer: BtcExplorer
 
     private val confirmations: Int
+    private val btcService: BtcService
+    private val txService: TxService
 
-    constructor(conf: Config) {
+    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
+        btcService = BtcService(datasource)
+        txService = txServ
 
         val user = config[BtcConfig.Coin.user]
         val pass = config[BtcConfig.Coin.password]
@@ -39,10 +46,12 @@ class BtcCoin: Coin {
         confirmations = config[BtcConfig.Coin.confirmations]
 
         val frequency = config[BtcConfig.Explorer.frequency]
-        explorer = BtcExplorer(this, frequency)
+        explorer = BtcExplorer(this, datasource, txServ, frequency)
     }
 
-    constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String) {
+    constructor(btcRpc: BtcRpc, btcExplorer: BtcExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
+        btcService = BtcService(datasource)
+        txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(BtcConfig)
@@ -78,7 +87,11 @@ class BtcCoin: Coin {
             .details
             .single { detail -> match(detail, amount, address) }
 
-        return constructTx(tx, TxId(tx.hash, detail.vout))
+        val transaction = constructTx(tx, TxId(tx.hash, detail.vout))
+        val new = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
+            transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+        btcService.add(tx.confirmations, detail.address, new)
+        return transaction
     }
 
     private fun match(detail: BtcTxDetail, amount: BigDecimal, address: String): Boolean =

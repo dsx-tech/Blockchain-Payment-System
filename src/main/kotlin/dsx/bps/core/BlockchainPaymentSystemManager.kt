@@ -2,7 +2,10 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.BPSConfig
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.Currency
@@ -27,13 +30,22 @@ class BlockchainPaymentSystemManager {
 
     private val coinsManager: CoinsManager
     private val emitter: Observable<Tx>
+    private val datasource = Datasource()
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
 
     constructor(confPath: String = DEFAULT_CONFIG_PATH) {
         val configFile = File(confPath)
 
-        coinsManager = CoinsManager(configFile)
+        val databaseConfig = with(Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
+        datasource.initConnection(databaseConfig)
+        val txService = TxService(datasource)
+        coinsManager = CoinsManager(configFile, datasource, txService)
 
         val bpsConfig = with(Config()) {
             addSpec(BPSConfig)
@@ -55,8 +67,8 @@ class BlockchainPaymentSystemManager {
         }
         paymentProcessorConfig.validateRequired()
 
-        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig)
-        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig)
+        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource, txService)
+        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource)
     }
 
     constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor, paymentProcessor: PaymentProcessor) {
