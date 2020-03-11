@@ -17,7 +17,7 @@ class BtcCoin: Coin {
     override val currency = Currency.BTC
     override val config: Config
 
-    override val connection: BtcRpc
+    override val connector: BtcRpc
     override val explorer: BtcExplorer
 
     private val confirmations: Int
@@ -30,7 +30,7 @@ class BtcCoin: Coin {
         val host = config[BtcConfig.Connection.host]
         val port = config[BtcConfig.Connection.port]
         val url = "http://$user:$pass@$host:$port/"
-        connection = BtcRpc(url)
+        connector = BtcRpc(url)
 
         confirmations = config[BtcConfig.Coin.confirmations]
 
@@ -47,34 +47,34 @@ class BtcCoin: Coin {
         config.validateRequired()
 
         confirmations = config[BtcConfig.Coin.confirmations]
-        connection = btcRpc
+        connector = btcRpc
         explorer = btcExplorer
     }
 
-    override fun getBalance(): BigDecimal = connection.getBalance()
+    override fun getBalance(): BigDecimal = connector.getBalance()
 
-    override fun getAddress(): String = connection.getNewAddress()
+    override fun getAddress(): String = connector.getNewAddress()
 
-    override fun getTag(): Int? = null
+    override fun getTag(): String? = null
 
     override fun getTx(txid: TxId): Tx {
-        val btcTx = connection.getTransaction(txid.hash)
+        val btcTx = connector.getTransaction(txid.hash)
         return constructTx(btcTx, txid)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
-        val tx = connection.createRawTransaction(amount, address)
-            .let { connection.fundRawTransaction(it) }
+    override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
+        val tx = connector.createRawTransaction(amount, address)
+            .let { connector.fundRawTransaction(it) }
             // TODO: implement local tx sign
-            .let { connection.signRawTransactionWithWallet(it) }
-            .let { connection.sendRawTransaction(it) }
-            .let { connection.getTransaction(it) }
+            .let { connector.signRawTransactionWithWallet(it) }
+            .let { connector.sendRawTransaction(it) }
+            .let { connector.getTransaction(it) }
 
         val detail = tx
             .details
             .single { detail -> match(detail, amount, address) }
 
-        return constructTx(tx, TxId(tx.hash, detail.vout))
+        return constructTx(tx, TxId(tx.hash, detail.vout.toLong()))
     }
 
     private fun match(detail: BtcTxDetail, amount: BigDecimal, address: String): Boolean =
@@ -82,23 +82,23 @@ class BtcCoin: Coin {
         detail.category == "send" &&
         detail.amount.abs().compareTo(amount.abs()) == 0
 
-    fun getBestBlockHash(): String = connection.getBestBlockHash()
+    fun getBestBlockHash(): String = connector.getBestBlockHash()
 
-    fun getBlock(hash: String): BtcBlock = connection.getBlock(hash)
+    fun getBlock(hash: String): BtcBlock = connector.getBlock(hash)
 
-    fun listSinceBlock(hash: String): BtcListSinceBlock = connection.listSinceBlock(hash)
+    fun listSinceBlock(hash: String): BtcListSinceBlock = connector.listSinceBlock(hash)
 
     fun constructTx(btcTx: BtcTx, txid: TxId): Tx {
         val detail = btcTx
             .details
-            .first { detail -> detail.vout == txid.index }
+            .first { detail -> detail.vout.toLong() == txid.index }
 
         return object: Tx {
             override fun currency() = Currency.BTC
 
             override fun hash() = btcTx.hash
 
-            override fun index() = detail.vout
+            override fun index() = detail.vout.toLong()
 
             override fun amount() = detail.amount.abs()
 
@@ -120,7 +120,7 @@ class BtcCoin: Coin {
 
         override fun hash() = btcTxSinceBlock.hash
 
-        override fun index() = btcTxSinceBlock.vout
+        override fun index() = btcTxSinceBlock.vout.toLong()
 
         override fun amount() = btcTxSinceBlock.amount
 

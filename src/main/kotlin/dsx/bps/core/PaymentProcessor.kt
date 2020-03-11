@@ -2,11 +2,8 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import dsx.bps.config.PaymentProcessorConfig
+import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.datamodel.PaymentStatus
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.exception.core.payment.PaymentException
 import java.math.BigDecimal
 import java.util.*
@@ -26,7 +23,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
         check()
     }
 
-    fun createPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Payment {
+    fun createPayment(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): Payment {
         val id = UUID.randomUUID().toString().replace("-", "")
         val pay = Payment(id, currency, amount, address, tag)
         payments[pay.id] = pay
@@ -80,5 +77,5 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
         pay.currency == tx.currency() &&
         pay.amount.compareTo(tx.amount()) == 0 &&
         pay.address == tx.destination() &&
-        pay.tag == tx.tag()
+                pay.tag == tx.paymentReference()
 }

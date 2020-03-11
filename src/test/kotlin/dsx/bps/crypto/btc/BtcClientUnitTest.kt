@@ -78,7 +78,7 @@ internal class BtcClientUnitTest {
         val result = btcCoin.sendPayment(BigDecimal.TEN, "testaddress", null)
         Assertions.assertEquals(result.currency(), btcCoin.currency)
         Assertions.assertEquals(result.destination(), btcTxDetail.address)
-        Assertions.assertEquals(result.index(), btcTxDetail.vout)
+        Assertions.assertEquals(result.index(), btcTxDetail.vout.toLong())
         Assertions.assertEquals(result.hash(), btcTx.hash)
         Assertions.assertEquals(result.amount(), BigDecimal.TEN)
     }
@@ -126,7 +126,7 @@ internal class BtcClientUnitTest {
         Assertions.assertEquals(result.fee(), btcTxDetail.fee.abs())
         Assertions.assertEquals(result.status(), TxStatus.VALIDATING)
         Assertions.assertEquals(result.hash(), btcTx.hash)
-        Assertions.assertEquals(result.index(), btcTxDetail.vout)
+        Assertions.assertEquals(result.index(), btcTxDetail.vout.toLong())
     }
 
     @Test
@@ -147,6 +147,6 @@ internal class BtcClientUnitTest {
         Assertions.assertEquals(result.status(), TxStatus.VALIDATING)
         Assertions.assertEquals(result.fee(), btcTxSinceBlock.fee)
         Assertions.assertEquals(result.hash(), btcTxSinceBlock.hash)
-        Assertions.assertEquals(result.index(), btcTxSinceBlock.vout)
+        Assertions.assertEquals(result.index(), btcTxSinceBlock.vout.toLong())
     }
 }

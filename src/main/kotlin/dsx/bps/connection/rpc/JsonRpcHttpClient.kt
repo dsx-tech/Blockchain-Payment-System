@@ -1,8 +1,8 @@
 package dsx.bps.connection.rpc
 
 import com.google.gson.Gson
-import dsx.bps.connection.Connection
-import dsx.bps.exception.rpc.BpsRpcException
+import dsx.bps.connection.Connector
+import dsx.bps.exception.connector.BpsConnectorException
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
@@ -12,7 +12,7 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLSocketFactory
 import kotlin.random.Random
 
-abstract class JsonRpcHttpClient : Connection {
+abstract class JsonRpcHttpClient : Connector {
 
     protected var rpcURL: URL
     protected var auth: String?
@@ -74,11 +74,11 @@ abstract class JsonRpcHttpClient : Connection {
 
         if (conn.responseCode != 200) {
             val errorStream = conn.errorStream
-            throw BpsRpcException(
+            throw BpsConnectorException(
                 "$request failed\n" +
-                "Code: ${conn.responseCode}\n" +
-                "Message: ${conn.responseMessage}\n" +
-                "Response: ${errorStream.use { it.readBytes().toString(charset) }}"
+                        "Code: ${conn.responseCode}\n" +
+                        "Message: ${conn.responseMessage}\n" +
+                        "Response: ${errorStream.use { it.readBytes().toString(charset) }}"
             )
         }
 
@@ -92,11 +92,11 @@ abstract class JsonRpcHttpClient : Connection {
         val obj = gson.fromJson(response.json, Map::class.java)
 
         if (response.id != obj["id"])
-            throw BpsRpcException("Wrong response id: sent ${response.id}, received ${obj["id"]}")
+            throw BpsConnectorException("Wrong response id: sent ${response.id}, received ${obj["id"]}")
 
         if (obj["error"] != null) {
             val error = obj["error"] as Map<*, *>
-            throw BpsRpcException("RPC error: code ${error["code"]}, message: ${error["message"]}")
+            throw BpsConnectorException("RPC error: code ${error["code"]}, message: ${error["message"]}")
         }
 
         return obj["result"]

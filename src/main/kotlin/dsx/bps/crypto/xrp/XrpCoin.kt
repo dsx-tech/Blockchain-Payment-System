@@ -22,7 +22,7 @@ class XrpCoin: Coin {
     private val privateKey: String
     private val passPhrase: String
 
-    override val connection: XrpRpc
+    override val connector: XrpRpc
     override val explorer: XrpExplorer
 
     constructor(conf: Config) {
@@ -35,7 +35,7 @@ class XrpCoin: Coin {
         val host = config[XrpConfig.Connection.host]
         val port = config[XrpConfig.Connection.port]
         val url = "http://$host:$port/"
-        connection = XrpRpc(url)
+        connector = XrpRpc(url)
 
         val frequency = config[XrpConfig.Explorer.frequency]
         explorer = XrpExplorer(this, frequency)
@@ -53,40 +53,40 @@ class XrpCoin: Coin {
         privateKey = config[XrpConfig.Coin.privateKey]
         passPhrase = config[XrpConfig.Coin.passPhrase]
 
-        connection = xrpRpc
+        connector = xrpRpc
         explorer = xrpExplorer
     }
 
-    override fun getBalance(): BigDecimal = connection.getBalance(account)
+    override fun getBalance(): BigDecimal = connector.getBalance(account)
 
     override fun getAddress(): String = account
 
-    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
+    override fun getTag(): String? = Random.nextInt(0, Int.MAX_VALUE).toString()
 
     override fun getTx(txid: TxId): Tx {
-        val xrtTx = connection.getTransaction(txid.hash)
+        val xrtTx = connector.getTransaction(txid.hash)
         return constructTx(xrtTx)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+    override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
         return createTransaction(amount, address, tag)
-            .let { connection.sign(privateKey, it) }
-            .let { connection.submit(it) }
+            .let { connector.sign(privateKey, it) }
+            .let { connector.submit(it) }
             .let { constructTx(it) }
     }
 
-    private fun createTransaction(amount: BigDecimal, address: String, tag: Int?): XrpTxPayment {
-        val fee = connection.getTxCost()
-        val seq = connection.getSequence(account)
-        return XrpTxPayment(account, amount, address, fee.toPlainString(), seq, tag)
+    private fun createTransaction(amount: BigDecimal, address: String, tag: String?): XrpTxPayment {
+        val fee = connector.getTxCost()
+        val seq = connector.getSequence(account)
+        return XrpTxPayment(account, amount, address, fee.toPlainString(), seq, tag?.toInt())
     }
 
-    fun getLastLedger(): XrpLedger = connection.getLastLedger()
+    fun getLastLedger(): XrpLedger = connector.getLastLedger()
 
-    fun getLedger(hash: String): XrpLedger = connection.getLedger(hash)
+    fun getLedger(hash: String): XrpLedger = connector.getLedger(hash)
 
     fun getAccountTxs(indexMin: Long, indexMax: Long): XrpAccountTxs =
-        connection.getAccountTxs(account, indexMin, indexMax)
+        connector.getAccountTxs(account, indexMin, indexMax)
 
     fun constructTx(xrpAccountTx: XrpAccountTx): Tx {
         val tx = xrpAccountTx.tx
@@ -101,11 +101,11 @@ class XrpCoin: Coin {
 
             override fun hash() = tx.hash
 
-            override fun index() = tx.sequence
+            override fun index() = tx.sequence.toLong()
 
             override fun amount() = amount
 
-            override fun tag() = tx.destinationTag
+            override fun paymentReference(): String? = tx.destinationTag.toString()
 
             override fun destination() = tx.destination
 
@@ -127,13 +127,13 @@ class XrpCoin: Coin {
 
             override fun hash() = xrpTx.hash
 
-            override fun index() = xrpTx.sequence
+            override fun index() = xrpTx.sequence.toLong()
 
             override fun amount() = amount
 
             override fun destination() = xrpTx.destination
 
-            override fun tag() = xrpTx.destinationTag
+            override fun paymentReference(): String? = xrpTx.destinationTag.toString()
 
             override fun fee() = BigDecimal(xrpTx.fee)
 

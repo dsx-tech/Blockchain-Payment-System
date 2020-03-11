@@ -1,11 +1,9 @@
 package dsx.bps.crypto.grm
 
 import dsx.bps.config.currencies.GrmConfig
+import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.grm.datamodel.GrmInternalTxId
-import dsx.bps.crypto.grm.datamodel.GrmMsgData
-import dsx.bps.crypto.grm.datamodel.GrmRawMessage
-import dsx.bps.crypto.grm.datamodel.GrmRawTransaction
+import dsx.bps.crypto.grm.datamodel.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -14,9 +12,10 @@ import java.math.BigDecimal
 
 internal class GrmCoinUnitTest {
 
-    private val grmConnection = Mockito.mock(GrmConnection::class.java)
+    private val grmConnection = Mockito.mock(GrmConnector::class.java)
     private val grmExplorer = Mockito.mock(GrmExplorer::class.java)
     private val grmCoin = GrmCoin(grmConnection, grmExplorer, javaClass.getResource("/TestBpsConfig.yaml").path)
+
 
 
     @Test
@@ -35,7 +34,7 @@ internal class GrmCoinUnitTest {
     @Test
     @DisplayName("getTag test")
     fun getTagTest() {
-        Assertions.assertTrue(grmCoin.getTag() is Int)
+        Assertions.assertTrue(grmCoin.getTag() is String)
     }
 
     @Test
@@ -69,17 +68,25 @@ internal class GrmCoinUnitTest {
     @Test
     @DisplayName("getAccountTxs test")
     fun getAccountTxsTest() {
-        val grmInternalTxId = GrmInternalTxId(10000, "hash".toByteArray())
-        grmCoin.getAccountTxs(grmInternalTxId)
+        val grmInternalTxId = GrmInternalTxId(0L, "0000000000000000000000000000000000000000000000000000000000000000")
+
+        Mockito.`when`(
+            grmConnection.getOlderAccountTxs(
+                grmCoin.config[GrmConfig.Coin.accountAddress], grmInternalTxId
+            )
+        ).thenReturn(GrmRawTransactions(arrayOf<GrmRawTransaction>(), grmInternalTxId))
+
+        grmCoin.getAccountTxs(grmInternalTxId, grmInternalTxId)
+
         Mockito.verify(grmConnection, Mockito.only())
-            .getAccountTxs(grmCoin.config[GrmConfig.Coin.accountAddress], grmInternalTxId)
+            .getOlderAccountTxs(grmCoin.config[GrmConfig.Coin.accountAddress], grmInternalTxId)
     }
 
     @Test
     @DisplayName("constructTx(grmTx: GrmRawTransaction) test")
     fun constructTxTest() {
         val msgData = Mockito.mock(GrmMsgData::class.java)
-        Mockito.`when`(msgData.body).thenReturn("555".toByteArray())
+        Mockito.`when`(msgData.body).thenReturn("555")
 
         val inMsg = Mockito.mock(GrmRawMessage::class.java)
         Mockito.`when`(inMsg.value).thenReturn(5000)
@@ -87,7 +94,7 @@ internal class GrmCoinUnitTest {
         Mockito.`when`(inMsg.msgData).thenReturn(msgData)
 
         val transactionId = Mockito.mock(GrmInternalTxId::class.java)
-        Mockito.`when`(transactionId.hash).thenReturn("hash".toByteArray())
+        Mockito.`when`(transactionId.hash).thenReturn("hash")
         Mockito.`when`(transactionId.lt).thenReturn(1000)
         val grmRawTransaction = Mockito.mock(GrmRawTransaction::class.java)
         Mockito.`when`(grmRawTransaction.transactionId).thenReturn(transactionId)
@@ -96,13 +103,12 @@ internal class GrmCoinUnitTest {
 
         val resultTx = grmCoin.constructTx(grmRawTransaction)
         Assertions.assertEquals(resultTx.currency(), grmCoin.currency)
-        Assertions.assertEquals(resultTx.hash(), transactionId.hash.toString())
-        Assertions.assertEquals(resultTx.index(), transactionId.lt.toInt())
+        Assertions.assertEquals(resultTx.hash(), transactionId.hash)
+        Assertions.assertEquals(resultTx.txid(), TxId(transactionId.hash, transactionId.lt))
         Assertions.assertEquals(resultTx.amount(), BigDecimal(5000))
-        Assertions.assertEquals(resultTx.destination(), "destination")
-        Assertions.assertEquals(resultTx.tag(), 555)
+        Assertions.assertEquals(resultTx.destination(), inMsg.destination)
+        Assertions.assertEquals(resultTx.paymentReference(), msgData.body)
         Assertions.assertEquals(resultTx.fee(), BigDecimal.ONE)
         Assertions.assertEquals(resultTx.status(), TxStatus.CONFIRMED)
-
     }
 }

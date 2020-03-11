@@ -22,7 +22,7 @@ class GrmCoin : Coin {
 
     private val accountAddress: String
 
-    override val connection: GrmConnection
+    override val connector: GrmConnector
     override val explorer: GrmExplorer
 
     constructor(conf: Config) {
@@ -33,13 +33,13 @@ class GrmCoin : Coin {
         val tonClientConfig = File(config[GrmConfig.Connection.pathToTonClientConfig]).readText()
         val keyStorePath = config[GrmConfig.Connection.keyStorePath]
         val logVerbosityLevel = config[GrmConfig.Connection.logVerbosityLevel]
-        connection = GrmConnection(tonClientConfig, keyStorePath, logVerbosityLevel)
+        connector = GrmConnector(tonClientConfig, keyStorePath, logVerbosityLevel)
 
         val frequency = config[GrmConfig.Explorer.frequency]
         explorer = GrmExplorer(this, frequency)
     }
 
-    constructor(grmConnection: GrmConnection, grmExplorer: GrmExplorer, configPath: String) {
+    constructor(grmConnection: GrmConnector, grmExplorer: GrmExplorer, configPath: String) {
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(GrmConfig)
@@ -50,35 +50,62 @@ class GrmCoin : Coin {
 
         accountAddress = config[GrmConfig.Coin.accountAddress]
 
-        connection = grmConnection
+        connector = grmConnection
         explorer = grmExplorer
     }
 
 
-    override fun getBalance(): BigDecimal = connection.getBalance(accountAddress)
+    override fun getBalance(): BigDecimal = connector.getBalance(accountAddress)
 
     override fun getAddress(): String = accountAddress
 
-    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
+    override fun getTag(): String? = Random.nextInt(0, Int.MAX_VALUE).toString()
 
     override fun getTx(txid: TxId): Tx {
         TODO("not implemented")
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+    override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
         TODO("not implemented")
     }
 
     fun getFullAccountState(): GrmFullAccountState {
-        return connection.getFullAccountState(accountAddress)
+        return connector.getFullAccountState(accountAddress)
     }
 
     fun getLastInternalTxId(): GrmInternalTxId {
-        return connection.getLastInternalTxId(accountAddress)
+        return connector.getLastInternalTxId(accountAddress)
     }
 
-    fun getAccountTxs(sinceLastTxId: GrmInternalTxId): Array<GrmRawTransaction> {
-        return connection.getAccountTxs(accountAddress, sinceLastTxId)
+    /*
+    Include startTx and not include untilTx
+     */
+    fun getAccountTxs(startTxId: GrmInternalTxId, untilTxId: GrmInternalTxId): Array<GrmRawTransaction> {
+        val grmTxs = ArrayList<GrmRawTransaction>()
+
+        var tmpTxId = startTxId
+        var allNewTxsProcessed = false
+
+        while (!allNewTxsProcessed) {
+            val olderAccountTxs = connector.getOlderAccountTxs(
+                accountAddress, tmpTxId
+            )
+            for (grmOlderTx in olderAccountTxs.transactions) {
+                if (grmOlderTx.transactionId == untilTxId) {
+                    allNewTxsProcessed = true
+                    break
+                }
+                grmTxs.add(grmOlderTx)
+            }
+            if (olderAccountTxs.previousTransactionId.lt == 0L &&
+                olderAccountTxs.previousTransactionId.hash ==
+                "0000000000000000000000000000000000000000000000000000000000000000"
+            ) {
+                allNewTxsProcessed = true
+            }
+            tmpTxId = olderAccountTxs.previousTransactionId
+        }
+        return grmTxs.toTypedArray()
     }
 
     fun constructTx(grmTx: GrmRawTransaction): Tx {
@@ -86,18 +113,19 @@ class GrmCoin : Coin {
         return object : Tx {
             override fun currency() = Currency.GRM
 
-            override fun hash() = grmTx.transactionId.hash.toString()
-            //TODO: Преобразование Long в Int небезопасено. Поменять на Long в интерфейсе Tx?
-            override fun index() = grmTx.transactionId.lt.toInt()
+            override fun hash() = grmTx.transactionId.hash
+
+            override fun txid(): TxId = TxId(hash(), grmTx.transactionId.lt)
 
             override fun amount() = BigDecimal(grmTx.inMsg.value)
 
             override fun destination() = grmTx.inMsg.destination
 
-            override fun tag() = grmTx.inMsg.msgData.body.toString(Charsets.UTF_8).toIntOrNull()
+            override fun paymentReference(): String? = grmTx.inMsg.msgData.body
 
             override fun fee() = BigDecimal(grmTx.fee)
 
+            //TODO: Верно только для депозитов. Для вывода средств хз нужно думать как отслеживать вывод и скорее всего править.
             override fun status() = TxStatus.CONFIRMED
 
         }

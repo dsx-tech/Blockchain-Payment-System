@@ -5,7 +5,7 @@ import com.google.gson.GsonBuilder
 import dsx.bps.connection.rpc.JsonRpcHttpClient
 import dsx.bps.connection.rpc.RpcResponse
 import dsx.bps.crypto.xrp.datamodel.*
-import dsx.bps.exception.rpc.xrp.XrpRpcException
+import dsx.bps.exception.connector.xrp.XrpRpcException
 import java.math.BigDecimal
 
 class XrpRpc(url: String): JsonRpcHttpClient(url) {

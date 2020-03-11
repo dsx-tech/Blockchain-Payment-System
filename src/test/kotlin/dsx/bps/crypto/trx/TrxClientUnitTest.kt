@@ -49,7 +49,7 @@ internal class TrxClientUnitTest {
     @DisplayName("getTag test")
     fun getTagTest() {
         val randomInt = trxClient.getTag()
-        Assertions.assertTrue(randomInt is Int)
+        Assertions.assertTrue(randomInt is String)
     }
 
     @Test
@@ -90,7 +90,7 @@ internal class TrxClientUnitTest {
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(true)
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
 
-            trxClient.sendPayment(BigDecimal.TEN, "testaddress", 1)
+            trxClient.sendPayment(BigDecimal.TEN, "testaddress", "1")
         }
 
         @Test
@@ -119,7 +119,7 @@ internal class TrxClientUnitTest {
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
 
             Assertions.assertThrows(TrxException::class.java) {
-                trxClient.sendPayment(BigDecimal.TEN, "testaddress", 1)
+                trxClient.sendPayment(BigDecimal.TEN, "testaddress", "1")
             }
         }
     }
@@ -181,7 +181,7 @@ internal class TrxClientUnitTest {
         Assertions.assertEquals(resultTx.destination(), trxTxValue.toAddress)
         Assertions.assertEquals(resultTx.fee(), BigDecimal.ZERO)
         Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
-        Assertions.assertEquals(resultTx.tag(), trxTxRawData.data?.toInt(16))
+        Assertions.assertEquals(resultTx.paymentReference(), trxTxRawData.data)
     }
 
     private fun mockForConstructTx(): TrxTx {

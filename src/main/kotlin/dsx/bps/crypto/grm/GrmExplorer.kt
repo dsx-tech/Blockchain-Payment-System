@@ -14,23 +14,21 @@ class GrmExplorer(override val coin: GrmCoin, frequency: Long) : Explorer(freque
     }
 
     override fun explore() {
+        //TODO: После добавление БД, нужна процедура восстановления после сбоя
         var lastTxId: GrmInternalTxId = coin.getLastInternalTxId()
 
         timer(this::class.toString(), true, 0, frequency) {
-            val newTransactionId = coin.getLastInternalTxId()
+            val newTxId = coin.getLastInternalTxId()
+            val notProcesssedGrmTxs = coin.getAccountTxs(newTxId, lastTxId)
 
-            if (lastTxId != newTransactionId) {
-                coin.getAccountTxs(lastTxId).filter {
-                    it.inMsg.value > 0
-                            && it.inMsg.msgData.body.isNotEmpty()
-                }.forEach {
-                    val tx = coin.constructTx(it)
-                    when (tx.tag()) {
-                        checkNotNull(tx.tag()) -> emitter.onNext(tx)
-                    }
+            for (grmTx in notProcesssedGrmTxs) {
+                //TODO: Разобраться как идентифицировать валидные и невалидные транзакции
+                if (grmTx.inMsg.value > 0 && grmTx.inMsg.msgData.body.isNotEmpty()) {
+                    val tx = coin.constructTx(grmTx)
+                    emitter.onNext(tx)
                 }
-                lastTxId = newTransactionId
             }
+            lastTxId = newTxId
         }
     }
 }

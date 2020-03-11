@@ -5,7 +5,7 @@ import dsx.bps.ton.api.TonApi
 class GrmRawTransaction {
 
     val utime: Long
-    val data: ByteArray
+    val data: String
     val transactionId: GrmInternalTxId
     val fee: Long
     val storageFee: Long
@@ -19,7 +19,7 @@ class GrmRawTransaction {
         inMsg: GrmRawMessage, outMsg: Array<GrmRawMessage>
     ) {
         this.utime = utime
-        this.data = data
+        this.data = byteArrayToHex(data)
         this.transactionId = transactionId
         this.fee = fee
         this.storageFee = storageFee
@@ -30,7 +30,7 @@ class GrmRawTransaction {
 
     constructor(rawTransaction: TonApi.RawTransaction) {
         utime = rawTransaction.utime
-        data = rawTransaction.data
+        data = byteArrayToHex(rawTransaction.data)
         transactionId = GrmInternalTxId(rawTransaction.transactionId)
         fee = rawTransaction.fee
         storageFee = rawTransaction.storageFee
@@ -44,7 +44,6 @@ class GrmRawTransaction {
         outMsg = grmOutMsgList.toTypedArray()
     }
 
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -52,7 +51,7 @@ class GrmRawTransaction {
         other as GrmRawTransaction
 
         if (utime != other.utime) return false
-        if (!data.contentEquals(other.data)) return false
+        if (data != other.data) return false
         if (transactionId != other.transactionId) return false
         if (fee != other.fee) return false
         if (storageFee != other.storageFee) return false
@@ -65,7 +64,7 @@ class GrmRawTransaction {
 
     override fun hashCode(): Int {
         var result = utime.hashCode()
-        result = 31 * result + data.contentHashCode()
+        result = 31 * result + data.hashCode()
         result = 31 * result + transactionId.hashCode()
         result = 31 * result + fee.hashCode()
         result = 31 * result + storageFee.hashCode()

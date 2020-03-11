@@ -1,7 +1,7 @@
 package dsx.bps.crypto.common
 
 import com.uchuhimo.konf.Config
-import dsx.bps.connection.Connection
+import dsx.bps.connection.Connector
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
@@ -13,7 +13,7 @@ abstract class Coin {
     abstract val currency: Currency
     abstract val config: Config
 
-    protected abstract val connection: Connection
+    protected abstract val connector: Connector
     protected abstract val explorer: Explorer
 
     fun getTxEmitter(): PublishSubject<Tx> = explorer.emitter
@@ -22,9 +22,9 @@ abstract class Coin {
 
     abstract fun getAddress(): String
 
-    open fun getTag(): Int? = null
+    open fun getTag(): String? = null
 
     abstract fun getTx(txid: TxId): Tx
 
-    abstract fun sendPayment(amount: BigDecimal, address: String, tag: Int? = null): Tx
+    abstract fun sendPayment(amount: BigDecimal, address: String, tag: String? = null): Tx
 }

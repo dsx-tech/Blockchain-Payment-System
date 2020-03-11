@@ -3,11 +3,7 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.PaymentStatus
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxId
-import dsx.bps.core.datamodel.TxStatus
+import dsx.bps.core.datamodel.*
 import dsx.bps.exception.core.payment.PaymentException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -42,7 +38,7 @@ internal class PaymentProcessorUnitTest {
     @EnumSource(value = Currency::class)
     @DisplayName("create and get payment test")
     fun createPaymentTest(currency: Currency) {
-        val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", 1)
+        val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", "1")
         val receivePayment = paymentProcessor.getPayment(payment.id)
         Assertions.assertEquals(payment, receivePayment)
     }
@@ -71,14 +67,14 @@ internal class PaymentProcessorUnitTest {
             Mockito.`when`(tx.currency()).thenReturn(Currency.BTC)
             Mockito.`when`(tx.amount()).thenReturn(BigDecimal.TEN)
             Mockito.`when`(tx.destination()).thenReturn("testaddress")
-            Mockito.`when`(tx.tag()).thenReturn(1)
+            Mockito.`when`(tx.paymentReference()).thenReturn("1")
             Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ONE)
             Mockito.`when`(tx.txid()).thenReturn(txId)
             Mockito.`when`(tx.status()).thenReturn(TxStatus.VALIDATING)
 
             Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
-            val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
+            val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
             paymentProcessor.updatePayment(payment.id, tx)
             Assertions.assertEquals(payment.status, PaymentStatus.PROCESSING)

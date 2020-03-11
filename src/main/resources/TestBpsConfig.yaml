@@ -59,6 +59,6 @@ GRM:
   connection:
     pathToTonClientConfig: "src/main/resources/TonClientConfig.json"
     keyStorePath: "src/main/resources/TonKeyStore/"
-    logVerbosityLevel: 4
+    logVerbosityLevel: 1
   explorer:
     frequency: 5000

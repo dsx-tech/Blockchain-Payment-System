@@ -1,4 +1,4 @@
 package dsx.bps.connection
 
-abstract class Connection {
+abstract class Connector {
 }
