@@ -2,6 +2,8 @@ package dsx.bps.crypto.eth
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -33,7 +35,7 @@ class EthCoin: Coin {
     private val confirmations: Int
     private var nonce: BigInteger
 
-    constructor(conf: Config) {
+    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
 
         scanningCount = config[EthConfig.Coin.scanningCount]
@@ -55,7 +57,7 @@ class EthCoin: Coin {
         explorer = EthExplorer(this, frequency)
     }
 
-    constructor(ethRpc: EthRpc, ethExplorer: EthExplorer, configPath: String) {
+    constructor(ethRpc: EthRpc, ethExplorer: EthExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(EthConfig)

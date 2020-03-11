@@ -2,6 +2,8 @@ package dsx.bps.crypto.eth
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
@@ -35,9 +37,11 @@ internal class EthClientUnitTest {
         testConfig.validateRequired()
         Mockito.`when`(ethRpc.getTransactionCount(testConfig[EthConfig.Coin.accountAddress]))
             .thenReturn(0.toBigInteger())
+        val datasource = Mockito.mock(Datasource::class.java)
+        val txServ = Mockito.mock(TxService::class.java)
         ethClient = EthCoin(
             ethRpc, ethBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path
+            javaClass.getResource("/TestBpsConfig.yaml").path, datasource, txServ
         )
     }
 
