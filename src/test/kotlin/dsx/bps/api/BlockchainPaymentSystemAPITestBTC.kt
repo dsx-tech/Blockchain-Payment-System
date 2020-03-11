@@ -7,11 +7,17 @@ import dsx.bps.crypto.btc.BtcRpc
 import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
 internal class BlockchainPaymentSystemAPITestBTC {
 
@@ -31,28 +37,28 @@ internal class BlockchainPaymentSystemAPITestBTC {
         val container: KFixedHostPortGenericContainer = KFixedHostPortGenericContainer("siandreev/bitcoind-regtest:alice-bob-regtest")
             .withFixedExposedPort(18444, 18444)
             .withFixedExposedPort(18443, 18443)
+            .waitingFor(
+                Wait.forLogMessage(".*The node is ready to use.*", 1));
     }
 
     @BeforeEach
     fun setUp() {
         val address = container.containerIpAddress
         generator = BtcRpc("http://bob:password@$address:18444/")
-        Thread.sleep(10000)
-
         aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
     }
 
-
-
+    @Order(1)
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-           assertNotEquals(aliceAPI.getBalance(Currency.BTC), "0")
-           assertNotEquals(bobAPI.getBalance(Currency.BTC),"0")
+           assertEquals(aliceAPI.getBalance(Currency.BTC), "5050.0")
+           assertEquals(bobAPI.getBalance(Currency.BTC),"50.0")
         }
     }
 
+    @Order(2)
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
@@ -79,13 +85,17 @@ internal class BlockchainPaymentSystemAPITestBTC {
         }
     }
 
+    @Disabled
+    @Order(3)
     @Test
     fun createInvoice() {
         val invId = aliceAPI.createInvoice(Currency.BTC, 0.42)
         val inv = aliceAPI.getInvoice(invId)
-
         assertNotNull(inv)
-        bobAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
+
+        val id1 = bobAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
+        val pay1 = bobAPI.getPayment(id1)
+        println(pay1)
         Thread.sleep(2000)
 
         var count = 0
@@ -97,6 +107,8 @@ internal class BlockchainPaymentSystemAPITestBTC {
         }
     }
 
+    @Disabled
+    @Order(4)
     @Test
     fun createInvoiceWithTwoPayments() {
         val invId = aliceAPI.createInvoice(Currency.BTC, 10.2)

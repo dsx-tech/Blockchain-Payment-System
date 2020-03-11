@@ -27,19 +27,18 @@ class EthRpc(url: String): Connector {
 
     fun getBalance(address: String): BigDecimal {
         val ethGetBalance: EthGetBalance = web3j.ethGetBalance(address, DefaultBlockParameter.valueOf("latest"))
-            .sendAsync()
-            .get()
+            .send()
         return Convert.fromWei(ethGetBalance.balance.toString(), Convert.Unit.ETHER)
 
     }
 
     fun getTransactionByHash(hash: String): Transaction {
-        val transactionInfo = web3j.ethGetTransactionByHash(hash).sendAsync().get()
+        val transactionInfo = web3j.ethGetTransactionByHash(hash).send()
         return transactionInfo.transaction.get()
     }
 
     fun getBlockByHash(hash: String): EthBlock.Block {
-        val blockInfo = web3j.ethGetBlockByHash(hash, true).sendAsync().get()
+        val blockInfo = web3j.ethGetBlockByHash(hash, true).send()
         return blockInfo.block
     }
 
@@ -47,7 +46,7 @@ class EthRpc(url: String): Connector {
         val ethBlock = web3j.ethGetBlockByNumber(
             DefaultBlockParameterName.LATEST,
             true
-        ).sendAsync().get()
+        ).send()
         return ethBlock.block
     }
 
@@ -55,42 +54,36 @@ class EthRpc(url: String): Connector {
         val ethBlock = web3j.ethGetBlockByNumber(
             DefaultBlockParameterName.PENDING,
             true
-        ).sendAsync().get()
+        ).send()
         return ethBlock.block.transactions.size
     }
 
-    fun getPendingTransactionsCount(address: String): Int {
-        val ethBlock = web3j.ethGetBlockByNumber(
-            DefaultBlockParameterName.PENDING,
-            true
-        ).sendAsync().get()
-        val tx =
-            ethBlock.block.transactions.map { it.get() as EthBlock.TransactionObject }
-        return tx.filter { it.from == address }.size
+    fun getPendingTransactionsCount(address: String): BigInteger {
+
+        return web3j.ethGetTransactionCount(address, DefaultBlockParameterName.PENDING).send().transactionCount
     }
 
     fun getAllTransactionsCount(address: String): BigInteger {
         val ethGetTransactionCount = web3j.ethGetTransactionCount(
             address, DefaultBlockParameterName.LATEST
-        ).sendAsync().get()
+        ).send()
         return ethGetTransactionCount.transactionCount + getPendingTransactionsCount(address)
-            .toBigInteger()
     }
 
     fun getTransactionReceiptByHash(hash: String): TransactionReceipt {
-        val receiptInfo = web3j.ethGetTransactionReceipt(hash).sendAsync().get()
+        val receiptInfo = web3j.ethGetTransactionReceipt(hash).send()
         return receiptInfo.transactionReceipt.get()
     }
 
     fun getGasPrice(): BigInteger {
-        val result = web3j.ethGasPrice().sendAsync().get()
+        val result = web3j.ethGasPrice().send()
         return result.gasPrice
     }
 
     fun getTransactionCount(address: String): BigInteger {
         val ethGetTransactionCount = web3j.ethGetTransactionCount(
             address, DefaultBlockParameterName.LATEST
-        ).sendAsync().get()
+        ).send()
         return ethGetTransactionCount.transactionCount
     }
 
@@ -120,7 +113,7 @@ class EthRpc(url: String): Connector {
     }
 
     fun sendTransaction(hexValue: String): String {
-        val ethSendTransaction = web3j.ethSendRawTransaction(hexValue).sendAsync().get()
+        val ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send()
         return ethSendTransaction.transactionHash
     }
 
