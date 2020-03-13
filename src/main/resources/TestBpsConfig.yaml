@@ -60,9 +60,9 @@ XRP:
 
 ETH:
   coin:
-    accountAddress: "0xacfd9f1452e191fa39ff882e5fea428b999fb2af"
-    pathToWallet: "./src/test/resources/ETH/aliceWallet/UTC--2019-11-26T13-14-22.792555600Z--acfd9f1452e191fa39ff882e5fea428b999fb2af"
-    password: "root"
+    accountAddress: "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    pathToWallet: "./src/test/resources/ETH/aliceWallet/UTC--2020-03-04T08-33-21.065924100Z--073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    password: "password1"
     confirmations: 2
     defaultPasswordForNewAddresses: "newPassword"
     walletsDir: "./src/test/resources/ETH/aliceWallet/"
