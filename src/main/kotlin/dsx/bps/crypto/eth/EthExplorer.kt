@@ -16,10 +16,10 @@ class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequen
 
     override fun explore() {
         var last = coin.getLatestBlock()
-        var scanedBlocks = 0
-        while (last.number != BigInteger.ZERO && scanedBlocks < coin.scanningCount) {
+        var scannedBlocks = 0
+        while (last.number != BigInteger.ZERO && scannedBlocks < coin.scanningCount) {
             last = coin.getBlockByHash(last.parentHash)
-            scanedBlocks ++
+            scannedBlocks ++
         }
 
         viewed.add(last.hash)

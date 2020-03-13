@@ -26,6 +26,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
 
     private lateinit var aliceAPI : BlockchainPaymentSystemAPI
     private lateinit var bobAPI : BlockchainPaymentSystemAPI
+
     private lateinit var generator : BtcRpc
 
     private val aliceBtcAddress = "2MtYy1RGY2msh9WbRBf5VwUAE4xtGNJ9GQc"
@@ -38,13 +39,14 @@ internal class BlockchainPaymentSystemAPITestBTC {
             .withFixedExposedPort(18444, 18444)
             .withFixedExposedPort(18443, 18443)
             .waitingFor(
-                Wait.forLogMessage(".*The node is ready to use.*", 1));
+                Wait.forLogMessage(".*The node is ready!.*", 1))
     }
 
     @BeforeEach
     fun setUp() {
         val address = container.containerIpAddress
         generator = BtcRpc("http://bob:password@$address:18444/")
+
         aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
     }
@@ -62,7 +64,6 @@ internal class BlockchainPaymentSystemAPITestBTC {
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
-            generator.generate(101)
             val id1 = aliceAPI.sendPayment(Currency.BTC, 5.05, bobBtcAddress)
             Thread.sleep(1000)
 
@@ -78,7 +79,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
             while (pay1!!.status != PaymentStatus.SUCCEED ||
                 pay2!!.status != PaymentStatus.SUCCEED) {
                 count += 1
-                generator.generate(1)
+                generator.generatetoaddress(1, bobBtcAddress)
                 Thread.sleep(2000)
                 assertNotEquals(10, count, "Payment wasn't confirmed or found in 10 blocks")
             }
@@ -101,8 +102,8 @@ internal class BlockchainPaymentSystemAPITestBTC {
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
             count += 1
-            generator.generate(1)
-            Thread.sleep(1000)
+            generator.generatetoaddress(1, bobBtcAddress)
+            Thread.sleep(3000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
         }
     }
@@ -125,7 +126,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
         var count = 0
         while (inv.status != InvoiceStatus.PAID) {
             count += 1
-            generator.generate(1)
+            generator.generatetoaddress(1, bobBtcAddress)
             Thread.sleep(1000)
             assertNotEquals(10, count, "Invoice wasn't paid or found in 10 blocks")
         }

@@ -8,14 +8,16 @@ import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.TestMethodOrder
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class BlockchainPaymentSystemAPITestETH {
 
     private val aliceConfigPath = javaClass.classLoader.getResource("AliceConfigETH.yaml")?.path
@@ -24,16 +26,17 @@ internal class BlockchainPaymentSystemAPITestETH {
     private lateinit var aliceAPI: BlockchainPaymentSystemAPI
     private lateinit var bobAPI: BlockchainPaymentSystemAPI
 
-    private val aliceEthAddress = "0xacfd9f1452e191fa39ff882e5fea428b999fb2af"
-    private val bobEthAddress = "0x940c955f4072201fd9732bb5000c2d66dec449b6"
+    private val aliceEthAddress = "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    private val bobEthAddress = "0x0ce59225bcd447feaed698ed754d309feba5fc63"
 
     private lateinit var generator: EthRpc
 
     companion object {
         @Container
         @JvmStatic
-        val container = KFixedHostPortGenericContainer("siandreev/ethereum-rpc-test:mining")
-            .withFixedExposedPort(8545, 8545)
+        val container = KFixedHostPortGenericContainer("siandreev/ethereum-rpc-test:PoA-mining")
+            .withFixedExposedPort(8541, 8541)
+            .withFixedExposedPort(8542, 8542)
     }
 
     @BeforeEach
@@ -42,20 +45,20 @@ internal class BlockchainPaymentSystemAPITestETH {
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
 
         val address = container.containerIpAddress
-        val url = "http://$address:8545"
+        val url = "http://$address:8541"
         generator = EthRpc(url)
     }
 
-    @Disabled
+    @Order(1)
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            assertNotEquals(aliceAPI.getBalance(Currency.ETH), "0")
-            //TODO: create another etherbase account
+            val realBalance = "904625697166532776746648320380374280103671755200316906558.261906867821325312"
+            assertEquals(realBalance, aliceAPI.getBalance(Currency.ETH))
         }
     }
 
-    @Disabled
+    @Order(2)
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
@@ -82,6 +85,7 @@ internal class BlockchainPaymentSystemAPITestETH {
     }
 
     @Disabled
+    @Order(3)
     @Test
     fun createInvoice() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.03)
@@ -98,6 +102,7 @@ internal class BlockchainPaymentSystemAPITestETH {
     }
 
     @Disabled
+    @Order(4)
     @Test
     fun createInvoiceWithTwoPayments() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.06)

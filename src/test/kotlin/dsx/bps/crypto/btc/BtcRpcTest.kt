@@ -2,13 +2,19 @@ package dsx.bps.crypto.btc
 
 import dsx.bps.crypto.eth.KGenericContainer
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.MethodOrderer
+import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestMethodOrder
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 import kotlin.math.roundToInt
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
 internal class BtcRpcTest {
 
@@ -21,6 +27,9 @@ internal class BtcRpcTest {
         @JvmStatic
         val container: KGenericContainer = KGenericContainer("siandreev/bitcoind-regtest:alice-bob-regtest")
             .withExposedPorts(18443, 18444)
+            .waitingFor(
+                Wait.forLogMessage(".*The node is ready!.*", 1))
+
     }
 
     @BeforeEach
@@ -29,14 +38,14 @@ internal class BtcRpcTest {
         val port = container.firstMappedPort
         url = "http://alice:password@$address:$port/"
         rpc = BtcRpc(url)
-        Thread.sleep(4000)
     }
 
+    @Order(1)
     @Test
     fun getBalance() {
         assertDoesNotThrow {
             val r = rpc.getBalance()
-            println("btc getbalance: $r")
+            assertEquals(5050.0.toBigDecimal(), r)
         }
     }
 
@@ -148,9 +157,9 @@ internal class BtcRpcTest {
     }
 
     @Test
-    fun generate() {
+    fun generatetoaddress() {
         assertDoesNotThrow {
-            val r = rpc.generate(1)
+            val r = rpc.generatetoaddress(1, alice)
             println("btc generate: {n:1}: $r")
         }
     }
