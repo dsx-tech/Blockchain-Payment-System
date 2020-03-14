@@ -2,6 +2,9 @@ package dsx.bps.crypto.xrp
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.XrpService
 import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -21,12 +24,16 @@ class XrpCoin: Coin {
     private val account: String
     private val privateKey: String
     private val passPhrase: String
+    private val xrpService: XrpService
+    private val txService: TxService
 
     override val connector: XrpRpc
     override val explorer: XrpExplorer
 
-    constructor(conf: Config) {
+    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
+        xrpService = XrpService(datasource)
+        txService = txServ
 
         account = config[XrpConfig.Coin.account]
         privateKey = config[XrpConfig.Coin.privateKey]
@@ -38,10 +45,12 @@ class XrpCoin: Coin {
         connector = XrpRpc(url)
 
         val frequency = config[XrpConfig.Explorer.frequency]
-        explorer = XrpExplorer(this, frequency)
+        explorer = XrpExplorer(this, datasource, txServ, frequency)
     }
 
-    constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String) {
+    constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
+        xrpService = XrpService(datasource)
+        txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(XrpConfig)
@@ -68,11 +77,15 @@ class XrpCoin: Coin {
         return constructTx(xrtTx)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
-        return createTransaction(amount, address, tag)
+    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+        val xrpTx = createTransaction(amount, address, tag)
             .let { connector.sign(privateKey, it) }
             .let { connector.submit(it) }
-            .let { constructTx(it) }
+        val tx = constructTx(xrpTx)
+        val new = txService.add(tx.status(), tx.destination(), tx.paymentReference(),
+            tx.amount(), tx.fee(), tx.hash(), tx.index(), tx.currency())
+        xrpService.add(tx.fee(), this.account, xrpTx.sequence, xrpTx.validated, new)
+        return tx
     }
 
     private fun createTransaction(amount: BigDecimal, address: String, tag: String?): XrpTxPayment {

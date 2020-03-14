@@ -2,6 +2,9 @@ package dsx.bps.crypto.trx
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TrxService
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -23,14 +26,18 @@ class TrxCoin: Coin {
     private val account: String
     private val accountAddress: String
     private val privateKey: String
+    private val trxService: TrxService
+    private val txService: TxService
 
     override val connector: TrxRpc
     override val explorer: TrxExplorer
 
     private val confirmations: Int
 
-    constructor(conf: Config) {
+    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
+        trxService = TrxService(datasource)
+        txService = txServ
 
         account = config[TrxConfig.Coin.account]
         accountAddress = config[TrxConfig.Coin.accountAddress]
@@ -44,10 +51,12 @@ class TrxCoin: Coin {
         confirmations = config[TrxConfig.Coin.confirmations]
 
         val frequency = config[TrxConfig.Explorer.frequency]
-        explorer = TrxExplorer(this, frequency)
+        explorer = TrxExplorer(this,datasource, txServ, frequency)
     }
 
-    constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String) {
+    constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
+        trxService = TrxService(datasource)
+        txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(TrxConfig)
@@ -86,7 +95,11 @@ class TrxCoin: Coin {
         val result = connector.broadcastTransaction(tx)
 
         if (result.success) {
-            return constructTx(tx)
+            val transaction = constructTx(tx)
+            val new = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
+                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+            trxService.add(this.getAddress(),tx.ret.map { trxTxRet -> trxTxRet.contractRet }, new)
+            return transaction
         } else {
             throw TrxException("Unable to broadcast TRX transaction $tx with response $result")
         }

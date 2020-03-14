@@ -2,6 +2,8 @@ package dsx.bps.crypto
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.EnabledCurrenciesConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -20,7 +22,7 @@ class CoinsManager {
 
     private val enabledCoins: Map<Currency, Coin>
 
-    constructor(configFile: File) {
+    constructor(configFile: File, datasource: Datasource, txServ: TxService) {
         val enabledCurrenciesConfig = with(Config()) {
             addSpec(EnabledCurrenciesConfig)
             from.yaml.file(configFile)
@@ -35,9 +37,9 @@ class CoinsManager {
             }
             coinConfig.validateRequired()
             mutableCoinsMap[enabledCurrency] = when (enabledCurrency) {
-                Currency.BTC -> BtcCoin(coinConfig)
-                Currency.TRX -> TrxCoin(coinConfig)
-                Currency.XRP -> XrpCoin(coinConfig)
+                Currency.BTC -> BtcCoin(coinConfig, datasource, txServ)
+                Currency.TRX -> TrxCoin(coinConfig, datasource, txServ)
+                Currency.XRP -> XrpCoin(coinConfig, datasource, txServ)
                 Currency.GRM -> GrmCoin(coinConfig)
             }
         }
@@ -49,7 +51,7 @@ class CoinsManager {
     }
 
     private fun getCoin(currency: Currency): Coin = enabledCoins[currency]
-                                                    ?: throw Exception("Currency ${currency.name} isn't specified in configuration file.")
+        ?: throw Exception("Currency ${currency.name} isn't specified in configuration file.")
 
     fun getAddress(currency: Currency): String {
         return getCoin(currency).getAddress()

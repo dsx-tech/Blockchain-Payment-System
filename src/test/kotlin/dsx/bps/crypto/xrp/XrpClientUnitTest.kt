@@ -2,6 +2,9 @@ package dsx.bps.crypto.xrp
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
@@ -17,7 +20,8 @@ internal class XrpClientUnitTest {
 
     private val xrpRpc = Mockito.mock(XrpRpc::class.java)
     private val xrpBlockchainListener = Mockito.mock(XrpExplorer::class.java)
-    private val xrpClient = XrpCoin(xrpRpc, xrpBlockchainListener, javaClass.getResource("/TestBpsConfig.yaml").path)
+    private val datasource = Datasource()
+    private val xrpClient: XrpCoin
     private val testConfig: Config
 
     init {
@@ -27,8 +31,19 @@ internal class XrpClientUnitTest {
             addSpec(XrpConfig)
             from.yaml.file(configFile)
         }
-
         testConfig.validateRequired()
+
+        val databaseConfig = with(Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
+        datasource.initConnection(databaseConfig)
+        xrpClient = XrpCoin(
+            xrpRpc, xrpBlockchainListener,
+            javaClass.getResource("/TestBpsConfig.yaml").path, datasource, TxService(datasource)
+        )
     }
 
     @Test
@@ -96,6 +111,7 @@ internal class XrpClientUnitTest {
         Mockito.`when`(xrpTx.hash).thenReturn("hash")
         Mockito.`when`(xrpTx.sequence).thenReturn(1)
         Mockito.`when`(xrpTx.validated).thenReturn(true)
+        Mockito.`when`(xrpTx.destination).thenReturn("destination")
 
         Mockito.`when`(xrpRpc.submit("signedtx")).thenReturn(xrpTx)
 

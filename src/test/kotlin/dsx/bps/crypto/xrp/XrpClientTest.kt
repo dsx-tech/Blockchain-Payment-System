@@ -17,6 +17,7 @@ import java.math.BigDecimal
 internal class XrpClientTest {
 
     private val cur = Currency.XRP
+
     private val configDir = System.getProperty("user.home") + File.separator + "bps" + File.separator
     private val aliceConfigPath = configDir + "alice.properties"
     private val bobConfigPath = configDir + "bob.properties"
