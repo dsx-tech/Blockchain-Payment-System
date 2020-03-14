@@ -6,16 +6,16 @@ import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
-import dsx.bps.core.datamodel.Currency
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import java.util.UUID
 import kotlin.concurrent.timer
 
-class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config, datasource: Datasource, txServ: TxService): Observer<Tx> {
+class InvoiceProcessor(
+    private val manager: BlockchainPaymentSystemManager,
+    config: Config, datasource: Datasource, txServ: TxService
+) : Observer<Tx> {
 
     private val invService = InvoiceService(datasource)
     private val txService = txServ

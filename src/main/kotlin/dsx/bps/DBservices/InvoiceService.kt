@@ -1,13 +1,11 @@
 package dsx.bps.DBservices
 
 import dsx.bps.DBclasses.*
-import dsx.bps.DBclasses.PayableEntity
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.InvoiceStatus
-import dsx.bps.core.datamodel.TxId
-import dsx.bps.core.datamodel.PayableType
-import org.jetbrains.exposed.sql.*
+import dsx.bps.core.datamodel.*
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.SizedIterable
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
@@ -25,7 +23,7 @@ class InvoiceService(datasource: Datasource) {
         status: InvoiceStatus, received: BigDecimal,
         invoiceId: String, currency: Currency,
         amount: BigDecimal, address: String,
-        tag: Int?
+        tag: String?
     ): InvoiceEntity {
         val newInvoice = transaction {
             InvoiceEntity.new {

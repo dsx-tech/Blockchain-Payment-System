@@ -9,6 +9,7 @@ import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
 import io.reactivex.disposables.Disposable
+import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -16,7 +17,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
-import org.jetbrains.exposed.sql.transactions.transaction
 import java.io.File
 import java.math.BigDecimal
 
@@ -76,8 +76,10 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx.txid()).thenReturn(TxId("hash1",1))
 
-            txService.add(tx.status(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
-                "hash1", 1, tx.currency())
+            txService.add(
+                tx.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                "hash1", 1, tx.currency()
+            )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx)
             Assertions.assertEquals(InvoiceStatus.PAID, invService.getBySystemId(invoice.id).status)
@@ -98,8 +100,10 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash2", 2))
 
-            txService.add(tx1.status(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
-                "hash2", 2, tx1.currency())
+            txService.add(
+                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                "hash2", 2, tx1.currency()
+            )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
@@ -122,8 +126,10 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash3",3))
 
-            txService.add(tx1.status(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
-                "hash3", 3, tx1.currency())
+            txService.add(
+                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                "hash3", 3, tx1.currency()
+            )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
@@ -147,8 +153,10 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash4",4))
 
-            txService.add(tx1.status(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
-                "hash4", 4, tx1.currency())
+            txService.add(
+                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                "hash4", 4, tx1.currency()
+            )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
@@ -172,8 +180,10 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.status()).thenReturn(txStatus)
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash5",5))
 
-            txService.add(tx1.status(), "testaddress", 1, BigDecimal.TEN, BigDecimal.ZERO,
-                "hash5", 5, tx1.currency())
+            txService.add(
+                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                "hash5", 5, tx1.currency()
+            )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)

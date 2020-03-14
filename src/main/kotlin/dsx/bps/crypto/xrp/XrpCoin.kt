@@ -77,13 +77,15 @@ class XrpCoin: Coin {
         return constructTx(xrtTx)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+    override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
         val xrpTx = createTransaction(amount, address, tag)
             .let { connector.sign(privateKey, it) }
             .let { connector.submit(it) }
         val tx = constructTx(xrpTx)
-        val new = txService.add(tx.status(), tx.destination(), tx.paymentReference(),
-            tx.amount(), tx.fee(), tx.hash(), tx.index(), tx.currency())
+        val new = txService.add(
+            tx.status(), tx.destination(), tx.paymentReference(),
+            tx.amount(), tx.fee(), tx.hash(), tx.index(), tx.currency()
+        )
         xrpService.add(tx.fee(), this.account, xrpTx.sequence, xrpTx.validated, new)
         return tx
     }

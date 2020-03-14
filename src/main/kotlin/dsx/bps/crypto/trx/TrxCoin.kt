@@ -96,8 +96,10 @@ class TrxCoin: Coin {
 
         if (result.success) {
             val transaction = constructTx(tx)
-            val new = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
-                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+            val new = txService.add(
+                transaction.status(), transaction.destination(), transaction.paymentReference(),
+                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency()
+            )
             trxService.add(this.getAddress(),tx.ret.map { trxTxRet -> trxTxRet.contractRet }, new)
             return transaction
         } else {

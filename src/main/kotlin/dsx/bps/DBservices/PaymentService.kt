@@ -1,11 +1,7 @@
 package dsx.bps.DBservices
 
 import dsx.bps.DBclasses.*
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.datamodel.PaymentStatus
-import dsx.bps.core.datamodel.TxId
-import dsx.bps.core.datamodel.PayableType
+import dsx.bps.core.datamodel.*
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.exists
@@ -26,7 +22,7 @@ class PaymentService(datasource: Datasource) {
         status: PaymentStatus,
         paymentId: String, currency: Currency,
         amount: BigDecimal, address: String,
-        tag: Int?
+        tag: String?
     ): PaymentEntity {
         val newPayment = transaction {
             PaymentEntity.new {

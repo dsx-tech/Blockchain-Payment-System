@@ -1,7 +1,7 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.TxTable
 import dsx.bps.DBclasses.TxEntity
+import dsx.bps.DBclasses.TxTable
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.TxStatus
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -20,9 +20,9 @@ class TxService(datasource: Datasource) {
 
     fun add(
         status: TxStatus, destination: String,
-        tag: Int?, amount: BigDecimal,
+        tag: String?, amount: BigDecimal,
         fee: BigDecimal, hash: String,
-        index: Int, currency: Currency
+        index: Long, currency: Currency
     ): TxEntity {
         val newTx = transaction {
             TxEntity.new {
@@ -43,11 +43,11 @@ class TxService(datasource: Datasource) {
         return transaction { TxEntity.findById(id) }
     }
 
-    fun getByTxId(hash: String, index: Int): TxEntity {
+    fun getByTxId(hash: String, index: Long): TxEntity {
         return transaction { TxEntity.find { TxTable.hash eq hash and (TxTable.index eq index) }.first() }
     }
 
-    fun updateStatus(status: TxStatus, hash: String, index: Int) {
+    fun updateStatus(status: TxStatus, hash: String, index: Long) {
         transaction { getByTxId(hash, index).status = status }
     }
 }
