@@ -1,10 +1,8 @@
 package dsx.bps.crypto.grm
 
 import dsx.bps.connection.Connector
-import dsx.bps.crypto.grm.datamodel.GrmFullAccountState
-import dsx.bps.crypto.grm.datamodel.GrmInternalTxId
-import dsx.bps.crypto.grm.datamodel.GrmRawTransactions
-import dsx.bps.crypto.grm.datamodel.hexToByteArray
+import dsx.bps.core.datamodel.TxId
+import dsx.bps.crypto.grm.datamodel.*
 import dsx.bps.exception.connector.grm.GrmConnectorException
 import dsx.bps.ton.api.TonApi
 import dsx.bps.ton.api.TonClient
@@ -65,6 +63,37 @@ class GrmConnector : Connector {
             )
             else -> throw GrmConnectorException(
                 "${result.javaClass} cannot cast to TonApi.FullAccountState or TonApi.Error"
+            )
+        }
+    }
+
+    fun getTransaction(accountAddress: String, txId: TxId): GrmRawTransaction {
+        val result = runBlocking {
+            send(
+                TonApi.RawGetTransactions(
+                    null,
+                    TonApi.AccountAddress(accountAddress),
+                    TonApi.InternalTransactionId(
+                        txId.index,
+                        hexToByteArray(txId.hash)
+                    )
+                )
+            )
+        }
+        when (result) {
+            is TonApi.RawTransactions -> if (result.transactions.isEmpty()) {
+                throw GrmConnectorException(
+                    "Transaction with hash = ${txId.hash} and lt = ${txId.index}" +
+                            " in account on address = $accountAddress not found."
+                )
+            } else {
+                return GrmRawTransaction(result.transactions[0])
+            }
+            is TonApi.Error -> throw GrmConnectorException(
+                "Error code: ${result.code}. Message: ${result.message}"
+            )
+            else -> throw GrmConnectorException(
+                "${result.javaClass} cannot cast to TonApi.RawTransactions or TonApi.Error"
             )
         }
     }

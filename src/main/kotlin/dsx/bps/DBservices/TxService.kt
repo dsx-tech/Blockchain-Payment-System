@@ -48,6 +48,6 @@ class TxService(datasource: Datasource) {
     }
 
     fun updateStatus(status: TxStatus, hash: String, index: Long) {
-        transaction { getByTxId(hash, index).status = status }
+        return transaction { getByTxId(hash, index).status = status }
     }
 }

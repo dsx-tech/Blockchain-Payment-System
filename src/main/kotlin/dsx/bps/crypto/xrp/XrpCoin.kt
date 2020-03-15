@@ -48,7 +48,10 @@ class XrpCoin: Coin {
         explorer = XrpExplorer(this, datasource, txServ, frequency)
     }
 
-    constructor(xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
+    constructor(
+        xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String,
+        datasource: Datasource, txServ: TxService
+    ) {
         xrpService = XrpService(datasource)
         txService = txServ
         val configFile = File(configPath)

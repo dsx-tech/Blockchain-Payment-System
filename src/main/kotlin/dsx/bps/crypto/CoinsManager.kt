@@ -40,7 +40,7 @@ class CoinsManager {
                 Currency.BTC -> BtcCoin(coinConfig, datasource, txServ)
                 Currency.TRX -> TrxCoin(coinConfig, datasource, txServ)
                 Currency.XRP -> XrpCoin(coinConfig, datasource, txServ)
-                Currency.GRM -> GrmCoin(coinConfig)
+                Currency.GRM -> GrmCoin(coinConfig, datasource, txServ)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()

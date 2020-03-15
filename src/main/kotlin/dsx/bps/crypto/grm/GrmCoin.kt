@@ -2,6 +2,9 @@ package dsx.bps.crypto.grm
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.GrmService
+import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.GrmConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -21,12 +24,16 @@ class GrmCoin : Coin {
     override val config: Config
 
     private val accountAddress: String
+    private val grmService: GrmService
+    private val txService: TxService
 
     override val connector: GrmConnector
     override val explorer: GrmExplorer
 
-    constructor(conf: Config) {
+    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
+        grmService = GrmService(datasource)
+        txService = txServ
 
         accountAddress = config[GrmConfig.Coin.accountAddress]
 
@@ -36,10 +43,15 @@ class GrmCoin : Coin {
         connector = GrmConnector(tonClientConfig, keyStorePath, logVerbosityLevel)
 
         val frequency = config[GrmConfig.Explorer.frequency]
-        explorer = GrmExplorer(this, frequency)
+        explorer = GrmExplorer(this, datasource, txServ, frequency)
     }
 
-    constructor(grmConnection: GrmConnector, grmExplorer: GrmExplorer, configPath: String) {
+    constructor(
+        grmConnection: GrmConnector, grmExplorer: GrmExplorer,
+        configPath: String, datasource: Datasource, txServ: TxService
+    ) {
+        grmService = GrmService(datasource)
+        txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(GrmConfig)
@@ -62,7 +74,8 @@ class GrmCoin : Coin {
     override fun getTag(): String? = Random.nextInt(0, Int.MAX_VALUE).toString()
 
     override fun getTx(txid: TxId): Tx {
-        TODO("not implemented")
+        val grmRawTransaction = connector.getTransaction(accountAddress, txid)
+        return constructTx(grmRawTransaction)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
@@ -117,11 +130,17 @@ class GrmCoin : Coin {
 
             override fun txid(): TxId = TxId(hash(), grmTx.transactionId.lt)
 
-            override fun amount() = BigDecimal(grmTx.inMsg.value)
+            override fun amount(): BigDecimal {
+                var amount = grmTx.inMsg.value
+                for (msg in grmTx.outMsg) {
+                    amount -= msg.value + msg.ihrFee + msg.fwdFee
+                }
+                return BigDecimal(amount)
+            }
 
             override fun destination() = grmTx.inMsg.destination
 
-            override fun paymentReference(): String? = grmTx.inMsg.msgData.body
+            override fun paymentReference(): String? = grmTx.inMsg.msgText
 
             override fun fee() = BigDecimal(grmTx.fee)
 
