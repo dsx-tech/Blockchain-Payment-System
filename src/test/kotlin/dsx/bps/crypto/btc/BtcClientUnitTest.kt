@@ -4,6 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
+import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
@@ -27,7 +28,8 @@ internal class BtcClientUnitTest {
     private val txService: TxService
 
     init {
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
+        val configFile = File(configPath)
         val databaseConfig = with(Config()) {
             addSpec(DatabaseConfig)
             from.yaml.file(configFile)
@@ -38,7 +40,7 @@ internal class BtcClientUnitTest {
         txService = TxService(datasource)
         btcCoin = BtcCoin(
             btcRpc, btcExplorer,
-            javaClass.getResource("/TestBpsConfig.yaml").path,
+            configPath,
             datasource, txService
         )
     }

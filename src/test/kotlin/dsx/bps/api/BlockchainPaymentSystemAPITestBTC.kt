@@ -1,5 +1,6 @@
 package dsx.bps.api
 
+import dsx.bps.TestUtils
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
@@ -21,8 +22,8 @@ import java.math.BigDecimal
 @Testcontainers
 internal class BlockchainPaymentSystemAPITestBTC {
 
-    private val aliceConfigPath = javaClass.classLoader.getResource("AliceConfigBTC.yaml")?.path
-    private val bobConfigPath = javaClass.classLoader.getResource("BobConfigBTC.yaml")?.path
+    private val aliceConfigPath = (TestUtils.getResourcePath("AliceConfigBTC.yaml"))
+    private val bobConfigPath = (TestUtils.getResourcePath("BobConfigBTC.yaml"))
 
     private lateinit var aliceAPI : BlockchainPaymentSystemAPI
     private lateinit var bobAPI : BlockchainPaymentSystemAPI

@@ -4,6 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
+import dsx.bps.TestUtils
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
@@ -29,7 +30,8 @@ internal class EthClientUnitTest {
     init {
 
         val initConfig = Config()
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
+        val configFile = File(configPath)
         testConfig = with(initConfig) {
             addSpec(EthConfig)
             from.yaml.file(configFile)
@@ -41,7 +43,7 @@ internal class EthClientUnitTest {
         val txServ = Mockito.mock(TxService::class.java)
         ethClient = EthCoin(
             ethRpc, ethBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path, datasource, txServ
+            configPath, datasource, txServ
         )
     }
 

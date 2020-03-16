@@ -5,6 +5,7 @@ import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.PaymentService
 import dsx.bps.DBservices.TxService
+import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.Currency
@@ -35,7 +36,8 @@ internal class PaymentProcessorUnitTest {
 
     init {
         val initConfig = Config()
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
+        val configFile = File(configPath)
         testConfig = with(initConfig) {
             addSpec(PaymentProcessorConfig)
             from.yaml.file(configFile)
