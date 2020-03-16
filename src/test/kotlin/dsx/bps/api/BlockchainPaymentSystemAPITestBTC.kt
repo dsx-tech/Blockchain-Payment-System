@@ -48,8 +48,8 @@ internal class BlockchainPaymentSystemAPITestBTC {
         val address = container.containerIpAddress
         generator = BtcRpc("http://bob:password@$address:18444/")
 
-        aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
-        bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
+        aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath)
+        bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
     }
 
     @Order(1)

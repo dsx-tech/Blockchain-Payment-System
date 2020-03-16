@@ -8,7 +8,7 @@ import org.junit.jupiter.api.MethodOrderer
 import org.junit.jupiter.api.Order
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestMethodOrder
-import org.testcontainers.containers.wait.strategy.Wait
+import org.testcontainers.containers.wait.strategy.Wait.forLogMessage
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
@@ -28,8 +28,8 @@ internal class BtcRpcTest {
         val container: KGenericContainer = KGenericContainer("siandreev/bitcoind-regtest:alice-bob-regtest")
             .withExposedPorts(18443, 18444)
             .waitingFor(
-                Wait.forLogMessage(".*The node is ready!.*", 1))
-
+                forLogMessage(".*The node is ready!.*", 1)
+            )
     }
 
     @BeforeEach

@@ -21,8 +21,8 @@ import java.math.BigDecimal
 @Testcontainers
 internal class BlockchainPaymentSystemAPITestETH {
 
-    private val aliceConfigPath = TestUtils.getResourcePath("AliceConfigETH.yaml")
-    private val bobConfigPath = TestUtils.getResourcePath(("BobConfigETH.yaml"))
+    private val aliceConfigPath = (TestUtils.getResourcePath("AliceConfigETH.yaml"))
+    private val bobConfigPath = (TestUtils.getResourcePath("BobConfigETH.yaml"))
 
     private lateinit var aliceAPI: BlockchainPaymentSystemAPI
     private lateinit var bobAPI: BlockchainPaymentSystemAPI
@@ -42,8 +42,8 @@ internal class BlockchainPaymentSystemAPITestETH {
 
     @BeforeEach
     fun setUp() {
-        aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
-        bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
+        aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath)
+        bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
 
         val address = container.containerIpAddress
         val url = "http://$address:8541"
