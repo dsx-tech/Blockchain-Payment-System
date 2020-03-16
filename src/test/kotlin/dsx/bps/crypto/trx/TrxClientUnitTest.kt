@@ -4,6 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
+import dsx.bps.TestUtils.Companion.getResourcePath
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.TxId
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.io.File
 import java.math.BigDecimal
+import java.net.URI
 
 internal class TrxClientUnitTest {
 
@@ -28,7 +30,8 @@ internal class TrxClientUnitTest {
 
     init {
         val initConfig = Config()
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val configPath = getResourcePath("TestBpsConfig.yaml")
+        val configFile = File(configPath)
         testConfig = with(initConfig) {
             addSpec(TrxConfig)
             from.yaml.file(configFile)
@@ -43,7 +46,7 @@ internal class TrxClientUnitTest {
 
         datasource.initConnection(databaseConfig)
         trxClient = TrxCoin(trxRpc, trxBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path, datasource, TxService(datasource)
+            configPath, datasource, TxService(datasource)
         )
     }
 
