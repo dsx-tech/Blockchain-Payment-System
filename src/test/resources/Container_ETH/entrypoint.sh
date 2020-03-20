@@ -1,6 +1,0 @@
-#!/bin/bash
-    (bootnode -nodekey boot.key -verbosity 9 -addr 127.0.0.1:30310 &> bootnode.log &)
-    (geth --datadir node1 --nousb --unlock 0 --password node1/node1.password --rpc -rpcapi eth,web3,personal,admin --rpccorsdomain '*' --mine --minerthreads 1 --allow-insecure-unlock --port 30311 --rpcaddr "0.0.0.0" --rpcport 8541 --networkid 191 --miner.etherbase 0x073CFa4b6635b1A1B96F6363a9e499a8076B6107 --syncmode 'full' --ipcdisable --bootnodes 'enode://69085715ce41505334a86cb6dc9b1af35ec32c70fbc8cf0ec5d94e9f873ea8459b0242655fc44a594fa48cc9e837a6f0b1f60eaf5a2aec97bb62ba2f2bf893fe@127.0.0.1:30310' &> node1.log &)
-    sleep 1
-    (geth --datadir node2 --nousb --unlock 0 --password node2/node2.password --rpc -rpcapi eth,web3,personal,admin --rpccorsdomain '*' --mine --minerthreads 1 --allow-insecure-unlock --port 30312 --rpcaddr "0.0.0.0" --rpcport 8542 --networkid 191 --miner.etherbase 0x0Ce59225BCD447fEaEd698ED754D309febA5fC63 --syncmode 'full' --ipcdisable --bootnodes 'enode://69085715ce41505334a86cb6dc9b1af35ec32c70fbc8cf0ec5d94e9f873ea8459b0242655fc44a594fa48cc9e837a6f0b1f60eaf5a2aec97bb62ba2f2bf893fe@127.0.0.1:30310' &> node2.log &)
-    sleep infinity

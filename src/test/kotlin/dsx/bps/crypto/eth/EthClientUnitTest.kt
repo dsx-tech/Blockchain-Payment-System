@@ -64,7 +64,7 @@ internal class EthClientUnitTest {
             )
         ).thenReturn("newAddress")
 
-        val address = ethClient.getAddress()
+        val address = ethClient.getAddressWithWallet()
         Assertions.assertEquals("newAddress", address)
     }
 
@@ -188,7 +188,7 @@ internal class EthClientUnitTest {
         Assertions.assertEquals(resultTx.hash(), "hash1")
         Assertions.assertEquals((resultTx.amount()).toString(), "1")
         Assertions.assertEquals(resultTx.destination(), "to")
-        Assertions.assertEquals(resultTx.fee(), 235000.toBigDecimal())
+        Assertions.assertEquals(resultTx.fee(), Convert.fromWei(BigDecimal.valueOf(235000), Convert.Unit.ETHER))
         Assertions.assertEquals(resultTx.status(), TxStatus.CONFIRMED)
     }
 
@@ -210,7 +210,7 @@ internal class EthClientUnitTest {
         Assertions.assertEquals(resultTx.hash(), "hash2")
         Assertions.assertEquals((resultTx.amount()).toString(), "1")
         Assertions.assertEquals(resultTx.destination(), "to")
-        Assertions.assertEquals(resultTx.fee(), 450000.toBigDecimal())
+        Assertions.assertEquals(resultTx.fee(), Convert.fromWei(BigDecimal.valueOf(450000), Convert.Unit.ETHER))
         Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
     }
 

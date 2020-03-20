@@ -1,6 +1,8 @@
 package dsx.bps.crypto.eth
 
 import dsx.bps.crypto.common.Connector
+import dsx.bps.crypto.eth.datamodel.Proxy
+import dsx.bps.crypto.eth.datamodel.SmartContract
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
@@ -14,11 +16,13 @@ import org.web3j.protocol.core.methods.response.Transaction
 import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.Transfer
+import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
+
 
 class EthRpc(url: String): Connector {
 
@@ -92,8 +96,16 @@ class EthRpc(url: String): Connector {
             password,
             File(pathToWallet)
         )
-        val credentials = WalletUtils.loadCredentials(password, pathToWallet + "/" + fileName)
+        val credentials = WalletUtils.loadCredentials(password, "$pathToWallet/$fileName")
         return credentials.address
+    }
+
+    fun generateSmartWallet(pathToWallet: String, password: String): SmartContract{
+        val credentials = WalletUtils.loadCredentials(password, pathToWallet)
+        val contract = Proxy.deploy(web3j, credentials, DefaultGasProvider()).send()
+        val fee = Convert.fromWei(this.getGasPrice()
+            .multiply(contract.transactionReceipt.get().gasUsed).toString(), Convert.Unit.ETHER)
+        return SmartContract(contract.contractAddress, fee)
     }
 
     fun createRawTransaction(

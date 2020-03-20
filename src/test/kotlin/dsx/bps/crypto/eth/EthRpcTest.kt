@@ -1,66 +1,75 @@
 package dsx.bps.crypto.eth
 
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import org.web3j.crypto.WalletUtils
 import java.io.File
-import java.io.FileFilter
 import java.math.BigDecimal
 import java.nio.file.Files
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
 internal class EthRpcTest {
 
-    private lateinit var url: String
-    private lateinit var ethRpc: EthRpc
+    private lateinit var aliceRpc: EthRpc
+    private lateinit var bobRpc: EthRpc
 
-    private val alice = "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
-    private val bob = "0x0ce59225bcd447feaed698ed754d309feba5fc63"
+    private val aliceAddress = "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    private val bobAddress = "0x0ce59225bcd447feaed698ed754d309feba5fc63"
     private val aliceWalletPath =
-        "./src/test/resources/ETH/aliceWallet/UTC--2020-03-04T08-33-21.065924100Z--073cfa4b6635b1a1b96f6363a9e499a8076b6107"
-    private val alice_p = "password1"
-    private lateinit var address: String
-    private var port = 0
+        "./src/test/resources/ETH/aliceWallet/" +
+                "UTC--2020-03-04T08-33-21.065924100Z--073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    private val bobWalletPath =
+        "./src/test/resources/ETH/bobWallet/" +
+                "UTC--2020-03-04T08-33-39.016502000Z--0ce59225bcd447feaed698ed754d309feba5fc63"
+
+    private val alicePassword = "password1"
+    private val bobPassword = "password2"
 
     companion object {
         @Container
         @JvmStatic
         val container: KGenericContainer = KGenericContainer("siandreev/ethereum-rpc-test:PoA-mining")
             .withExposedPorts(8541, 8542)
+            .waitingFor(
+                Wait.forLogMessage(".*The node is ready!.*", 1)
+            )
     }
 
-    @BeforeEach
+    @BeforeAll
     fun setUp() {
-        address = container.containerIpAddress
-        port = container.firstMappedPort
-        url = "http://$address:${port}"
-        ethRpc = EthRpc(url)
+        val address = container.containerIpAddress
+
+        val alicePort = container.getMappedPort(8541)
+        val aliceUrl = "http://$address:$alicePort"
+        aliceRpc = EthRpc(aliceUrl)
+
+        val bobPort = container.getMappedPort(8542)
+        val bobUrl = "http://$address:$bobPort"
+        bobRpc = EthRpc(bobUrl)
     }
 
     @Order(1)
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            val bal = ethRpc.getBalance(alice)
-            val realBalance = BigDecimal("904625697166532776746648320380374280103671755200316906558.261906867821325312")
+            val bal = aliceRpc.getBalance(aliceAddress)
+            val realBalance = BigDecimal("50")
             assertEquals(realBalance, bal)
         }
     }
 
     @Order(2)
     @Test
-    fun getNewAddress() {
+    fun getNewAddressWithWallet() {
         assertDoesNotThrow {
-            val oldFile = lastFileModified("./src/test/resources")
-            ethRpc.generateWalletFile("defaultPassword", "./src/test/resources")
-            val newFile = lastFileModified("./src/test/resources")
+            val oldFile = lastFileModified()
+            aliceRpc.generateWalletFile("defaultPassword", "./src/test/resources")
+            val newFile = lastFileModified()
             assertNotEquals(oldFile, newFile)
             if (oldFile != newFile && newFile != null) {
                 Files.delete(newFile.toPath())
@@ -72,7 +81,7 @@ internal class EthRpcTest {
     @Test
     fun createRawTransaction() {
         assertDoesNotThrow {
-            ethRpc.createRawTransaction(0.toBigInteger(), toAddress = bob, value = 0.01.toBigDecimal())
+            aliceRpc.createRawTransaction(0.toBigInteger(), toAddress = bobAddress, value = 0.01.toBigDecimal())
         }
     }
 
@@ -80,22 +89,22 @@ internal class EthRpcTest {
     @Test
     fun sendRawTransaction() {
         assertDoesNotThrow {
-            val tx = ethRpc.createRawTransaction(3.toBigInteger(), toAddress = bob, value = 0.01.toBigDecimal())
-            val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
-            val hash = ethRpc.signTransaction(tx, credentials)
-            ethRpc.sendTransaction(hash)
+            val tx = aliceRpc.createRawTransaction(0.toBigInteger(), toAddress = bobAddress, value = 0.01.toBigDecimal())
+            val credentials = WalletUtils.loadCredentials(alicePassword, aliceWalletPath)
+            val hash = aliceRpc.signTransaction(tx, credentials)
+            aliceRpc.sendTransaction(hash)
         }
     }
 
     @Order(5)
     @Test
     fun getTransactionByHash() {
-        val tx = ethRpc.createRawTransaction(4.toBigInteger(), toAddress = bob, value = 0.011.toBigDecimal())
-        val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
-        val hash = ethRpc.signTransaction(tx, credentials)
-        val result = ethRpc.sendTransaction(hash)
+        val tx = aliceRpc.createRawTransaction(1.toBigInteger(), toAddress = bobAddress, value = 0.011.toBigDecimal())
+        val credentials = WalletUtils.loadCredentials(alicePassword, aliceWalletPath)
+        val hash = aliceRpc.signTransaction(tx, credentials)
+        val result = aliceRpc.sendTransaction(hash)
         assertDoesNotThrow {
-            ethRpc.getTransactionByHash(result)
+            aliceRpc.getTransactionByHash(result)
         }
     }
 
@@ -104,16 +113,16 @@ internal class EthRpcTest {
     fun sendTransaction() {
         assertDoesNotThrow {
             val pathTOWallet = aliceWalletPath
-            ethRpc.sendTransaction(pathTOWallet, alice_p, alice, 0.012.toBigDecimal())
+            aliceRpc.sendTransaction(pathTOWallet, alicePassword, aliceAddress, 0.012.toBigDecimal())
         }
     }
 
     @Order(7)
     @Test
     fun getBlockByHash() {
-        val hash = ethRpc.getLatestBlock().hash
+        val hash = aliceRpc.getLatestBlock().hash
         assertDoesNotThrow {
-            ethRpc.getBlockByHash(hash)
+            aliceRpc.getBlockByHash(hash)
         }
     }
 
@@ -121,20 +130,21 @@ internal class EthRpcTest {
     @Test
     fun getLatestBlock() {
         assertDoesNotThrow {
-            ethRpc.getLatestBlock()
+            aliceRpc.getLatestBlock()
         }
     }
 
     @Order(9)
     @Test
     fun getTransactionReceiptByHash() {
-        val tx = ethRpc.createRawTransaction(5.toBigInteger(), toAddress = bob, value = 0.013.toBigDecimal())
-        val credentials = WalletUtils.loadCredentials(alice_p, aliceWalletPath)
-        val hash = ethRpc.signTransaction(tx, credentials)
-        val result = ethRpc.sendTransaction(hash)
+        val tx = aliceRpc.createRawTransaction(3.toBigInteger(), toAddress = bobAddress, value = 0.013.toBigDecimal())
+        val credentials = WalletUtils.loadCredentials(alicePassword, aliceWalletPath)
+        val hash = aliceRpc.signTransaction(tx, credentials)
+        val result = aliceRpc.sendTransaction(hash)
+        waitForSomeBlocksMining()
         waitForSomeBlocksMining()
         assertDoesNotThrow {
-            ethRpc.getTransactionReceiptByHash(result)
+            aliceRpc.getTransactionReceiptByHash(result)
         }
     }
 
@@ -142,7 +152,7 @@ internal class EthRpcTest {
     @Test
     fun getTransactionsCount() {
         assertDoesNotThrow {
-            ethRpc.getTransactionCount(alice)
+            aliceRpc.getTransactionCount(aliceAddress)
         }
     }
 
@@ -150,7 +160,7 @@ internal class EthRpcTest {
     @Test
     fun getAllPendingTransactionsCount() {
         assertDoesNotThrow {
-            ethRpc.getAllPendingTransactionsCount()
+            aliceRpc.getAllPendingTransactionsCount()
         }
     }
 
@@ -158,20 +168,38 @@ internal class EthRpcTest {
     @Test
     fun getPendingTransactionsCount() {
         assertDoesNotThrow {
-            ethRpc.getPendingTransactionsCount(alice)
+            aliceRpc.getPendingTransactionsCount(aliceAddress)
         }
     }
 
-    fun lastFileModified(dir: String): File? {
+    @Order(13)
+    @Test
+    fun createSmartContractAndCheckMoneyRouting() {
+        assertDoesNotThrow {
+            val aliceBalanceBefore = aliceRpc.getBalance(aliceAddress)
+            val contract = aliceRpc.generateSmartWallet(aliceWalletPath, alicePassword)
+
+            val tx = bobRpc.createRawTransaction(0.toBigInteger(), toAddress = contract.address,
+                value = 15.toBigDecimal())
+            val credentials = WalletUtils.loadCredentials(bobPassword, bobWalletPath)
+            bobRpc.sendTransaction(bobRpc.signTransaction(tx, credentials))
+
+            waitForSomeBlocksMining()
+            waitForSomeBlocksMining()
+
+            val aliceBalanceAfter = aliceRpc.getBalance(aliceAddress)
+            assertTrue(aliceBalanceAfter >= aliceBalanceBefore.plus(BigDecimal.valueOf(15))
+                .minus(contract.fee))
+        }
+    }
+
+    private fun lastFileModified(): File? {
+        val dir = "./src/test/resources"
         val fl = File(dir)
-        val files = fl.listFiles(object: FileFilter {
-            override fun accept(file: File): Boolean {
-                return file.isFile
-            }
-        })
+        val files = fl.listFiles { file -> file.isFile }
         var lastMod = java.lang.Long.MIN_VALUE
         var choice: File? = null
-        for (file in files) {
+        for (file in files!!) {
             if (file.lastModified() > lastMod) {
                 choice = file
                 lastMod = file.lastModified()
@@ -180,10 +208,10 @@ internal class EthRpcTest {
         return choice
     }
 
-    fun waitForSomeBlocksMining() {
-        val latestHash = ethRpc.getLatestBlock()
+    private fun waitForSomeBlocksMining() {
+        val latestHash = aliceRpc.getLatestBlock()
         var count = 0
-        while (ethRpc.getLatestBlock() == latestHash && count < 160) {
+        while (aliceRpc.getLatestBlock() == latestHash && count < 160) {
             Thread.sleep(2000)
             count++
         }

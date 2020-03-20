@@ -6,17 +6,13 @@ import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.eth.EthRpc
 import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
 internal class BlockchainPaymentSystemAPITestETH {
@@ -40,7 +36,7 @@ internal class BlockchainPaymentSystemAPITestETH {
             .withFixedExposedPort(8542, 8542)
     }
 
-    @BeforeEach
+    @BeforeAll
     fun setUp() {
         aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath)
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
@@ -54,7 +50,7 @@ internal class BlockchainPaymentSystemAPITestETH {
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            val realBalance = "904625697166532776746648320380374280103671755200316906558.261906867821325312"
+            val realBalance = "50"
             assertEquals(realBalance, aliceAPI.getBalance(Currency.ETH))
         }
     }

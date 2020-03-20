@@ -6,18 +6,14 @@ import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.btc.BtcRpc
 import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
 internal class BlockchainPaymentSystemAPITestBTC {
@@ -43,7 +39,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
                 Wait.forLogMessage(".*The node is ready!.*", 1))
     }
 
-    @BeforeEach
+    @BeforeAll
     fun setUp() {
         val address = container.containerIpAddress
         generator = BtcRpc("http://bob:password@$address:18444/")

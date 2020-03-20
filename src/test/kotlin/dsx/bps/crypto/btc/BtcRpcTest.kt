@@ -1,19 +1,16 @@
 package dsx.bps.crypto.btc
 
 import dsx.bps.crypto.eth.KGenericContainer
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.MethodOrderer
-import org.junit.jupiter.api.Order
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestMethodOrder
 import org.testcontainers.containers.wait.strategy.Wait.forLogMessage
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 import kotlin.math.roundToInt
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
 internal class BtcRpcTest {
@@ -32,7 +29,7 @@ internal class BtcRpcTest {
             )
     }
 
-    @BeforeEach
+    @BeforeAll
     fun setUp() {
         val address = container.containerIpAddress
         val port = container.firstMappedPort

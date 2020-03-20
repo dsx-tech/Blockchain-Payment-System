@@ -87,7 +87,11 @@ class EthCoin: Coin {
     /**
      * @return account address.
      */
-    override fun getAddress(): String = rpc.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
+    override fun getAddress(): String{
+        return rpc.generateSmartWallet(pathToWallet, password).address
+    }
+
+    fun getAddressWithWallet() : String = rpc.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
 
     /**
      * @param txid TxId object ( {hash : String, index : Int} )
@@ -113,10 +117,12 @@ class EthCoin: Coin {
             override fun destination() = ethTx.to
 
             override fun fee(): BigDecimal {
-                if (this.status() == TxStatus.VALIDATING) {
-                    return ethTx.gasPrice.multiply(ethTx.gas).toBigDecimal()
+                return if (this.status() == TxStatus.VALIDATING) {
+                    Convert.fromWei(ethTx.gasPrice.multiply(ethTx.gas).toBigDecimal(), Convert.Unit.ETHER)
                 } else {
-                    return ethTx.gasPrice.multiply(rpc.getTransactionReceiptByHash(ethTx.hash).gasUsed).toBigDecimal()
+                    Convert.fromWei(ethTx.gasPrice
+                        .multiply(rpc.getTransactionReceiptByHash(ethTx.hash).gasUsed).toBigDecimal(),
+                        Convert.Unit.ETHER)
                 }
             }
 
