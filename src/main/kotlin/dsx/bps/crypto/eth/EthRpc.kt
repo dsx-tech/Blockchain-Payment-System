@@ -137,4 +137,8 @@ class EthRpc(url: String): Connector {
         ).send()
         return transactionReceipt.transactionHash
     }
+
+    fun getBLockByNumber(number : BigInteger) : EthBlock.Block{
+        return web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(number), true).send().block
+    }
 }

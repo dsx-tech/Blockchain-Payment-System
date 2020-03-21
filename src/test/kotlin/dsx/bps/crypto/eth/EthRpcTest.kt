@@ -176,8 +176,8 @@ internal class EthRpcTest {
     @Test
     fun createSmartContractAndCheckMoneyRouting() {
         assertDoesNotThrow {
-            val aliceBalanceBefore = aliceRpc.getBalance(aliceAddress)
             val contract = aliceRpc.generateSmartWallet(aliceWalletPath, alicePassword)
+            val aliceBalanceBefore = aliceRpc.getBalance(aliceAddress)
 
             val tx = bobRpc.createRawTransaction(0.toBigInteger(), toAddress = contract.address,
                 value = 15.toBigDecimal())
@@ -188,8 +188,7 @@ internal class EthRpcTest {
             waitForSomeBlocksMining()
 
             val aliceBalanceAfter = aliceRpc.getBalance(aliceAddress)
-            assertTrue(aliceBalanceAfter >= aliceBalanceBefore.plus(BigDecimal.valueOf(15))
-                .minus(contract.fee))
+            assertTrue(aliceBalanceAfter >= aliceBalanceBefore.plus(BigDecimal.valueOf(15)))
         }
     }
 
