@@ -7,6 +7,7 @@ import dsx.bps.crypto.eth.EthRpc
 import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
@@ -33,6 +34,9 @@ internal class BlockchainPaymentSystemAPITestETH {
         val container = KFixedHostPortGenericContainer("siandreev/ethereum-rpc-test:PoA-mining")
             .withFixedExposedPort(8541, 8541)
             .withFixedExposedPort(8542, 8542)
+            .waitingFor(
+                Wait.forLogMessage(".*The node is ready!.*", 1)
+            )
     }
 
     @BeforeAll
@@ -43,6 +47,12 @@ internal class BlockchainPaymentSystemAPITestETH {
         val address = container.containerIpAddress
         val url = "http://$address:8541"
         generator = EthRpc(url)
+    }
+
+    @AfterAll
+    fun tearDown(){
+        aliceAPI.kill(Currency.ETH)
+        bobAPI.kill(Currency.ETH)
     }
 
     @Order(1)

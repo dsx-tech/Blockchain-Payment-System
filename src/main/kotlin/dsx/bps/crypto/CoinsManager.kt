@@ -88,4 +88,9 @@ class CoinsManager {
     fun getAllEmitters(): Observable<Tx> {
         return Observable.merge(enabledCoins.values.map { it.getTxEmitter() })
     }
+
+    @Deprecated("only for tests")
+    fun kill(currency: Currency){
+        getCoin(currency).kill()
+    }
 }

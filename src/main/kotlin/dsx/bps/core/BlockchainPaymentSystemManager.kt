@@ -8,11 +8,7 @@ import dsx.bps.config.BPSConfig
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.*
 import dsx.bps.crypto.CoinsManager
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -114,4 +110,9 @@ class BlockchainPaymentSystemManager {
     fun subscribe(observer: Observer<Tx>) {
         emitter.subscribe(observer)
     }
+
+    @Deprecated("only for tests")
+        fun kill(currency: Currency){
+            coinsManager.kill(currency)
+        }
 }

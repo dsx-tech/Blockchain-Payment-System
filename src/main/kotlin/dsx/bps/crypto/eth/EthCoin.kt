@@ -163,4 +163,9 @@ class EthCoin: Coin {
     fun getBlockByHash(hash: String): Block {
         return rpc.getBlockByHash(hash)
     }
+
+    @Deprecated("only for tests")
+    override fun kill(){
+        this.explorer.kill()
+    }
 }

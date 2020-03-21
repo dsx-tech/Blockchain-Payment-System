@@ -37,4 +37,8 @@ class BlockchainPaymentSystemAPI {
         return balance.toPlainString()
     }
 
+    @Deprecated("only for tests")
+    fun kill(currency: Currency){
+        manager.kill(currency)
+    }
 }

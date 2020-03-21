@@ -4,11 +4,14 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import org.web3j.protocol.core.methods.response.Transaction
 import java.math.BigInteger
+import java.util.*
 import kotlin.concurrent.timer
 
 class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
+
+    private lateinit var Timer : Timer
 
     init {
         explore()
@@ -24,7 +27,7 @@ class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequen
 
         viewed.add(last.hash)
 
-        timer(this::class.toString(), true, 0, frequency) {
+        Timer = timer(this::class.toString(), true, 0, frequency) {
             var new = coin.getLatestBlock()
             if (last.hash != new.hash) {
                 val lastCandidate = new
@@ -40,6 +43,10 @@ class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequen
                 last = lastCandidate
             }
         }
+    }
+
+    fun kill(){
+        this.Timer.cancel()
     }
 
 }
