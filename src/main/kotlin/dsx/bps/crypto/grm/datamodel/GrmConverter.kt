@@ -60,23 +60,25 @@ fun byteArrayBEtoLong(buffer: ByteArray): Long {
 }
 
 fun bocDataToText(byteArray: ByteArray): String {
-    val rootBagOfCells: BagOfCells = BagOfCells.deserialize(byteArray)
+    val bagOfCells: BagOfCells = BagOfCells.deserialize(byteArray)
     val strInBytes: ArrayList<Byte> = arrayListOf()
-    val arrayDeque: ArrayDeque<BagOfCells> = ArrayDeque()
-    arrayDeque.addFirst(rootBagOfCells)
+    val arrayDeque: ArrayDeque<Cell> = ArrayDeque()
+    for (rootCell in bagOfCells.rootCells) {
+        arrayDeque.addFirst(rootCell)
 
-    while (arrayDeque.isNotEmpty()) {
-        val bagOfCells: BagOfCells = arrayDeque.pop()
-        if (bagOfCells.length % 8 != 0) {
-            throw GrmBocException(
-                "Could not parse to UTF-8 string from data "
-                        + byteArrayToHex(bagOfCells.data) + ".\n"
-                        + "Length data is ${bagOfCells.length / 8} bytes ${bagOfCells.length % 8} bits"
-            )
-        }
-        strInBytes.addAll(bagOfCells.data.toTypedArray())
-        for (ref in bagOfCells.references) {
-            arrayDeque.addLast(ref)
+        while (arrayDeque.isNotEmpty()) {
+            val cell: Cell = arrayDeque.pop()
+            if (cell.length % 8 != 0) {
+                throw GrmBocException(
+                    "Could not parse to UTF-8 string from data "
+                            + byteArrayToHex(cell.data) + ".\n"
+                            + "Length data is ${cell.length / 8} bytes ${cell.length % 8} bits"
+                )
+            }
+            strInBytes.addAll(cell.data.toTypedArray())
+            for (ref in cell.references) {
+                arrayDeque.addLast(ref)
+            }
         }
     }
 

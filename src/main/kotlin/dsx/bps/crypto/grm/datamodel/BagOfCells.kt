@@ -3,13 +3,12 @@ package dsx.bps.crypto.grm.datamodel
 import dsx.bps.exception.crypto.grm.GrmBocException
 import kotlin.math.ceil
 
-class BagOfCells(
-    val special: Boolean,
-    val index: Int,//in bits, max 128*8 bit
-    val length: Int,// max 128
-    val data: ByteArray,
-    val references: ArrayList<BagOfCells>
-) {
+class BagOfCells {
+    val rootCells: Array<Cell>
+
+    constructor(roots: Array<Cell>) {
+        rootCells = roots
+    }
 
     companion object {
         private const val magicGeneric: String = "B5EE9C72"
@@ -71,7 +70,7 @@ class BagOfCells(
                 val totCellsSizeInByte: ByteArray = buffer
                     .sliceArray(pointer until (pointer + offBytes))
                 // tot_cell_size { tot_cell_size <= 64 }, (off_bytes * 8) <= 64
-                val totCellsSize: Long = byteArrayLEtoLong(totCellsSizeInByte)
+                val totCellsSize: Long = byteArrayBEtoLong(totCellsSizeInByte)
                 pointer += offBytes
 
                 if (totCellsSize > Int.MAX_VALUE) {
@@ -117,7 +116,7 @@ class BagOfCells(
                     // crc32c implement in java 9 standard library
                 }
 
-                val cells: ArrayList<BagOfCells> = arrayListOf()
+                val cells: ArrayList<Cell> = arrayListOf()
                 val refs: Array<ArrayList<Long>> = Array(cellsCount.toInt()) { arrayListOf<Long>() }
                 for (i in 0 until cellsCount.toInt()) {
                     val d1: Byte = cellData[0]
@@ -138,9 +137,9 @@ class BagOfCells(
                         .sliceArray(2 until (2 + cellFSize))
 
                     cells.add(
-                        BagOfCells(
+                        Cell(
                             isSpecial, indexes?.get(i) ?: 0,
-                            (cellSize * 8).toInt(), cellBuffer, arrayListOf<BagOfCells>()
+                            (cellSize * 8).toInt(), cellBuffer, arrayListOf<Cell>()
                         )
                     )
 
@@ -166,7 +165,11 @@ class BagOfCells(
                     }
                 }
 
-                return cells[rootList[0]]
+                val rootCells: ArrayList<Cell> = arrayListOf()
+                for (i in rootList) {
+                    rootCells.add(cells[i])
+                }
+                return BagOfCells(rootCells.toTypedArray())
 
             } else {
                 throw GrmBocException(
@@ -177,12 +180,4 @@ class BagOfCells(
         }
 
     }
-
-    private fun putRef(ref: BagOfCells) {
-        if (this.references.size > 4) {
-            throw GrmBocException("Number of references to the other cells should not be more than four.")
-        }
-        this.references.add(ref)
-    }
-
 }
