@@ -129,7 +129,7 @@ internal class GrmCoinUnitTest {
         Mockito.`when`(grmRawTransaction.fee).thenReturn(1)
         Mockito.`when`(grmRawTransaction.outMsg).thenReturn(arrayOf<GrmRawMessage>())
 
-        val resultTx = grmCoin.constructTx(grmRawTransaction)
+        val resultTx = grmCoin.constructDepositTx(grmRawTransaction)
         Assertions.assertEquals(resultTx.currency(), grmCoin.currency)
         Assertions.assertEquals(resultTx.hash(), transactionId.hash)
         Assertions.assertEquals(resultTx.txid(), TxId(transactionId.hash, transactionId.lt))

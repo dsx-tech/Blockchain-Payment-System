@@ -1,6 +1,7 @@
 package dsx.bps.crypto.grm.datamodel
 
-import dsx.bps.ton.api.TonApi
+import drinkless.org.ton.TonApi
+
 
 class GrmRawTransactions {
 

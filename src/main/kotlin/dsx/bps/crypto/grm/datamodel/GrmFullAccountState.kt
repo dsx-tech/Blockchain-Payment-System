@@ -1,6 +1,6 @@
 package dsx.bps.crypto.grm.datamodel
 
-import dsx.bps.ton.api.TonApi
+import drinkless.org.ton.TonApi
 import java.math.BigDecimal
 
 data class GrmFullAccountState(

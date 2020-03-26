@@ -1,7 +1,7 @@
 package dsx.bps.crypto.grm.datamodel
 
+import drinkless.org.ton.TonApi
 import dsx.bps.exception.crypto.grm.GrmException
-import dsx.bps.ton.api.TonApi
 
 class GrmRawMessage {
 
@@ -30,7 +30,7 @@ class GrmRawMessage {
     }
 
     constructor(rawMessage: TonApi.RawMessage) : this(
-        rawMessage.source, rawMessage.destination,
+        rawMessage.source.accountAddress, rawMessage.destination.accountAddress,
         rawMessage.value, rawMessage.fwdFee, rawMessage.ihrFee,
         rawMessage.createdLt,
         byteArrayToHex(rawMessage.bodyHash),

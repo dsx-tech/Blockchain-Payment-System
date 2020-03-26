@@ -1,6 +1,6 @@
 package dsx.bps.crypto.grm.datamodel
 
-import dsx.bps.ton.api.TonApi
+import drinkless.org.ton.TonApi
 
 data class GrmBlockIdExt(
     val workchain: Int,

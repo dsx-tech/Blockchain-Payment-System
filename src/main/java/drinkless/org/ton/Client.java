@@ -1,10 +1,10 @@
-package dsx.bps.ton.api;//
+//
 // Copyright Aliaksei Levin (levlam@telegram.org), Arseny Smirnov (arseny30@gmail.com) 2014-2019
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
-
+package drinkless.org.ton;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -15,68 +15,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Main class for interaction with the tonlib.
  */
-public final class TonClient implements Runnable {
-    private static final int MAX_EVENTS = 1000;
-
+public final class Client implements Runnable {
     static {
         System.loadLibrary("native-lib");
     }
 
+    private static final int MAX_EVENTS = 1000;
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    private final Lock readLock = readWriteLock.readLock();
-    private final Lock writeLock = readWriteLock.writeLock();
-    private final long nativeClientId;
-    private final ConcurrentHashMap<Long, Handler> handlers = new ConcurrentHashMap<Long, Handler>();
-    private final AtomicLong currentQueryId = new AtomicLong();
-    private final long[] eventIds = new long[MAX_EVENTS];
-    private final TonApi.Object[] events = new TonApi.Object[MAX_EVENTS];
-    private volatile boolean stopFlag = false;
-    private volatile boolean isClientDestroyed = false;
-    private volatile ExceptionHandler defaultExceptionHandler = null;
-
-    private TonClient(ResultHandler updatesHandler, ExceptionHandler updateExceptionHandler, ExceptionHandler defaultExceptionHandler) {
-        nativeClientId = createNativeClient();
-        handlers.put(0L, new Handler(updatesHandler, updateExceptionHandler));
-        this.defaultExceptionHandler = defaultExceptionHandler;
-    }
-
-    /**
-     * Synchronously executes a tonlib request. Only a few marked accordingly requests can be executed synchronously.
-     *
-     * @param query Object representing a query to the tonlib.
-     * @return request result.
-     * @throws NullPointerException if query is null.
-     */
-    public static TonApi.Object execute(TonApi.Function query) {
-        if (query == null) {
-            throw new NullPointerException("query is null");
-        }
-        return nativeClientExecute(query);
-    }
-
-    /**
-     * Creates new Client.
-     *
-     * @param updatesHandler          Handler for incoming updates.
-     * @param updatesExceptionHandler Handler for exceptions thrown from updatesHandler. If it is null, exceptions will be iggnored.
-     * @param defaultExceptionHandler Default handler for exceptions thrown from all ResultHandler. If it is null, exceptions will be iggnored.
-     * @return created Client
-     */
-    public static TonClient create(ResultHandler updatesHandler, ExceptionHandler updatesExceptionHandler, ExceptionHandler defaultExceptionHandler) {
-        TonClient tonClient = new TonClient(updatesHandler, updatesExceptionHandler, defaultExceptionHandler);
-        new Thread(tonClient, "tonlib thread").start();
-        return tonClient;
-    }
-
-    private static native long createNativeClient();
-
-    private static native void nativeClientSend(long nativeClientId, long eventId, TonApi.Function function);
-
-    private static native int nativeClientReceive(long nativeClientId, long[] eventIds, TonApi.Object[] events, double timeout);
-
-    private static native TonApi.Object nativeClientExecute(TonApi.Function function);
-
-    private static native void destroyNativeClient(long nativeClientId);
 
     /**
      * Sends a request to the tonlib.
@@ -125,6 +70,8 @@ public final class TonClient implements Runnable {
         send(query, resultHandler, null);
     }
 
+    private final Lock readLock = readWriteLock.readLock();
+
     /**
      * Replaces handler for incoming updates from the tonlib.
      *
@@ -147,14 +94,7 @@ public final class TonClient implements Runnable {
         setUpdatesHandler(updatesHandler, null);
     }
 
-    /**
-     * Replaces default exception handler to be invoked on exceptions thrown from updatesHandler and all other ResultHandler.
-     *
-     * @param defaultExceptionHandler Default exception handler. If null Exceptions are ignored.
-     */
-    public void setDefaultExceptionHandler(TonClient.ExceptionHandler defaultExceptionHandler) {
-        this.defaultExceptionHandler = defaultExceptionHandler;
-    }
+    private final Lock writeLock = readWriteLock.writeLock();
 
     /**
      * Overridden method from Runnable, do not call it directly.
@@ -165,6 +105,8 @@ public final class TonClient implements Runnable {
             receiveQueries(300.0 /*seconds*/);
         }
     }
+
+    private final long nativeClientId;
 
     /**
      * Closes Client.
@@ -190,6 +132,56 @@ public final class TonClient implements Runnable {
             writeLock.unlock();
         }
     }
+
+    private final ConcurrentHashMap<Long, Handler> handlers = new ConcurrentHashMap<Long, Handler>();
+    private final AtomicLong currentQueryId = new AtomicLong();
+    private final long[] eventIds = new long[MAX_EVENTS];
+    private final TonApi.Object[] events = new TonApi.Object[MAX_EVENTS];
+    private volatile boolean stopFlag = false;
+    private volatile boolean isClientDestroyed = false;
+    private volatile ExceptionHandler defaultExceptionHandler = null;
+
+    private Client(ResultHandler updatesHandler, ExceptionHandler updateExceptionHandler, ExceptionHandler defaultExceptionHandler) {
+        nativeClientId = createNativeClient();
+        handlers.put(0L, new Handler(updatesHandler, updateExceptionHandler));
+        this.defaultExceptionHandler = defaultExceptionHandler;
+    }
+
+    /**
+     * Synchronously executes a tonlib request. Only a few marked accordingly requests can be executed synchronously.
+     *
+     * @param query Object representing a query to the tonlib.
+     * @return request result.
+     * @throws NullPointerException if query is null.
+     */
+    public static TonApi.Object execute(TonApi.Function query) {
+        if (query == null) {
+            throw new NullPointerException("query is null");
+        }
+        return nativeClientExecute(query);
+    }
+
+    /**
+     * Creates new Client.
+     *
+     * @param updatesHandler          Handler for incoming updates.
+     * @param updatesExceptionHandler Handler for exceptions thrown from updatesHandler. If it is null, exceptions will be iggnored.
+     * @param defaultExceptionHandler Default handler for exceptions thrown from all ResultHandler. If it is null, exceptions will be iggnored.
+     * @return created Client
+     */
+    public static Client create(ResultHandler updatesHandler, ExceptionHandler updatesExceptionHandler, ExceptionHandler defaultExceptionHandler) {
+        Client client = new Client(updatesHandler, updatesExceptionHandler, defaultExceptionHandler);
+        new Thread(client, "tonlib thread").start();
+        return client;
+    }
+
+    private static native long createNativeClient();
+
+    private static native void nativeClientSend(long nativeClientId, long eventId, TonApi.Function function);
+
+    private static native int nativeClientReceive(long nativeClientId, long[] eventIds, TonApi.Object[] events, double timeout);
+
+    private static native TonApi.Object nativeClientExecute(TonApi.Function function);
 
     @Override
     protected void finalize() throws Throwable {
@@ -248,6 +240,17 @@ public final class TonClient implements Runnable {
             processResult(eventIds[i], events[i]);
             events[i] = null;
         }
+    }
+
+    private static native void destroyNativeClient(long nativeClientId);
+
+    /**
+     * Replaces default exception handler to be invoked on exceptions thrown from updatesHandler and all other ResultHandler.
+     *
+     * @param defaultExceptionHandler Default exception handler. If null Exceptions are ignored.
+     */
+    public void setDefaultExceptionHandler(Client.ExceptionHandler defaultExceptionHandler) {
+        this.defaultExceptionHandler = defaultExceptionHandler;
     }
 
     /**

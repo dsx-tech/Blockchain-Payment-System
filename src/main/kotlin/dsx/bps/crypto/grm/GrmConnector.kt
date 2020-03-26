@@ -1,11 +1,11 @@
 package dsx.bps.crypto.grm
 
+import drinkless.org.ton.Client
+import drinkless.org.ton.TonApi
 import dsx.bps.connection.Connector
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.grm.datamodel.*
 import dsx.bps.exception.connector.grm.GrmConnectorException
-import dsx.bps.ton.api.TonApi
-import dsx.bps.ton.api.TonClient
 import kotlinx.coroutines.runBlocking
 import java.math.BigDecimal
 import kotlin.coroutines.resume
@@ -13,13 +13,13 @@ import kotlin.coroutines.suspendCoroutine
 
 class GrmConnector : Connector {
 
-    private val tonClient: TonClient
+    private val tonClient: Client
 
     constructor(tonClientConfig: String, keyStorePath: String, logVerbosityLevel: Int) {
         System.loadLibrary("native-lib")
 
-        TonClient.execute(TonApi.SetLogVerbosityLevel(logVerbosityLevel))
-        tonClient = TonClient.create(
+        Client.execute(TonApi.SetLogVerbosityLevel(logVerbosityLevel))
+        tonClient = Client.create(
             { result -> println(result) },
             { exception -> println(exception) },
             { exception -> println(exception) })

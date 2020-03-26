@@ -45,7 +45,7 @@ class GrmExplorer(
     }
 
     private fun processNewGrmTx(grmTx: GrmRawTransaction) {
-        val tx = coin.constructTx(grmTx)
+        val tx = coin.constructDepositTx(grmTx)
         if (tx.amount() > BigDecimal.ZERO &&
             (tx.paymentReference()?.length ?: -1) < 500
         ) {

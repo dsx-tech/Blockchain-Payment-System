@@ -75,7 +75,7 @@ class GrmCoin : Coin {
 
     override fun getTx(txid: TxId): Tx {
         val grmRawTransaction = connector.getTransaction(accountAddress, txid)
-        return constructTx(grmRawTransaction)
+        return constructDepositTx(grmRawTransaction)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
@@ -121,7 +121,7 @@ class GrmCoin : Coin {
         return grmTxs.toTypedArray()
     }
 
-    fun constructTx(grmTx: GrmRawTransaction): Tx {
+    fun constructDepositTx(grmTx: GrmRawTransaction): Tx {
 
         return object : Tx {
             override fun currency() = Currency.GRM
