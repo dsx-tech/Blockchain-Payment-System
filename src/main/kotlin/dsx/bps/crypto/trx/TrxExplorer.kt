@@ -30,8 +30,10 @@ class TrxExplorer(override val coin: TrxCoin, datasource: Datasource, txServ: Tx
                     new.transactions
                         .forEach {
                             val tx = coin.constructTx(it)
-                            val newTx = txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(),
-                                tx.fee(), tx.hash(), tx.index(), tx.currency())
+                            val newTx = txService.add(
+                                tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                                tx.fee(), tx.hash(), tx.index(), tx.currency()
+                            )
                             trxService.add(it.rawData.contract.first().parameter.value.ownerAddress,
                                 it.ret.map { trxTxRet -> trxTxRet.contractRet },  newTx)
                             emitter.onNext(tx)

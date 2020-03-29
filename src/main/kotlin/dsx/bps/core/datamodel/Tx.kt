@@ -10,13 +10,13 @@ interface Tx {
 
     fun hash(): String
 
-    fun index(): Int = 0
+    fun index(): Long = 0
 
     fun amount(): BigDecimal
 
     fun destination(): String
 
-    fun tag(): Int? = null
+    fun paymentReference(): String? = null
 
     fun fee(): BigDecimal
 

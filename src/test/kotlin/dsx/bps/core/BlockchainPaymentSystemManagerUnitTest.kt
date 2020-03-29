@@ -1,10 +1,6 @@
 package dsx.bps.core
 
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.*
 import dsx.bps.crypto.CoinsManager
 import io.reactivex.subjects.PublishSubject
 import org.junit.jupiter.api.Assertions
@@ -37,11 +33,11 @@ internal class BlockchainPaymentSystemManagerUnitTest {
     fun sendPaymentTest() {
         val payment = Mockito.mock(Payment::class.java)
         Mockito.`when`(payment.id).thenReturn("id")
-        Mockito.`when`(paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1))
+        Mockito.`when`(paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", "1"))
             .thenReturn(payment)
-        Mockito.`when`(coinsManager.sendPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1))
+        Mockito.`when`(coinsManager.sendPayment(Currency.BTC, BigDecimal.TEN, "testaddress", "1"))
             .thenReturn(Mockito.mock(Tx::class.java))
-        val resultPaymentId = bpsManager.sendPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
+        val resultPaymentId = bpsManager.sendPayment(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
         Assertions.assertEquals(resultPaymentId, "id")
     }
 
@@ -50,9 +46,9 @@ internal class BlockchainPaymentSystemManagerUnitTest {
     fun createInvoiceTest() {
         val invoice = Mockito.mock(Invoice::class.java)
         Mockito.`when`(invoice.id).thenReturn("id")
-        Mockito.`when`(invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", 1))
+        Mockito.`when`(invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1"))
             .thenReturn(invoice)
-        Mockito.`when`(coinsManager.getTag(Currency.BTC)).thenReturn(1)
+        Mockito.`when`(coinsManager.getTag(Currency.BTC)).thenReturn("1")
         Mockito.`when`(coinsManager.getAddress(Currency.BTC)).thenReturn("testaddress")
         val returnInvoiceId = bpsManager.createInvoice(Currency.BTC, BigDecimal.TEN)
         Assertions.assertEquals(returnInvoiceId, "id")

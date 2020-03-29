@@ -3,12 +3,14 @@ package dsx.bps.crypto.xrp
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
 import dsx.bps.DBservices.XrpService
-import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
-class XrpExplorer(override val coin: XrpCoin, datasource: Datasource, txServ: TxService, frequency: Long): Explorer(frequency) {
+class XrpExplorer(
+    override val coin: XrpCoin, datasource: Datasource,
+    txServ: TxService, frequency: Long
+) : Explorer(frequency) {
 
     override val currency: Currency = coin.currency
 
@@ -33,8 +35,10 @@ class XrpExplorer(override val coin: XrpCoin, datasource: Datasource, txServ: Tx
                     }
                     .forEach {
                         val tx = coin.constructTx(it)
-                        val newTx = txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(),
-                            tx.fee(), tx.hash(), tx.index(), tx.currency())
+                        val newTx = txService.add(
+                            tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                            tx.fee(), tx.hash(), tx.index(), tx.currency()
+                        )
                         xrpService.add(tx.fee(), it.tx.account, it.tx.sequence, it.validated, newTx)
                         emitter.onNext(tx)
                     }

@@ -2,6 +2,7 @@ package dsx.bps.core.datamodel
 
 import com.uchuhimo.konf.ConfigSpec
 import dsx.bps.config.currencies.BtcConfig
+import dsx.bps.config.currencies.GrmConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.config.currencies.XrpConfig
 
@@ -14,6 +15,9 @@ enum class Currency {
     },
     TRX {
         override val coinConfigSpec = TrxConfig
+    },
+    GRM {
+        override val coinConfigSpec = GrmConfig
     };
 
     abstract val coinConfigSpec: ConfigSpec
