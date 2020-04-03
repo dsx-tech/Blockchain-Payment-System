@@ -14,6 +14,7 @@ import dsx.bps.crypto.common.Coin
 import dsx.bps.crypto.grm.datamodel.GrmFullAccountState
 import dsx.bps.crypto.grm.datamodel.GrmInternalTxId
 import dsx.bps.crypto.grm.datamodel.GrmRawTransaction
+import dsx.bps.crypto.grm.datamodel.byteArrayToHex
 import java.io.File
 import java.math.BigDecimal
 import kotlin.random.Random
@@ -24,6 +25,8 @@ class GrmCoin : Coin {
     override val config: Config
 
     private val accountAddress: String
+    private val privateKey: String
+    private val localPassword: String
     private val grmService: GrmService
     private val txService: TxService
 
@@ -36,6 +39,8 @@ class GrmCoin : Coin {
         txService = txServ
 
         accountAddress = config[GrmConfig.Coin.accountAddress]
+        privateKey = config[GrmConfig.Coin.privateKey]
+        localPassword = config[GrmConfig.Coin.localPassword]
 
         val tonClientConfig = File(config[GrmConfig.Connection.pathToTonClientConfig]).readText()
         val keyStorePath = config[GrmConfig.Connection.keyStorePath]
@@ -61,6 +66,8 @@ class GrmCoin : Coin {
         config.validateRequired()
 
         accountAddress = config[GrmConfig.Coin.accountAddress]
+        privateKey = config[GrmConfig.Coin.privateKey]
+        localPassword = config[GrmConfig.Coin.localPassword]
 
         connector = grmConnection
         explorer = grmExplorer
@@ -79,7 +86,23 @@ class GrmCoin : Coin {
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
-        TODO("not implemented")
+        val queryInfo = connector.sendPaymentQuery(
+            accountAddress, privateKey,
+            localPassword, amount, address, tag, 100
+        )
+        val queryEstimateFees = connector.getQueryEstimateFees(queryInfo.id, true)
+
+        //TODO: Implement actualize payment tx and status
+        return object : Tx {
+            override fun currency(): Currency = Currency.GRM
+            override fun hash(): String = byteArrayToHex(queryInfo.bodyHash)
+            override fun txid(): TxId = TxId(hash(), -1)
+            override fun amount(): BigDecimal = amount
+            override fun destination(): String = address
+            override fun fee(): BigDecimal = BigDecimal(queryEstimateFees.sourceFees.gasFee)
+
+            override fun status(): TxStatus = TxStatus.VALIDATING
+        }
     }
 
     fun getFullAccountState(): GrmFullAccountState {

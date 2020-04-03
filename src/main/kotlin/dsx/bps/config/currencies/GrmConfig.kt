@@ -5,6 +5,8 @@ import com.uchuhimo.konf.ConfigSpec
 object GrmConfig : ConfigSpec("GRM") {
     object Coin : ConfigSpec("coin") {
         val accountAddress by required<String>()
+        val privateKey by required<String>()
+        val localPassword by required<String>()
     }
 
     object Connection : ConfigSpec("connection") {

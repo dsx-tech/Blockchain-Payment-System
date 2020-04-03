@@ -60,6 +60,8 @@ XRP:
 GRM:
   coin:
     accountAddress: "kQCBFvmeIOjrZlSoxIVys2nE7nQUxUPM370tbmyC_lzlaIlk"
+    privateKey: "5B07270646EED42ABF623E8E971D01A561863BBB85A1DB67FAC9C74E4CB1064E"
+    localPassword: "local_password"
   connection:
     pathToTonClientConfig: "src/main/resources/TonClientConfig.json"
     keyStorePath: "src/main/resources/TonKeyStore/"
