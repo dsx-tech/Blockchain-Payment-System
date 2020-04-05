@@ -37,24 +37,26 @@ class GrmExplorer(
             val newTxId = coin.getLastInternalTxId()
             val notProcessedGrmTxs = coin.getAccountTxs(newTxId, lastTxId)
 
-            for (grmTx in notProcessedGrmTxs.reversedArray()) {
-                processNewGrmTx(grmTx)
+            for (i in notProcessedGrmTxs.size downTo 0) {
+                processNewGrmTx(notProcessedGrmTxs[i])
             }
             lastTxId = newTxId
         }
     }
 
     private fun processNewGrmTx(grmTx: GrmRawTransaction) {
-        val tx = coin.constructDepositTx(grmTx)
-        if (tx.amount() > BigDecimal.ZERO &&
-            (tx.paymentReference()?.length ?: -1) < 500
-        ) {
-            val newTx = txService.add(
-                tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
-                tx.fee(), tx.hash(), tx.index(), tx.currency()
-            )
-            grmService.add(grmTx.utime, grmTx.storageFee, grmTx.transactionId.lt, newTx)
-            emitter.onNext(tx)
+        if (grmTx.inMsg.source != "") {
+            val tx = coin.constructDepositTx(grmTx)
+            if (tx.amount() > BigDecimal.ZERO &&
+                (tx.paymentReference()?.length ?: -1) < 500
+            ) {
+                val newTx = txService.add(
+                    tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                    tx.fee(), tx.hash(), tx.index(), tx.currency()
+                )
+                grmService.add(grmTx.utime, grmTx.storageFee, grmTx.transactionId.lt, newTx)
+                emitter.onNext(tx)
+            }
         }
     }
 }

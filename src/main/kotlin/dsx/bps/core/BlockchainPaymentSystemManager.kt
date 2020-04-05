@@ -107,6 +107,10 @@ class BlockchainPaymentSystemManager {
         return coinsManager.getTxs(currency, txids)
     }
 
+    fun updateTxStatus(currency: Currency, txId: TxId): Tx {
+        return coinsManager.updateTxStatus(currency, txId)
+    }
+
     fun subscribe(observer: Observer<Tx>) {
         emitter.subscribe(observer)
     }

@@ -85,6 +85,10 @@ class CoinsManager {
             }
     }
 
+    fun updateTxStatus(currency: Currency, txId: TxId): Tx {
+        return getCoin(currency).updateTxStatus(txId)
+    }
+
     fun getAllEmitters(): Observable<Tx> {
         return Observable.merge(enabledCoins.values.map { it.getTxEmitter() })
     }

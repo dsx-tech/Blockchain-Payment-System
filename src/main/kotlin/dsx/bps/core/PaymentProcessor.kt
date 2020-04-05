@@ -57,7 +57,7 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
             processing
                 .mapNotNull { id -> payments[id] }
                 .forEach { pay ->
-                    val tx = manager.getTx(pay.currency, pay.txid)
+                    val tx = manager.updateTxStatus(pay.currency, pay.txid)
                     if (match(pay, tx)) {
                         when (tx.status()) {
                             TxStatus.VALIDATING -> {

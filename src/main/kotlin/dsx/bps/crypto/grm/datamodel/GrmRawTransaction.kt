@@ -74,4 +74,10 @@ class GrmRawTransaction {
         result = 31 * result + outMsg.contentHashCode()
         return result
     }
+
+    override fun toString(): String {
+        return "GrmRawTransaction(utime=$utime, data='$data'," +
+                " transactionId=$transactionId, fee=$fee, storageFee=$storageFee," +
+                " otherFee=$otherFee, inMsg=$inMsg, outMsg=${outMsg.contentToString()})"
+    }
 }
