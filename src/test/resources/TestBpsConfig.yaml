@@ -20,8 +20,8 @@ enabledCurrencies:
     - BTC
     - XRP
     - TRX
-    - GRM
     - ETH
+    - GRM
 
 # Example values
 BTC:
@@ -73,6 +73,7 @@ ETH:
     port: "8545"
   explorer:
     frequency: 5000
+
 GRM:
   coin:
     accountAddress: "kQCBFvmeIOjrZlSoxIVys2nE7nQUxUPM370tbmyC_lzlaIlk"

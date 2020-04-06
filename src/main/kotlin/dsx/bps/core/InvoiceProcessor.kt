@@ -10,8 +10,6 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
 import java.util.UUID
-import java.util.*
-import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 
 class InvoiceProcessor(

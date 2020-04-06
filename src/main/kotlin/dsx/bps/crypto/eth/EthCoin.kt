@@ -29,7 +29,7 @@ class EthCoin: Coin {
     private val defaultPasswordForNewAddresses: String
     private val walletsDir: String
 
-    override val rpc: EthRpc
+    override val connector: EthRpc
     override val explorer: EthExplorer
 
     private val confirmations: Int
@@ -53,7 +53,7 @@ class EthCoin: Coin {
         val host = config[EthConfig.Connection.host]
         val port = config[EthConfig.Connection.port]
         val url = "http://$host:$port"
-        rpc = EthRpc(url)
+        connector = EthRpc(url)
 
         confirmations = config[EthConfig.Coin.confirmations]
 
@@ -79,7 +79,7 @@ class EthCoin: Coin {
         defaultPasswordForNewAddresses = config[EthConfig.Coin.defaultPasswordForNewAddresses]
         walletsDir = config[EthConfig.Coin.walletsDir]
 
-        rpc = ethRpc
+        connector = ethRpc
         explorer = ethExplorer
 
         confirmations = config[EthConfig.Coin.confirmations]
@@ -88,23 +88,23 @@ class EthCoin: Coin {
     /**
      * @return account balance in ether.
      */
-    override fun getBalance(): BigDecimal = rpc.getBalance(accountAddress)
+    override fun getBalance(): BigDecimal = connector.getBalance(accountAddress)
 
     /**
      * @return account address.
      */
     override fun getAddress(): String{
-        return rpc.generateSmartWallet(pathToWallet, password).address
+        return connector.generateSmartWallet(pathToWallet, password).address
     }
 
-    fun getAddressWithWallet() : String = rpc.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
+    fun getAddressWithWallet() : String = connector.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
 
     /**
      * @param txid TxId object ( {hash : String, index : Int} )
      * @return Tx oject - generalized transaction template in the system
      */
     override fun getTx(txid: TxId): Tx {
-        val ethTx = rpc.getTransactionByHash(txid.hash)
+        val ethTx = connector.getTransactionByHash(txid.hash)
         return constructTx(ethTx)
     }
 
@@ -127,13 +127,13 @@ class EthCoin: Coin {
                     Convert.fromWei(ethTx.gasPrice.multiply(ethTx.gas).toBigDecimal(), Convert.Unit.ETHER)
                 } else {
                     Convert.fromWei(ethTx.gasPrice
-                        .multiply(rpc.getTransactionReceiptByHash(ethTx.hash).gasUsed).toBigDecimal(),
+                        .multiply(connector.getTransactionReceiptByHash(ethTx.hash).gasUsed).toBigDecimal(),
                         Convert.Unit.ETHER)
                 }
             }
 
             override fun status(): TxStatus {
-                val latestBlock = rpc.getLatestBlock()
+                val latestBlock = connector.getLatestBlock()
                 if (ethTx.blockHash == null) {
                     return TxStatus.VALIDATING
                 } else {
@@ -153,35 +153,35 @@ class EthCoin: Coin {
      * @param address address of the recipient
      * @return Tx oject - generalized transaction template in the system
      */
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+    override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
         var nonce = ethService.getLatestNonce(this.accountAddress)
         if (nonce == null)
         {
-            nonce = rpc.getTransactionCount(accountAddress)
+            nonce = connector.getTransactionCount(accountAddress)
         }
         else
         {
             nonce ++
         }
 
-        val rawTransaction = rpc.createRawTransaction(nonce, toAddress = address, value = amount)
+        val rawTransaction = connector.createRawTransaction(nonce, toAddress = address, value = amount)
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
-        val signedTransaction = rpc.signTransaction(rawTransaction, credentials)
-        val resultHash = rpc.sendTransaction(signedTransaction)
-        val transaction = constructTx(rpc.getTransactionByHash(resultHash))
+        val signedTransaction = connector.signTransaction(rawTransaction, credentials)
+        val resultHash = connector.sendTransaction(signedTransaction)
+        val transaction = constructTx(connector.getTransactionByHash(resultHash))
 
-        val txs = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
+        val txs = txService.add(transaction.status(), transaction.destination(),"",
             transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
         ethService.add( accountAddress, nonce.toLong(), txs)
-        return constructTx(rpc.getTransactionByHash(resultHash))
+        return constructTx(connector.getTransactionByHash(resultHash))
     }
 
     fun getLatestBlock(): Block {
-        return rpc.getLatestBlock()
+        return connector.getLatestBlock()
     }
 
     fun getBlockByHash(hash: String): Block {
-        return rpc.getBlockByHash(hash)
+        return connector.getBlockByHash(hash)
     }
 
     @Deprecated("only for tests")

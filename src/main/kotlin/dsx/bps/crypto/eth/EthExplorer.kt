@@ -41,7 +41,7 @@ class EthExplorer(override val coin: EthCoin, frequency: Long, datasource: Datas
                     new.transactions
                         .forEach {
                             val transaction = coin.constructTx(it.get() as Transaction)
-                            val txs = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
+                            val txs = txService.add(transaction.status(), transaction.destination(), "",
                                 transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
                             ethService.add( (it.get() as Transaction).from, (it.get() as Transaction).nonce.toLong(), txs)
                             emitter.onNext(transaction)
