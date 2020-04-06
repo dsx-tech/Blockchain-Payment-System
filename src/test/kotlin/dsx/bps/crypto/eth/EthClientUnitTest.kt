@@ -153,7 +153,7 @@ internal class EthClientUnitTest {
     @Test
     @DisplayName("check nonce work")
     fun sendSecondPayment() {
-        sendPaymentTest()
+
         val password = testConfig[EthConfig.Coin.password]
         val pathToWallet = testConfig[EthConfig.Coin.pathToWallet]
 
@@ -162,6 +162,7 @@ internal class EthClientUnitTest {
 
         Mockito.`when`(ethRpc.createRawTransaction(1.toBigInteger(), toAddress = "to", value = 1.toBigDecimal()))
             .thenReturn(rawTx)
+
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
         Mockito.`when`(ethRpc.signTransaction(rawTx, credentials)).thenReturn("signedHex")
         Mockito.`when`(ethRpc.sendTransaction("signedHex")).thenReturn("hash2")
