@@ -3,6 +3,7 @@ package dsx.bps.crypto.eth
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.EthService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.Currency
@@ -16,7 +17,6 @@ import org.web3j.protocol.core.methods.response.Transaction
 import org.web3j.utils.Convert
 import java.io.File
 import java.math.BigDecimal
-import java.math.BigInteger
 
 class EthCoin: Coin {
     override val currency = Currency.ETH
@@ -33,9 +33,14 @@ class EthCoin: Coin {
     override val explorer: EthExplorer
 
     private val confirmations: Int
-    private var nonce: BigInteger
+
+    private val ethService: EthService
+    private val txService: TxService
 
     constructor(conf: Config, datasource: Datasource, txServ: TxService) {
+        ethService = EthService(datasource)
+        txService = txServ
+
         config = conf
 
         scanningCount = config[EthConfig.Coin.scanningCount]
@@ -51,13 +56,15 @@ class EthCoin: Coin {
         rpc = EthRpc(url)
 
         confirmations = config[EthConfig.Coin.confirmations]
-        nonce = rpc.getTransactionCount(accountAddress)
 
         val frequency = config[EthConfig.Explorer.frequency]
-        explorer = EthExplorer(this, frequency)
+        explorer = EthExplorer(this, frequency, datasource, txService)
     }
 
     constructor(ethRpc: EthRpc, ethExplorer: EthExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
+        ethService = EthService(datasource)
+        txService = txServ
+
         val configFile = File(configPath)
         config = with(Config()) {
             addSpec(EthConfig)
@@ -76,7 +83,6 @@ class EthCoin: Coin {
         explorer = ethExplorer
 
         confirmations = config[EthConfig.Coin.confirmations]
-        nonce = rpc.getTransactionCount(accountAddress)
     }
 
     /**
@@ -148,11 +154,25 @@ class EthCoin: Coin {
      * @return Tx oject - generalized transaction template in the system
      */
     override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
+        var nonce = ethService.getLatestNonce(this.accountAddress)
+        if (nonce == null)
+        {
+            nonce = rpc.getTransactionCount(accountAddress)
+        }
+        else
+        {
+            nonce ++
+        }
+
         val rawTransaction = rpc.createRawTransaction(nonce, toAddress = address, value = amount)
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
         val signedTransaction = rpc.signTransaction(rawTransaction, credentials)
         val resultHash = rpc.sendTransaction(signedTransaction)
-        nonce++ //TODO develop safe interactions with nonce
+        val transaction = constructTx(rpc.getTransactionByHash(resultHash))
+
+        val txs = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
+            transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+        ethService.add( accountAddress, nonce.toLong(), txs)
         return constructTx(rpc.getTransactionByHash(resultHash))
     }
 
@@ -168,4 +188,5 @@ class EthCoin: Coin {
     override fun kill(){
         this.explorer.kill()
     }
+
 }

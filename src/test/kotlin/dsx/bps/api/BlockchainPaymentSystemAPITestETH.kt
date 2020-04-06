@@ -66,13 +66,37 @@ internal class BlockchainPaymentSystemAPITestETH {
 
     @Order(2)
     @Test
-    fun sendPayment() {
+    fun sendPayments() {
+        // send first payment
         assertDoesNotThrow {
             val id1 = aliceAPI.sendPayment(Currency.ETH, 1.0, bobEthAddress)
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
             val id2 = bobAPI.sendPayment(Currency.ETH, 0.2, aliceEthAddress)
+            waitForSomeBlocksMining()
+
+            val pay1 = aliceAPI.getPayment(id1)
+            val pay2 = bobAPI.getPayment(id2)
+            assertNotNull(pay1)
+            assertNotNull(pay2)
+
+            var count = 0
+            while (pay1!!.status != PaymentStatus.SUCCEED ||
+                pay2!!.status != PaymentStatus.SUCCEED) {
+                count += 1
+                waitForSomeBlocksMining()
+                assertNotEquals(5, count, "Payment wasn't confirmed or found in >= 5 blocks")
+            }
+        }
+
+        // send second payment
+        assertDoesNotThrow {
+            val id1 = aliceAPI.sendPayment(Currency.ETH, 1.1, bobEthAddress)
+            Thread.sleep(1000)
+            waitForSomeBlocksMining()
+            Thread.sleep(1000)
+            val id2 = bobAPI.sendPayment(Currency.ETH, 0.22, aliceEthAddress)
             waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)

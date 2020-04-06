@@ -5,6 +5,7 @@ import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
 import dsx.bps.TestUtils
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
@@ -26,6 +27,8 @@ internal class EthClientUnitTest {
     private val ethBlockchainListener = Mockito.mock(EthExplorer::class.java)
     private val ethClient: EthCoin
     private val testConfig: Config
+    private val datasource = Datasource()
+    private val txService: TxService
 
     init {
 
@@ -39,11 +42,18 @@ internal class EthClientUnitTest {
         testConfig.validateRequired()
         Mockito.`when`(ethRpc.getTransactionCount(testConfig[EthConfig.Coin.accountAddress]))
             .thenReturn(0.toBigInteger())
-        val datasource = Mockito.mock(Datasource::class.java)
-        val txServ = Mockito.mock(TxService::class.java)
+        val databaseConfig = with(Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
+        datasource.initConnection(databaseConfig)
+        txService = TxService(datasource)
+        
         ethClient = EthCoin(
             ethRpc, ethBlockchainListener,
-            configPath, datasource, txServ
+            configPath, datasource, txService
         )
     }
 

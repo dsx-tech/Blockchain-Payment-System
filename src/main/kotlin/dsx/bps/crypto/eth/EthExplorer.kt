@@ -1,5 +1,8 @@
 package dsx.bps.crypto.eth
 
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.EthService
+import dsx.bps.DBservices.TxService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import org.web3j.protocol.core.methods.response.Transaction
@@ -7,9 +10,12 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.concurrent.timer
 
-class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequency) {
+class EthExplorer(override val coin: EthCoin, frequency: Long, datasource: Datasource, txServ: TxService): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
+    private val ethService = EthService(datasource)
+    private val txService = txServ
+
 
     private lateinit var Timer : Timer
 
@@ -34,8 +40,11 @@ class EthExplorer(override val coin: EthCoin, frequency: Long): Explorer(frequen
                 while (!viewed.contains(new.hash)) {
                     new.transactions
                         .forEach {
-                            val tx = coin.constructTx(it.get() as Transaction)
-                            emitter.onNext(tx)
+                            val transaction = coin.constructTx(it.get() as Transaction)
+                            val txs = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
+                                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+                            ethService.add( (it.get() as Transaction).from, (it.get() as Transaction).nonce.toLong(), txs)
+                            emitter.onNext(transaction)
                         }
                     viewed.add(new.hash)
                     new = coin.getBlockByHash(new.parentHash)
