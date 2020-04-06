@@ -7,7 +7,7 @@ data class Payment(
     val currency: Currency,
     val amount: BigDecimal,
     val address: String,
-    val tag: Int? = null
+    val tag: String? = null
 ) {
 
     var status: PaymentStatus = PaymentStatus.PENDING

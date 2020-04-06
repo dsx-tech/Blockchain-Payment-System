@@ -13,6 +13,6 @@ object InvoiceTable: IntIdTable() {
     val currency = enumeration("currency", Currency::class)
     val amount: Column<BigDecimal> = decimal("amount", 30, 15)
     val address: Column<String> = varchar("address", 100)
-    val tag: Column<Int?> = integer("tag").nullable()
+    val tag: Column<String?> = varchar("tag", 100).nullable()
     val payableId = reference("payableId", PayableTable)
 }

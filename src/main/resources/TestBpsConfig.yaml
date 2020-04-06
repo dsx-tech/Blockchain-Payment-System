@@ -21,6 +21,7 @@ enabledCurrencies:
     #  - XRP
     #  - TRX
     - ETH
+    #  - GRM
 
 # Example values
 BTC:
@@ -55,6 +56,16 @@ XRP:
   connection:
     host: "127.0.0.1"
     port: "51234"
+  explorer:
+    frequency: 5000
+
+GRM:
+  coin:
+    accountAddress: "kQCBFvmeIOjrZlSoxIVys2nE7nQUxUPM370tbmyC_lzlaIlk"
+  connection:
+    pathToTonClientConfig: "src/main/resources/TonClientConfig.json"
+    keyStorePath: "src/main/resources/TonKeyStore/"
+    logVerbosityLevel: 1
   explorer:
     frequency: 5000
 

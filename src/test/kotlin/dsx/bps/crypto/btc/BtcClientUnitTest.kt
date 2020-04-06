@@ -4,6 +4,7 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
+import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
@@ -27,7 +28,8 @@ internal class BtcClientUnitTest {
     private val txService: TxService
 
     init {
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
+        val configFile = File(configPath)
         val databaseConfig = with(Config()) {
             addSpec(DatabaseConfig)
             from.yaml.file(configFile)
@@ -38,7 +40,7 @@ internal class BtcClientUnitTest {
         txService = TxService(datasource)
         btcCoin = BtcCoin(
             btcRpc, btcExplorer,
-            javaClass.getResource("/TestBpsConfig.yaml").path,
+            configPath,
             datasource, txService
         )
     }
@@ -112,7 +114,7 @@ internal class BtcClientUnitTest {
         )
         Assertions.assertEquals(result.currency(), btcCoin.currency)
         Assertions.assertEquals(result.destination(), btcTxDetail.address)
-        Assertions.assertEquals(result.index(), btcTxDetail.vout)
+        Assertions.assertEquals(result.index(), btcTxDetail.vout.toLong())
         Assertions.assertEquals(result.hash(), btcTx.hash)
         Assertions.assertEquals(result.amount(), BigDecimal.TEN)
     }
@@ -160,7 +162,7 @@ internal class BtcClientUnitTest {
         Assertions.assertEquals(result.fee(), btcTxDetail.fee.abs())
         Assertions.assertEquals(result.status(), TxStatus.VALIDATING)
         Assertions.assertEquals(result.hash(), btcTx.hash)
-        Assertions.assertEquals(result.index(), btcTxDetail.vout)
+        Assertions.assertEquals(result.index(), btcTxDetail.vout.toLong())
     }
 
     @Test
@@ -181,6 +183,6 @@ internal class BtcClientUnitTest {
         Assertions.assertEquals(result.status(), TxStatus.VALIDATING)
         Assertions.assertEquals(result.fee(), btcTxSinceBlock.fee)
         Assertions.assertEquals(result.hash(), btcTxSinceBlock.hash)
-        Assertions.assertEquals(result.index(), btcTxSinceBlock.vout)
+        Assertions.assertEquals(result.index(), btcTxSinceBlock.vout.toLong())
     }
 }

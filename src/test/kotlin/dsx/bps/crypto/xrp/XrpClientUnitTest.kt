@@ -4,15 +4,12 @@ import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.TxService
+import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.xrp.datamodel.XrpAccountTx
-import dsx.bps.crypto.xrp.datamodel.XrpAmount
-import dsx.bps.crypto.xrp.datamodel.XrpTx
-import dsx.bps.crypto.xrp.datamodel.XrpTxMeta
-import dsx.bps.crypto.xrp.datamodel.XrpTxPayment
+import dsx.bps.crypto.xrp.datamodel.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -30,7 +27,8 @@ internal class XrpClientUnitTest {
 
     init {
         val initConfig = Config()
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
+        val configFile = File(configPath)
         testConfig = with(initConfig) {
             addSpec(XrpConfig)
             from.yaml.file(configFile)
@@ -46,7 +44,7 @@ internal class XrpClientUnitTest {
         datasource.initConnection(databaseConfig)
         xrpClient = XrpCoin(
             xrpRpc, xrpBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path, datasource, TxService(datasource)
+            configPath, datasource, TxService(datasource)
         )
     }
 
@@ -66,7 +64,7 @@ internal class XrpClientUnitTest {
     @Test
     @DisplayName("getTag test")
     fun getTagTest() {
-        Assertions.assertTrue(xrpClient.getTag() is Int)
+        Assertions.assertTrue(xrpClient.getTag() is String)
     }
 
     @Test
@@ -119,7 +117,7 @@ internal class XrpClientUnitTest {
 
         Mockito.`when`(xrpRpc.submit("signedtx")).thenReturn(xrpTx)
 
-        xrpClient.sendPayment(BigDecimal.TEN, "testaddress", 1)
+        xrpClient.sendPayment(BigDecimal.TEN, "testaddress", "1")
     }
 
     @Test
@@ -165,9 +163,9 @@ internal class XrpClientUnitTest {
         val resultTx = xrpClient.constructTx(xrpAccountTx)
         Assertions.assertEquals(resultTx.currency(), xrpClient.currency)
         Assertions.assertEquals(resultTx.hash(), xrpTx.hash)
-        Assertions.assertEquals(resultTx.index(), xrpTx.sequence)
+        Assertions.assertEquals(resultTx.index(), xrpTx.sequence.toLong())
         Assertions.assertEquals(resultTx.amount(), xrpAmount.value)
-        Assertions.assertEquals(resultTx.tag(), xrpTx.destinationTag)
+        Assertions.assertEquals(resultTx.paymentReference(), xrpTx.destinationTag.toString())
         Assertions.assertEquals(resultTx.destination(), xrpTx.destination)
         Assertions.assertEquals(resultTx.fee(), BigDecimal(xrpTx.fee))
         Assertions.assertEquals(resultTx.status(), TxStatus.CONFIRMED)
@@ -191,10 +189,10 @@ internal class XrpClientUnitTest {
         val resultTx = xrpClient.constructTx(xrpTx)
         Assertions.assertEquals(resultTx.currency(), xrpClient.currency)
         Assertions.assertEquals(resultTx.hash(), xrpTx.hash)
-        Assertions.assertEquals(resultTx.index(), xrpTx.sequence)
+        Assertions.assertEquals(resultTx.index(), xrpTx.sequence.toLong())
         Assertions.assertEquals(resultTx.amount(), xrpAmount.value)
         Assertions.assertEquals(resultTx.destination(), xrpTx.destination)
-        Assertions.assertEquals(resultTx.tag(), xrpTx.destinationTag)
+        Assertions.assertEquals(resultTx.paymentReference(), xrpTx.destinationTag.toString())
         Assertions.assertEquals(resultTx.fee(), BigDecimal(xrpTx.fee))
         Assertions.assertEquals(resultTx.status(), TxStatus.CONFIRMED)
     }

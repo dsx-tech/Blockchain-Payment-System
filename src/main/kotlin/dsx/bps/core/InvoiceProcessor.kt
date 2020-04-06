@@ -5,11 +5,7 @@ import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.InvoiceProcessorConfig
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.InvoiceStatus
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxStatus
+import dsx.bps.core.datamodel.*
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
@@ -18,7 +14,10 @@ import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.concurrent.timer
 
-class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, config: Config, datasource: Datasource, txServ: TxService): Observer<Tx> {
+class InvoiceProcessor(
+    private val manager: BlockchainPaymentSystemManager,
+    config: Config, datasource: Datasource, txServ: TxService
+) : Observer<Tx> {
 
     private val invService = InvoiceService(datasource)
     private val txService = txServ
@@ -32,7 +31,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
         check()
     }
 
-    fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Invoice {
+    fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): Invoice {
         val id = UUID.randomUUID().toString().replace("-", "")
         val inv = Invoice(id, currency, amount, address, tag)
         invService.add(InvoiceStatus.UNPAID, BigDecimal.ZERO, id, currency, amount, address, tag)
@@ -75,7 +74,7 @@ class InvoiceProcessor(private val manager: BlockchainPaymentSystemManager, conf
     private fun match(inv: Invoice, tx: Tx): Boolean =
         inv.currency == tx.currency() &&
         inv.address == tx.destination() &&
-        inv.tag == tx.tag()
+                inv.tag == tx.paymentReference()
 
     /** Check for payment in transaction [tx] */
     override fun onNext(tx: Tx) {

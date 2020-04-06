@@ -8,11 +8,7 @@ import dsx.bps.config.BPSConfig
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.Invoice
-import dsx.bps.core.datamodel.Payment
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxId
+import dsx.bps.core.datamodel.*
 import dsx.bps.crypto.CoinsManager
 import io.reactivex.Observable
 import io.reactivex.Observer
@@ -85,7 +81,7 @@ class BlockchainPaymentSystemManager {
         return coinsManager.getBalance(currency)
     }
 
-    fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): String {
+    fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): String {
         val payment = paymentProcessor.createPayment(currency, amount, address, tag)
         val tx = coinsManager.sendPayment(currency, amount, address, tag)
         paymentProcessor.updatePayment(payment.id, tx)
