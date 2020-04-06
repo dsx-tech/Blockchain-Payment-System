@@ -1,7 +1,7 @@
-package dsx.bps.connection.rpc
+package dsx.bps.connector.rpc
 
 import com.google.gson.Gson
-import dsx.bps.connection.Connector
+import dsx.bps.connector.Connector
 import dsx.bps.exception.connector.BpsConnectorException
 import java.net.HttpURLConnection
 import java.net.URI

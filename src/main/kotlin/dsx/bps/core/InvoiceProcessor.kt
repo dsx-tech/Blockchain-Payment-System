@@ -6,10 +6,11 @@ import dsx.bps.DBservices.InvoiceService
 import dsx.bps.DBservices.TxService
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
+import dsx.bps.core.datamodel.Currency
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
-import java.util.UUID
+import java.util.*
 import kotlin.concurrent.timer
 
 class InvoiceProcessor(
@@ -50,7 +51,7 @@ class InvoiceProcessor(
 
     private fun recalculate(inv: Invoice) {
         var received = BigDecimal.ZERO
-        synchronized(inv.txids) {
+        synchronized(inv) {
             manager
                 .getTxs(inv.currency, inv.txids)
                 .forEach { tx ->
@@ -62,11 +63,12 @@ class InvoiceProcessor(
                         received += tx.amount()
                     }
                 }
+
+            invService.updateReceived(received, inv.id)
+            if (inv.status == InvoiceStatus.PAID)
+                invService.updateStatus(InvoiceStatus.PAID, inv.id)
+            inv.received = received
         }
-        invService.updateReceived(received, inv.id)
-        if (inv.status == InvoiceStatus.PAID)
-            invService.updateStatus(InvoiceStatus.PAID, inv.id)
-        inv.received = received
     }
 
     private fun match(inv: Invoice, tx: Tx): Boolean =
@@ -86,16 +88,18 @@ class InvoiceProcessor(
                 recalculate(inv)
 
                 invService.addTx(inv.id, tx.txid())
-                inv.txids.add(tx.txid())
+                synchronized(inv) {
+                    inv.txids.add(tx.txid())
 
-                if (tx.status() == TxStatus.CONFIRMED) {
-                    invService.updateReceived(inv.received + tx.amount(), inv.id)
-                    inv.received += tx.amount()
-                }
+                    if (tx.status() == TxStatus.CONFIRMED) {
+                        invService.updateReceived(inv.received + tx.amount(), inv.id)
+                        inv.received += tx.amount()
+                    }
 
-                if (inv.status == InvoiceStatus.PAID) {
-                    invService.updateStatus(InvoiceStatus.PAID, inv.id)
-                    unpaid.remove(inv.id)
+                    if (inv.status == InvoiceStatus.PAID) {
+                        invService.updateStatus(InvoiceStatus.PAID, inv.id)
+                        unpaid.remove(inv.id)
+                    }
                 }
             }
     }

@@ -43,4 +43,10 @@ class GrmRawMessage {
             )
         }
     )
+
+    override fun toString(): String {
+        return "GrmRawMessage(source='$source', destination='$destination', value=$value," +
+                " fwdFee=$fwdFee, ihrFee=$ihrFee, createdLt=$createdLt, bodyHash='$bodyHash'," +
+                " msgText='$msgText')"
+    }
 }

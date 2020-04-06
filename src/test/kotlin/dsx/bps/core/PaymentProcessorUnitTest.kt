@@ -48,9 +48,9 @@ internal class PaymentProcessorUnitTest {
 
         datasource.initConnection(databaseConfig)
         DatabaseCreation(datasource).createPayments()
-        paymentProcessor = PaymentProcessor(manager, testConfig, datasource)
         payService = PaymentService(datasource)
         txService = TxService(datasource)
+        paymentProcessor = PaymentProcessor(manager, testConfig, datasource, txService)
     }
 
     @ParameterizedTest

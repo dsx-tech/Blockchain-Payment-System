@@ -66,6 +66,8 @@ GRM:
     # paymentQueryTimeLimit should be in 0..300
     paymentQueryTimeLimit: 10
     numberAttemptsSendPaymentQuery: 1
+    # lengthTag should be divided by 2
+    lengthTag: 20
   connection:
     pathToTonClientConfig: "src/main/resources/TonClientConfig.json"
     keyStorePath: "src/main/resources/TonKeyStore/"

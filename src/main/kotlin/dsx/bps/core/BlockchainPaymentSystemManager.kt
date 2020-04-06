@@ -64,7 +64,7 @@ class BlockchainPaymentSystemManager {
         paymentProcessorConfig.validateRequired()
 
         invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource, txService)
-        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource)
+        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource, txService)
     }
 
     constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor, paymentProcessor: PaymentProcessor) {
@@ -88,6 +88,10 @@ class BlockchainPaymentSystemManager {
         return payment.id
     }
 
+    fun updatePaymentTxStatus(payment: Payment): Tx {
+        return coinsManager.updatePaymentTxStatus(payment.currency, payment.txid)
+    }
+
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
         val tag = coinsManager.getTag(currency)
         val address = coinsManager.getAddress(currency)
@@ -105,10 +109,6 @@ class BlockchainPaymentSystemManager {
 
     fun getTxs(currency: Currency, txids: List<TxId>): List<Tx> {
         return coinsManager.getTxs(currency, txids)
-    }
-
-    fun updateTxStatus(currency: Currency, txId: TxId): Tx {
-        return coinsManager.updateTxStatus(currency, txId)
     }
 
     fun subscribe(observer: Observer<Tx>) {

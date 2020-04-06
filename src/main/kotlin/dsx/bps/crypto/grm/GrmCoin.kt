@@ -3,8 +3,9 @@ package dsx.bps.crypto.grm
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.GrmService
 import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.grm.GrmLastTxPayDestAccService
+import dsx.bps.DBservices.grm.GrmTxService
 import dsx.bps.config.currencies.GrmConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -14,6 +15,8 @@ import dsx.bps.crypto.common.Coin
 import dsx.bps.crypto.grm.datamodel.GrmFullAccountState
 import dsx.bps.crypto.grm.datamodel.GrmInternalTxId
 import dsx.bps.crypto.grm.datamodel.GrmRawTransaction
+import dsx.bps.crypto.grm.datamodel.byteArrayToHex
+import dsx.bps.exception.crypto.grm.payment.GrmPaymentException
 import dsx.bps.exception.crypto.grm.payment.GrmPaymentFailProcessTxException
 import dsx.bps.exception.crypto.grm.payment.GrmPaymentTimeLimitException
 import java.io.File
@@ -25,12 +28,14 @@ class GrmCoin : Coin {
     override val currency: Currency = Currency.GRM
     override val config: Config
 
-    private val accountAddress: String
+    val accountAddress: String
     private val privateKey: String
     private val localPassword: String
     private val paymentQueryTimeLimit: Int
     private val numberAttemptsSendPaymentQuery: Int
-    private val grmService: GrmService
+    private val lengthTag: Int
+    private val grmLastTxPayDestAccService: GrmLastTxPayDestAccService
+    private val grmTxService: GrmTxService
     private val txService: TxService
 
     override val connector: GrmConnector
@@ -38,7 +43,8 @@ class GrmCoin : Coin {
 
     constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         config = conf
-        grmService = GrmService(datasource)
+        grmLastTxPayDestAccService = GrmLastTxPayDestAccService(datasource)
+        grmTxService = GrmTxService(datasource)
         txService = txServ
 
         accountAddress = config[GrmConfig.Coin.accountAddress]
@@ -46,6 +52,7 @@ class GrmCoin : Coin {
         localPassword = config[GrmConfig.Coin.localPassword]
         paymentQueryTimeLimit = config[GrmConfig.Coin.paymentQueryTimeLimit]
         numberAttemptsSendPaymentQuery = config[GrmConfig.Coin.numberAttemptsSendPaymentQuery]
+        lengthTag = config[GrmConfig.Coin.lengthTag]
 
         val tonClientConfig = File(config[GrmConfig.Connection.pathToTonClientConfig]).readText()
         val keyStorePath = config[GrmConfig.Connection.keyStorePath]
@@ -60,7 +67,8 @@ class GrmCoin : Coin {
         grmConnection: GrmConnector, grmExplorer: GrmExplorer,
         configPath: String, datasource: Datasource, txServ: TxService
     ) {
-        grmService = GrmService(datasource)
+        grmLastTxPayDestAccService = GrmLastTxPayDestAccService(datasource)
+        grmTxService = GrmTxService(datasource)
         txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {
@@ -75,6 +83,7 @@ class GrmCoin : Coin {
         localPassword = config[GrmConfig.Coin.localPassword]
         paymentQueryTimeLimit = config[GrmConfig.Coin.paymentQueryTimeLimit]
         numberAttemptsSendPaymentQuery = config[GrmConfig.Coin.numberAttemptsSendPaymentQuery]
+        lengthTag = config[GrmConfig.Coin.lengthTag]
 
         connector = grmConnection
         explorer = grmExplorer
@@ -85,50 +94,71 @@ class GrmCoin : Coin {
 
     override fun getAddress(): String = accountAddress
 
-    override fun getTag(): String? = Random.nextInt(0, Int.MAX_VALUE).toString()
+    override fun getTag(): String? = byteArrayToHex(Random.nextBytes(lengthTag / 2))
 
     override fun getTx(txid: TxId): Tx {
         val grmRawTransaction = connector.getTransaction(accountAddress, txid)
         return constructDepositTx(grmRawTransaction)
     }
 
-    override fun updateTxStatus(txid: TxId): Tx {
-
+    /*
+    updateTxStatus is for PaymentProcessor only. Do not use this function anywhere else.
+     */
+    override fun updatePaymentTxStatus(txid: TxId): Tx {
         val ourTx = connector.getTransaction(accountAddress, txid)
+        if (ourTx.outMsg.size != 1) {
+            throw GrmPaymentException("Tx $ourTx has ${ourTx.outMsg.size} out messages, but expected 1 out message")
+        }
         val otherAccountAddress = ourTx.outMsg.single().destination
-        val otherAccountLastTx = connector.getLastInternalTxId(otherAccountAddress)
-        val otherAccountTxs = getAccountTxsUntilLt(
-            otherAccountAddress,
-            otherAccountLastTx, ourTx.outMsg.single().createdLt
+        val otherAccountNewTxId = connector.getLastInternalTxId(otherAccountAddress)
+        val grmLastProcTxPayment = grmLastTxPayDestAccService.get(
+            otherAccountAddress, ourTx.transactionId.lt, ourTx.transactionId.hash
+        )
+        val otherAccountLastTxId = GrmInternalTxId(
+            grmLastProcTxPayment.lastProcTxLt, grmLastProcTxPayment.lastProcTxHash
+        )
+        val otherAccountTxs = getAccountTxs(
+            otherAccountAddress, otherAccountNewTxId, otherAccountLastTxId
         )
 
         for (tx in otherAccountTxs) {
-            if (tx.inMsg.bodyHash == ourTx.outMsg.single().bodyHash) {
+            if (tx.inMsg.bodyHash == ourTx.outMsg.single().bodyHash &&
+                tx.inMsg.msgText == ourTx.outMsg.single().msgText
+            ) {
                 return if (tx.outMsg.isEmpty()) {
+                    grmLastTxPayDestAccService.delete(grmLastProcTxPayment)
                     constructPaymentTx(ourTx, TxStatus.CONFIRMED)
                 } else {
                     if (tx.outMsg.size == 1) {
                         if (tx.outMsg.single().destination == accountAddress &&
                             tx.outMsg.single().value == ourTx.outMsg.single().value
                         ) {
+                            grmLastTxPayDestAccService.delete(grmLastProcTxPayment)
                             constructPaymentTx(ourTx, TxStatus.REJECTED)
                         } else {
+                            grmLastTxPayDestAccService.delete(grmLastProcTxPayment)
                             constructPaymentTx(ourTx, TxStatus.CONFIRMED)
                         }
                     } else {
+                        grmLastTxPayDestAccService.delete(grmLastProcTxPayment)
                         constructPaymentTx(ourTx, TxStatus.CONFIRMED)
                     }
                 }
             }
         }
 
+        grmLastTxPayDestAccService.updateLastTx(
+            grmLastProcTxPayment,
+            otherAccountNewTxId.lt, otherAccountNewTxId.hash
+        )
         return constructPaymentTx(ourTx, TxStatus.VALIDATING)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
-        //TODO: Need tests
         var curAttemptSendPaymentQuery = 0
         while (curAttemptSendPaymentQuery < numberAttemptsSendPaymentQuery) {
+            val lastDestAccTxId = connector.getLastInternalTxId(address)
+
             var lastTxId = connector.getLastInternalTxId(accountAddress)
 
             val queryInfo = connector.sendPaymentQuery(
@@ -142,26 +172,32 @@ class GrmCoin : Coin {
                 val accountState = connector.getFullAccountState(accountAddress)
                 val newTxId = accountState.lastTxId
 
-                val notProcessTxs = getAccountTxs(newTxId, lastTxId)
-                for (tx in notProcessTxs.reversedArray()) {
+                val notProcessTxs = getAccountTxs(accountAddress, newTxId, lastTxId)
+
+                for (i in notProcessTxs.size - 1 downTo 0) {
+                    val tx = notProcessTxs[i]
                     if (tx.utime > queryInfo.validUntil) {
                         paymentTxChecking = false
                         break
                     }
 
                     if (tx.inMsg.bodyHash == queryInfo.bodyHash &&
-                        tx.inMsg.source == "" &&
-                        tx.inMsg.msgText == tag ?: ""
+                        tx.inMsg.source == ""
                     ) {
                         if (tx.outMsg.size == 1) {
                             if (tx.outMsg.single().destination == address &&
-                                tx.outMsg.single().value == amount.toLong()
+                                tx.outMsg.single().value == amount.toLong() &&
+                                tx.outMsg.single().msgText == tag ?: ""
                             ) {
+                                grmLastTxPayDestAccService.add(
+                                    address, tx.transactionId.lt,
+                                    tx.transactionId.hash, lastDestAccTxId.lt, lastDestAccTxId.hash
+                                )
                                 return constructPaymentTx(tx, TxStatus.VALIDATING)
                             } else
                                 throw GrmPaymentFailProcessTxException(
                                     "Payment's tx $tx send message to wrong destination" +
-                                            " address or with wrong amount."
+                                            " address or with wrong amount or tag."
                                 )
                         } else if (tx.outMsg.isEmpty()) {
                             throw GrmPaymentFailProcessTxException(
@@ -197,37 +233,9 @@ class GrmCoin : Coin {
     /*
     Include startTx and not include untilTx
      */
-    fun getAccountTxs(startTxId: GrmInternalTxId, untilTxId: GrmInternalTxId): Array<GrmRawTransaction> {
-        val grmTxs = ArrayList<GrmRawTransaction>()
-
-        var tmpTxId = startTxId
-        var allNewTxsProcessed = false
-
-        while (!allNewTxsProcessed) {
-            val olderAccountTxs = connector.getOlderAccountTxs(
-                accountAddress, tmpTxId
-            )
-            for (grmOlderTx in olderAccountTxs.transactions) {
-                if (grmOlderTx.transactionId == untilTxId) {
-                    allNewTxsProcessed = true
-                    break
-                }
-                grmTxs.add(grmOlderTx)
-            }
-            if (olderAccountTxs.previousTransactionId.lt == 0L &&
-                olderAccountTxs.previousTransactionId.hash ==
-                "0000000000000000000000000000000000000000000000000000000000000000"
-            ) {
-                allNewTxsProcessed = true
-            }
-            tmpTxId = olderAccountTxs.previousTransactionId
-        }
-        return grmTxs.toTypedArray()
-    }
-
-    fun getAccountTxsUntilLt(
+    fun getAccountTxs(
         accountAddress: String, startTxId: GrmInternalTxId,
-        untilLt: Long
+        untilTxId: GrmInternalTxId
     ): Array<GrmRawTransaction> {
         val grmTxs = ArrayList<GrmRawTransaction>()
 
@@ -239,7 +247,7 @@ class GrmCoin : Coin {
                 accountAddress, tmpTxId
             )
             for (grmOlderTx in olderAccountTxs.transactions) {
-                if (grmOlderTx.transactionId.lt < untilLt) {
+                if (grmOlderTx.transactionId == untilTxId) {
                     allNewTxsProcessed = true
                     break
                 }
@@ -283,7 +291,7 @@ class GrmCoin : Coin {
             override fun txid() = TxId(grmTx.transactionId.hash, grmTx.transactionId.lt)
             override fun hash() = grmTx.transactionId.hash
             override fun amount(): BigDecimal {
-                var amount = grmTx.inMsg.value
+                var amount = grmTx.outMsg.single().value
                 for (msg in grmTx.outMsg) {
                     amount -= msg.value + msg.ihrFee + msg.fwdFee
                 }
@@ -291,7 +299,7 @@ class GrmCoin : Coin {
             }
 
             override fun destination() = grmTx.outMsg.single().destination
-            override fun paymentReference() = grmTx.inMsg.msgText
+            override fun paymentReference() = grmTx.outMsg.single().msgText
             override fun fee() = BigDecimal(grmTx.fee)
             override fun status() = statusTx
         }

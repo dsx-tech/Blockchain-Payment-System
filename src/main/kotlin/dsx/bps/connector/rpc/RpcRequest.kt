@@ -1,4 +1,4 @@
-package dsx.bps.connection.rpc
+package dsx.bps.connector.rpc
 
 import java.net.URL
 

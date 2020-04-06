@@ -9,6 +9,7 @@ object GrmConfig : ConfigSpec("GRM") {
         val localPassword by required<String>()
         val paymentQueryTimeLimit by required<Int>()
         val numberAttemptsSendPaymentQuery by required<Int>()
+        val lengthTag by required<Int>()
     }
 
     object Connection : ConfigSpec("connection") {

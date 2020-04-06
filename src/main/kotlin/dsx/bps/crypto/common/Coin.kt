@@ -1,7 +1,7 @@
 package dsx.bps.crypto.common
 
 import com.uchuhimo.konf.Config
-import dsx.bps.connection.Connector
+import dsx.bps.connector.Connector
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
@@ -26,7 +26,7 @@ abstract class Coin {
 
     abstract fun getTx(txid: TxId): Tx
 
-    open fun updateTxStatus(txid: TxId): Tx = getTx(txid)
+    open fun updatePaymentTxStatus(txid: TxId): Tx = getTx(txid)
 
     abstract fun sendPayment(amount: BigDecimal, address: String, tag: String? = null): Tx
 }

@@ -1,15 +1,16 @@
-package dsx.bps.DBservices
+package dsx.bps.DBservices.grm
 
-import dsx.bps.DBclasses.GrmTxEntity
-import dsx.bps.DBclasses.GrmTxTable
 import dsx.bps.DBclasses.TxEntity
+import dsx.bps.DBclasses.grm.GrmTxEntity
+import dsx.bps.DBclasses.grm.GrmTxTable
+import dsx.bps.DBservices.Datasource
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.max
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class GrmService(datasource: Datasource) {
+class GrmTxService(datasource: Datasource) {
 
     init {
         transaction(datasource.getConnection()) {
@@ -32,11 +33,10 @@ class GrmService(datasource: Datasource) {
         return grmNewestKnownTx.tx
     }
 
-    fun add(utime: Long, storageFee: Long, lt: Long, tx: TxEntity): GrmTxEntity {
+    fun add(utime: Long, lt: Long, tx: TxEntity): GrmTxEntity {
         return transaction {
             GrmTxEntity.new {
                 this.utime = utime
-                this.storageFee = storageFee
                 this.lt = lt
                 this.tx = tx
             }

@@ -2,7 +2,7 @@ package dsx.bps.crypto.grm
 
 import drinkless.org.ton.Client
 import drinkless.org.ton.TonApi
-import dsx.bps.connection.Connector
+import dsx.bps.connector.Connector
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.grm.datamodel.*
 import dsx.bps.exception.connector.grm.GrmConnectorException
@@ -156,23 +156,6 @@ class GrmConnector : Connector {
 
         when (result) {
             is TonApi.Key -> return TonApi.InputKeyRegular(result, localPassword.toByteArray())
-            is TonApi.Error -> throw GrmConnectorException(
-                "Error code: ${result.code}. Message: ${result.message}"
-            )
-            else -> throw GrmConnectorException(
-                "${result.javaClass} cannot cast to TonApi.Key or TonApi.Error"
-            )
-        }
-    }
-
-    fun getQueryEstimateFees(id: Long, ignoreChecksign: Boolean): GrmQueryFees {
-        val queryEstimateFees = TonApi.QueryEstimateFees(id, ignoreChecksign)
-        val result = runBlocking {
-            send(queryEstimateFees)
-        }
-
-        when (result) {
-            is TonApi.QueryFees -> return GrmQueryFees(result)
             is TonApi.Error -> throw GrmConnectorException(
                 "Error code: ${result.code}. Message: ${result.message}"
             )

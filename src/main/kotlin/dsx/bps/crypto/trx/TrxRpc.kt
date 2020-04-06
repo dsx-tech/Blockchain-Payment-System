@@ -1,8 +1,8 @@
 package dsx.bps.crypto.trx
 
-import dsx.bps.connection.rpc.JsonRpcHttpClient
-import dsx.bps.connection.rpc.RpcRequest
-import dsx.bps.connection.rpc.RpcResponse
+import dsx.bps.connector.rpc.JsonRpcHttpClient
+import dsx.bps.connector.rpc.RpcRequest
+import dsx.bps.connector.rpc.RpcResponse
 import dsx.bps.crypto.trx.datamodel.*
 import java.math.BigDecimal
 import java.net.URL

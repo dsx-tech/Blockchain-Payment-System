@@ -2,8 +2,8 @@ package dsx.bps.crypto.grm
 
 import dsx.bps.DBclasses.TxEntity
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.GrmService
 import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.grm.GrmTxService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import dsx.bps.crypto.grm.datamodel.GrmInternalTxId
@@ -18,7 +18,7 @@ class GrmExplorer(
 
     override val currency: Currency = coin.currency
 
-    private val grmService = GrmService(datasource)
+    private val grmService = GrmTxService(datasource)
     private val txService = txServ
 
     init {
@@ -35,9 +35,9 @@ class GrmExplorer(
 
         timer(this::class.toString(), true, 0, frequency) {
             val newTxId = coin.getLastInternalTxId()
-            val notProcessedGrmTxs = coin.getAccountTxs(newTxId, lastTxId)
+            val notProcessedGrmTxs = coin.getAccountTxs(coin.accountAddress, newTxId, lastTxId)
 
-            for (i in notProcessedGrmTxs.size downTo 0) {
+            for (i in notProcessedGrmTxs.size - 1 downTo 0) {
                 processNewGrmTx(notProcessedGrmTxs[i])
             }
             lastTxId = newTxId
@@ -54,7 +54,7 @@ class GrmExplorer(
                     tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
                     tx.fee(), tx.hash(), tx.index(), tx.currency()
                 )
-                grmService.add(grmTx.utime, grmTx.storageFee, grmTx.transactionId.lt, newTx)
+                grmService.add(grmTx.utime, grmTx.transactionId.lt, newTx)
                 emitter.onNext(tx)
             }
         }
