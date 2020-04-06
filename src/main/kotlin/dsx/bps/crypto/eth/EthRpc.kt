@@ -1,6 +1,6 @@
 package dsx.bps.crypto.eth
 
-import dsx.bps.crypto.common.Connector
+import dsx.bps.connection.Connector
 import dsx.bps.crypto.eth.datamodel.Proxy
 import dsx.bps.crypto.eth.datamodel.SmartContract
 import org.web3j.crypto.Credentials
@@ -24,7 +24,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 
-class EthRpc(url: String): Connector {
+class EthRpc(url: String): Connector() {
 
     private val web3j = Web3j.build(HttpService(url))
     private val basicGasLimit = 90000
