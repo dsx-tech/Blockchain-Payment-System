@@ -8,11 +8,7 @@ import dsx.bps.DBservices.TxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.PaymentProcessorConfig
-import dsx.bps.core.datamodel.Currency
-import dsx.bps.core.datamodel.PaymentStatus
-import dsx.bps.core.datamodel.Tx
-import dsx.bps.core.datamodel.TxId
-import dsx.bps.core.datamodel.TxStatus
+import dsx.bps.core.datamodel.*
 import dsx.bps.exception.core.payment.PaymentException
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions
@@ -61,7 +57,7 @@ internal class PaymentProcessorUnitTest {
     @EnumSource(value = Currency::class)
     @DisplayName("create and get payment test")
     fun createPaymentTest(currency: Currency) {
-        val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", 1)
+        val payment = paymentProcessor.createPayment(currency, BigDecimal.TEN, "testaddress", "1")
         val receivePayment = paymentProcessor.getPayment(payment.id)
         Assertions.assertEquals(payment, payService.makePaymentFromDB(payService.getBySystemId(payment.id)))
         Assertions.assertEquals(payment, receivePayment)
@@ -80,14 +76,14 @@ internal class PaymentProcessorUnitTest {
         Mockito.`when`(tx.currency()).thenReturn(Currency.BTC)
         Mockito.`when`(tx.amount()).thenReturn(BigDecimal.ONE)
         Mockito.`when`(tx.destination()).thenReturn("addr1")
-        Mockito.`when`(tx.tag()).thenReturn(null)
+        Mockito.`when`(tx.paymentReference()).thenReturn(null)
         Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ZERO)
         Mockito.`when`(tx.txid()).thenReturn(txId)
         Mockito.`when`(tx.status()).thenReturn(TxStatus.VALIDATING)
 
         Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
-        txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
+        txService.add(tx.status(), tx.destination(), tx.paymentReference(), tx.amount(), tx.fee(),
             "txhash1", 1, tx.currency())
         val payment = paymentProcessor.getPayment("pay1")
         Assertions.assertEquals(PaymentStatus.PENDING, payService.getBySystemId(payment!!.id).status)
@@ -124,16 +120,16 @@ internal class PaymentProcessorUnitTest {
             Mockito.`when`(tx.currency()).thenReturn(Currency.BTC)
             Mockito.`when`(tx.amount()).thenReturn(BigDecimal.TEN)
             Mockito.`when`(tx.destination()).thenReturn("testaddress")
-            Mockito.`when`(tx.tag()).thenReturn(1)
+            Mockito.`when`(tx.paymentReference()).thenReturn("1")
             Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ONE)
             Mockito.`when`(tx.txid()).thenReturn(txId)
             Mockito.`when`(tx.status()).thenReturn(TxStatus.VALIDATING)
 
             Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
-            txService.add(tx.status(), tx.destination(), tx.tag(), tx.amount(), tx.fee(),
+            txService.add(tx.status(), tx.destination(), tx.paymentReference(), tx.amount(), tx.fee(),
                 "hash", 1, tx.currency())
-            val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", 1)
+            val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             Assertions.assertEquals(PaymentStatus.PENDING, payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
             paymentProcessor.updatePayment(payment.id, tx)

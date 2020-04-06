@@ -8,7 +8,7 @@ data class Invoice(
     val currency: Currency,
     val amount: BigDecimal,
     val address: String,
-    val tag: Int? = null
+    val tag: String? = null
 ) {
 
     val status: InvoiceStatus

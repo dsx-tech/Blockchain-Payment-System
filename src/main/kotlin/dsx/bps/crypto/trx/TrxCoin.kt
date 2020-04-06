@@ -29,7 +29,7 @@ class TrxCoin: Coin {
     private val trxService: TrxService
     private val txService: TxService
 
-    override val rpc: TrxRpc
+    override val connector: TrxRpc
     override val explorer: TrxExplorer
 
     private val confirmations: Int
@@ -46,7 +46,7 @@ class TrxCoin: Coin {
         val host = config[TrxConfig.Connection.host]
         val port = config[TrxConfig.Connection.port]
         val url = "http://$host:$port/wallet/"
-        rpc = TrxRpc(url)
+        connector = TrxRpc(url)
 
         confirmations = config[TrxConfig.Coin.confirmations]
 
@@ -70,34 +70,36 @@ class TrxCoin: Coin {
 
         confirmations = config[TrxConfig.Coin.confirmations]
 
-        rpc = trxRpc
+        connector = trxRpc
         explorer = trxExplorer
     }
 
-    override fun getBalance(): BigDecimal = rpc.getBalance(accountAddress)
+    override fun getBalance(): BigDecimal = connector.getBalance(accountAddress)
 
     override fun getAddress(): String = accountAddress
 
-    override fun getTag(): Int? = Random.nextInt(0, Int.MAX_VALUE)
+    override fun getTag(): String? = Random.nextInt(0, Int.MAX_VALUE).toString()
 
     override fun getTx(txid: TxId): Tx {
-        val trxTx = rpc.getTransactionById(txid.hash)
+        val trxTx = connector.getTransactionById(txid.hash)
         return constructTx(trxTx)
     }
 
-    override fun sendPayment(amount: BigDecimal, address: String, tag: Int?): Tx {
-        val tx = rpc.createTransaction(address, accountAddress, amount)
+    override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
+        val tx = connector.createTransaction(address, accountAddress, amount)
             .let {
-                it.rawData.data = tag?.toString(16)
-                rpc.getTransactionSign(privateKey, it)
+                it.rawData.data = tag
+                connector.getTransactionSign(privateKey, it)
             }
 
-        val result = rpc.broadcastTransaction(tx)
+        val result = connector.broadcastTransaction(tx)
 
         if (result.success) {
             val transaction = constructTx(tx)
-            val new = txService.add(transaction.status(), transaction.destination(), transaction.tag(),
-                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+            val new = txService.add(
+                transaction.status(), transaction.destination(), transaction.paymentReference(),
+                transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency()
+            )
             trxService.add(this.getAddress(),tx.ret.map { trxTxRet -> trxTxRet.contractRet }, new)
             return transaction
         } else {
@@ -105,20 +107,20 @@ class TrxCoin: Coin {
         }
     }
 
-    fun getNowBlock(): TrxBlock = rpc.getNowBlock()
+    fun getNowBlock(): TrxBlock = connector.getNowBlock()
 
-    fun getBlockByNum(num: Int): TrxBlock = rpc.getBlockByNum(num)
+    fun getBlockByNum(num: Int): TrxBlock = connector.getBlockByNum(num)
 
-    fun getBlockById(hash: String): TrxBlock = rpc.getBlockById(hash)
+    fun getBlockById(hash: String): TrxBlock = connector.getBlockById(hash)
 
     fun constructTx(trxTx: TrxTx): Tx {
         val contract = trxTx.rawData.contract.first()
         val value = contract.parameter.value
 
-        val txInfo = rpc.getTransactionInfoById(trxTx.hash)
-        val lastBlock = rpc.getNowBlock()
+        val txInfo = connector.getTransactionInfoById(trxTx.hash)
+        val lastBlock = connector.getNowBlock()
 
-        return object: Tx {
+        return object : Tx {
             override fun currency() = Currency.TRX
 
             override fun hash() = trxTx.hash
@@ -137,7 +139,7 @@ class TrxCoin: Coin {
                 }
             }
 
-            override fun tag() = trxTx.rawData.data?.toInt(16)
+            override fun paymentReference(): String? = trxTx.rawData.data
         }
     }
 }

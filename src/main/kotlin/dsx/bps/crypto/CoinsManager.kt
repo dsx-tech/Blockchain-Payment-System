@@ -11,9 +11,10 @@ import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.btc.BtcCoin
 import dsx.bps.crypto.common.Coin
 import dsx.bps.crypto.eth.EthCoin
+import dsx.bps.crypto.grm.GrmCoin
 import dsx.bps.crypto.trx.TrxCoin
 import dsx.bps.crypto.xrp.XrpCoin
-import dsx.bps.exception.rpc.BpsRpcException
+import dsx.bps.exception.connector.BpsConnectorException
 import io.reactivex.Observable
 import java.io.File
 import java.math.BigDecimal
@@ -41,6 +42,7 @@ class CoinsManager {
                 Currency.TRX -> TrxCoin(coinConfig, datasource, txServ)
                 Currency.XRP -> XrpCoin(coinConfig, datasource, txServ)
                 Currency.ETH -> EthCoin(coinConfig, datasource, txServ)
+                Currency.GRM -> GrmCoin(coinConfig, datasource, txServ)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()
@@ -61,11 +63,11 @@ class CoinsManager {
         return getCoin(currency).getBalance()
     }
 
-    fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): Tx {
+    fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): Tx {
         return getCoin(currency).sendPayment(amount, address, tag)
     }
 
-    fun getTag(currency: Currency): Int? {
+    fun getTag(currency: Currency): String? {
         return getCoin(currency).getTag()
     }
 
@@ -78,7 +80,7 @@ class CoinsManager {
             .mapNotNull { txid ->
                 try {
                     getCoin(currency).getTx(txid)
-                } catch (ex: BpsRpcException) {
+                } catch (ex: BpsConnectorException) {
                     println(ex.message)
                     null
                 }

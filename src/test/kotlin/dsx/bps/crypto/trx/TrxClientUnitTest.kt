@@ -9,16 +9,7 @@ import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.trx.datamodel.TrxBlock
-import dsx.bps.crypto.trx.datamodel.TrxBlockHeader
-import dsx.bps.crypto.trx.datamodel.TrxBlockRawData
-import dsx.bps.crypto.trx.datamodel.TrxBroadcastTxResult
-import dsx.bps.crypto.trx.datamodel.TrxTx
-import dsx.bps.crypto.trx.datamodel.TrxTxContract
-import dsx.bps.crypto.trx.datamodel.TrxTxParameter
-import dsx.bps.crypto.trx.datamodel.TrxTxRawData
-import dsx.bps.crypto.trx.datamodel.TrxTxValue
-import dsx.bps.crypto.xrp.datamodel.TrxTxInfo
+import dsx.bps.crypto.trx.datamodel.*
 import dsx.bps.exception.crypto.trx.TrxException
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
@@ -76,7 +67,7 @@ internal class TrxClientUnitTest {
     @DisplayName("getTag test")
     fun getTagTest() {
         val randomInt = trxClient.getTag()
-        Assertions.assertTrue(randomInt is Int)
+        Assertions.assertTrue(randomInt is String)
     }
 
     @Test
@@ -117,7 +108,7 @@ internal class TrxClientUnitTest {
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(true)
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
 
-            trxClient.sendPayment(BigDecimal.TEN, "testaddress", 1)
+            trxClient.sendPayment(BigDecimal.TEN, "testaddress", "1")
         }
 
         @Test
@@ -146,7 +137,7 @@ internal class TrxClientUnitTest {
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
 
             Assertions.assertThrows(TrxException::class.java) {
-                trxClient.sendPayment(BigDecimal.TEN, "testaddress", 1)
+                trxClient.sendPayment(BigDecimal.TEN, "testaddress", "1")
             }
         }
     }
@@ -208,7 +199,7 @@ internal class TrxClientUnitTest {
         Assertions.assertEquals(resultTx.destination(), trxTxValue.toAddress)
         Assertions.assertEquals(resultTx.fee(), BigDecimal.ZERO)
         Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
-        Assertions.assertEquals(resultTx.tag(), trxTxRawData.data?.toInt(16))
+        Assertions.assertEquals(resultTx.paymentReference(), trxTxRawData.data)
     }
 
     private fun mockForConstructTx(): TrxTx {

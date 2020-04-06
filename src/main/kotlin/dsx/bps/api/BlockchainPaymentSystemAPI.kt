@@ -18,7 +18,7 @@ class BlockchainPaymentSystemAPI {
         manager = BlockchainPaymentSystemManager(confPath)
     }
 
-    fun sendPayment(currency: Currency, amount: Number, address: String, tag: Int? = null): String {
+    fun sendPayment(currency: Currency, amount: Number, address: String, tag: String? = null): String {
         val am = BigDecimal(amount.toString())
         return manager.sendPayment(currency, am, address, tag)
     }

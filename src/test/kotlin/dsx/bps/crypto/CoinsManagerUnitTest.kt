@@ -45,8 +45,8 @@ internal class CoinsManagerUnitTest {
     @Test
     @DisplayName("sendPayment pick right Coin")
     fun sendPaymentTest() {
-        coinsManager.sendPayment(Currency.BTC, BigDecimal.ONE, "testaddress", 1)
-        Mockito.verify(btcCoin, only()).sendPayment(BigDecimal.ONE, "testaddress", 1)
+        coinsManager.sendPayment(Currency.BTC, BigDecimal.ONE, "testaddress", "1")
+        Mockito.verify(btcCoin, only()).sendPayment(BigDecimal.ONE, "testaddress", "1")
     }
 
     @Test

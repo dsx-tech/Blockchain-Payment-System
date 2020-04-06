@@ -81,7 +81,7 @@ class BlockchainPaymentSystemManager {
         return coinsManager.getBalance(currency)
     }
 
-    fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: Int? = null): String {
+    fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): String {
         val payment = paymentProcessor.createPayment(currency, amount, address, tag)
         val tx = coinsManager.sendPayment(currency, amount, address, tag)
         paymentProcessor.updatePayment(payment.id, tx)

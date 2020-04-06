@@ -14,12 +14,13 @@ database:
   maximumPoolSize: 5
 
 # Enabled currencies
-# Supported сurrencies: BTC, XRP, TRX, ETH
+# Supported сurrencies: BTC, XRP, TRX
 enabledCurrencies:
   coins:
-    #  - BTC
-    #  - XRP
-    #  - TRX
+    - BTC
+    - XRP
+    - TRX
+    - GRM
     - ETH
 
 # Example values
@@ -70,5 +71,14 @@ ETH:
   connection:
     host: "127.0.0.1"
     port: "8545"
+  explorer:
+    frequency: 5000
+GRM:
+  coin:
+    accountAddress: "kQCBFvmeIOjrZlSoxIVys2nE7nQUxUPM370tbmyC_lzlaIlk"
+  connection:
+    pathToTonClientConfig: "src/main/resources/TonClientConfig.json"
+    keyStorePath: "src/main/resources/TonKeyStore/"
+    logVerbosityLevel: 1
   explorer:
     frequency: 5000
