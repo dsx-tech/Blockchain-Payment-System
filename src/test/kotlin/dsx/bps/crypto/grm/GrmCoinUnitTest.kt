@@ -125,12 +125,12 @@ internal class GrmCoinUnitTest {
         )
 
         val grmTx1 = GrmRawTransaction(
-            1000, "".toByteArray(),
+            1000, "",
             newGrmInternalTxId, 0, 0, 0, inMsg, arrayOf(outMsg)
         )
 
         val grmTx2 = GrmRawTransaction(
-            999, "".toByteArray(),
+            999, "",
             lastGrmInternalTxId, 0, 0, 0,
             Mockito.mock(GrmRawMessage::class.java),
             arrayOf(Mockito.mock(GrmRawMessage::class.java))

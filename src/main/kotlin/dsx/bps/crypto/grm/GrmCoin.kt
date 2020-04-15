@@ -33,7 +33,14 @@ class GrmCoin : Coin {
     private val localPassword: String
     private val paymentQueryTimeLimit: Int
     private val numberAttemptsSendPaymentQuery: Int
-    private val lengthTag: Int
+    private val lengthTagInBytes: Int
+    val lengthTagInHex: Int
+        get() = this.lengthTagInBytes * 2
+
+    //emptyTxLt and emptyTxHash are used to determine when there are no earlier smart contract transactions
+    private val emptyTxLt = 0L
+    private val emptyTxHash = "0000000000000000000000000000000000000000000000000000000000000000"
+
     private val grmLastTxPayDestAccService: GrmLastTxPayDestAccService
     private val grmTxService: GrmTxService
     private val txService: TxService
@@ -52,7 +59,7 @@ class GrmCoin : Coin {
         localPassword = config[GrmConfig.Coin.localPassword]
         paymentQueryTimeLimit = config[GrmConfig.Coin.paymentQueryTimeLimit]
         numberAttemptsSendPaymentQuery = config[GrmConfig.Coin.numberAttemptsSendPaymentQuery]
-        lengthTag = config[GrmConfig.Coin.lengthTag]
+        lengthTagInBytes = config[GrmConfig.Coin.lengthTagInBytes]
 
         val tonClientConfig = File(config[GrmConfig.Connection.pathToTonClientConfig]).readText()
         val keyStorePath = config[GrmConfig.Connection.keyStorePath]
@@ -83,18 +90,19 @@ class GrmCoin : Coin {
         localPassword = config[GrmConfig.Coin.localPassword]
         paymentQueryTimeLimit = config[GrmConfig.Coin.paymentQueryTimeLimit]
         numberAttemptsSendPaymentQuery = config[GrmConfig.Coin.numberAttemptsSendPaymentQuery]
-        lengthTag = config[GrmConfig.Coin.lengthTag]
+        lengthTagInBytes = config[GrmConfig.Coin.lengthTagInBytes]
 
         connector = grmConnection
         explorer = grmExplorer
     }
 
 
+
     override fun getBalance(): BigDecimal = connector.getBalance(accountAddress)
 
     override fun getAddress(): String = accountAddress
 
-    override fun getTag(): String? = byteArrayToHex(Random.nextBytes(lengthTag / 2))
+    override fun getTag(): String? = byteArrayToHex(Random.nextBytes(lengthTagInBytes))
 
     override fun getTx(txid: TxId): Tx {
         val grmRawTransaction = connector.getTransaction(accountAddress, txid)
@@ -253,9 +261,8 @@ class GrmCoin : Coin {
                 }
                 grmTxs.add(grmOlderTx)
             }
-            if (olderAccountTxs.previousTransactionId.lt == 0L &&
-                olderAccountTxs.previousTransactionId.hash ==
-                "0000000000000000000000000000000000000000000000000000000000000000"
+            if (olderAccountTxs.previousTransactionId.lt == emptyTxLt &&
+                olderAccountTxs.previousTransactionId.hash == emptyTxHash
             ) {
                 allNewTxsProcessed = true
             }

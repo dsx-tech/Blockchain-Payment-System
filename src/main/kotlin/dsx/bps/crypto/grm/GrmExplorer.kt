@@ -45,18 +45,18 @@ class GrmExplorer(
     }
 
     private fun processNewGrmTx(grmTx: GrmRawTransaction) {
-        if (grmTx.inMsg.source != "") {
-            val tx = coin.constructDepositTx(grmTx)
-            if (tx.amount() > BigDecimal.ZERO &&
-                (tx.paymentReference()?.length ?: -1) < 500
-            ) {
-                val newTx = txService.add(
-                    tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
-                    tx.fee(), tx.hash(), tx.index(), tx.currency()
-                )
-                grmService.add(grmTx.utime, grmTx.transactionId.lt, newTx)
-                emitter.onNext(tx)
-            }
+        if (grmTx.inMsg.source.isEmpty()) return
+
+        val tx = coin.constructDepositTx(grmTx)
+        if (tx.amount() > BigDecimal.ZERO &&
+            tx.paymentReference()?.length == coin.lengthTagInHex
+        ) {
+            val newTx = txService.add(
+                tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                tx.fee(), tx.hash(), tx.index(), tx.currency()
+            )
+            grmService.add(grmTx.utime, grmTx.transactionId.lt, newTx)
+            emitter.onNext(tx)
         }
     }
 }
