@@ -65,10 +65,6 @@ class CoinsManager {
         return getCoin(currency).sendPayment(amount, address, tag)
     }
 
-    fun updatePaymentTxStatus(currency: Currency, txId: TxId): Tx {
-        return getCoin(currency).updatePaymentTxStatus(txId)
-    }
-
     fun getTag(currency: Currency): String? {
         return getCoin(currency).getTag()
     }

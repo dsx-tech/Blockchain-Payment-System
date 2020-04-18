@@ -1,4 +1,4 @@
-package dsx.bps.DBclasses
+package dsx.bps.DBclasses.core
 
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.TxStatus

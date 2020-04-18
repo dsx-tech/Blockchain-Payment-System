@@ -1,4 +1,4 @@
-package dsx.bps.DBclasses
+package dsx.bps.DBclasses.core
 
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity

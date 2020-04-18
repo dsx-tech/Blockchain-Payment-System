@@ -61,6 +61,7 @@ internal class PaymentProcessorUnitTest {
         val receivePayment = paymentProcessor.getPayment(payment.id)
         Assertions.assertEquals(payment, payService.makePaymentFromDB(payService.getBySystemId(payment.id)))
         Assertions.assertEquals(payment, receivePayment)
+        payService.deleteAll()
     }
 
     @Test
@@ -94,6 +95,7 @@ internal class PaymentProcessorUnitTest {
         Assertions.assertTrue(transaction { txService.getByTxId("txhash1", 1).payable ==
                 payService.getBySystemId(payment.id).payable})
         Assertions.assertNotNull(paymentProcessor.getPayment("pay1"))
+        payService.deleteAll()
     }
 
     @Nested

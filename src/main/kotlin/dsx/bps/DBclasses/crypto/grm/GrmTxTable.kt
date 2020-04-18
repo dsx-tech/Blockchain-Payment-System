@@ -1,6 +1,6 @@
-package dsx.bps.DBclasses.grm
+package dsx.bps.DBclasses.crypto.grm
 
-import dsx.bps.DBclasses.TxTable
+import dsx.bps.DBclasses.core.TxTable
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
 

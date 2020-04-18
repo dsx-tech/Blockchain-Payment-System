@@ -26,7 +26,5 @@ abstract class Coin {
 
     abstract fun getTx(txid: TxId): Tx
 
-    open fun updatePaymentTxStatus(txid: TxId): Tx = getTx(txid)
-
     abstract fun sendPayment(amount: BigDecimal, address: String, tag: String? = null): Tx
 }

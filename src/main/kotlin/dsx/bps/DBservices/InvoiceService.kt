@@ -1,6 +1,6 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.*
+import dsx.bps.DBclasses.core.*
 import dsx.bps.core.datamodel.*
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SizedIterable

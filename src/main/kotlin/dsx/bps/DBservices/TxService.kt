@@ -1,7 +1,7 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.TxEntity
-import dsx.bps.DBclasses.TxTable
+import dsx.bps.DBclasses.core.TxEntity
+import dsx.bps.DBclasses.core.TxTable
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.TxStatus
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -50,4 +50,5 @@ class TxService(datasource: Datasource) {
     fun updateStatus(status: TxStatus, hash: String, index: Long) {
         return transaction { getByTxId(hash, index).status = status }
     }
+
 }

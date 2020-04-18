@@ -1,8 +1,8 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.BtcTxEntity
-import dsx.bps.DBclasses.BtcTxTable
-import dsx.bps.DBclasses.TxEntity
+import dsx.bps.DBclasses.core.TxEntity
+import dsx.bps.DBclasses.crypto.btc.BtcTxEntity
+import dsx.bps.DBclasses.crypto.btc.BtcTxTable
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction

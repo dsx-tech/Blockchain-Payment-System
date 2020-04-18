@@ -1,9 +1,10 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.*
+import dsx.bps.DBclasses.core.*
 import dsx.bps.core.datamodel.*
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
@@ -40,6 +41,10 @@ class PaymentService(datasource: Datasource) {
 
     fun delete(systemId: String) {
         transaction { getBySystemId(systemId).delete() }
+    }
+
+    fun deleteAll() {
+        transaction { PaymentTable.deleteAll() }
     }
 
     fun getById(id: Int): PaymentEntity? {

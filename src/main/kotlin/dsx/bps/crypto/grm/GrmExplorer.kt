@@ -1,9 +1,9 @@
 package dsx.bps.crypto.grm
 
-import dsx.bps.DBclasses.TxEntity
+import dsx.bps.DBclasses.core.TxEntity
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.GrmTxService
 import dsx.bps.DBservices.TxService
-import dsx.bps.DBservices.grm.GrmTxService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import dsx.bps.crypto.grm.datamodel.GrmInternalTxId

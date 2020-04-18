@@ -1,9 +1,8 @@
-package dsx.bps.DBservices.grm
+package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.TxEntity
-import dsx.bps.DBclasses.grm.GrmTxEntity
-import dsx.bps.DBclasses.grm.GrmTxTable
-import dsx.bps.DBservices.Datasource
+import dsx.bps.DBclasses.core.TxEntity
+import dsx.bps.DBclasses.crypto.grm.GrmTxEntity
+import dsx.bps.DBclasses.crypto.grm.GrmTxTable
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.max

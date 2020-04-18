@@ -1,6 +1,9 @@
 package dsx.bps.DBservices
 
-import dsx.bps.DBclasses.*
+import dsx.bps.DBclasses.core.TxEntity
+import dsx.bps.DBclasses.crypto.trx.ContractRetEntity
+import dsx.bps.DBclasses.crypto.trx.TrxTxEntity
+import dsx.bps.DBclasses.crypto.trx.TrxTxTable
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction

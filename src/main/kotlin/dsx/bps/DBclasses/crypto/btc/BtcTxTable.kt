@@ -1,5 +1,6 @@
-package dsx.bps.DBclasses
+package dsx.bps.DBclasses.crypto.btc
 
+import dsx.bps.DBclasses.core.TxTable
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
 

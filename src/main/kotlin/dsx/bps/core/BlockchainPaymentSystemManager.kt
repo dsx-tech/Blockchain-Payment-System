@@ -88,10 +88,6 @@ class BlockchainPaymentSystemManager {
         return payment.id
     }
 
-    fun updatePaymentTxStatus(payment: Payment): Tx {
-        return coinsManager.updatePaymentTxStatus(payment.currency, payment.txid)
-    }
-
     fun createInvoice(currency: Currency, amount: BigDecimal): String {
         val tag = coinsManager.getTag(currency)
         val address = coinsManager.getAddress(currency)

@@ -1,6 +1,6 @@
-package dsx.bps.DBclasses.grm
+package dsx.bps.DBclasses.crypto.grm
 
-import dsx.bps.DBclasses.TxEntity
+import dsx.bps.DBclasses.core.TxEntity
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass

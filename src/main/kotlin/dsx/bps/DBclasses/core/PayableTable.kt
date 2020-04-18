@@ -1,7 +1,7 @@
-package dsx.bps.DBclasses
+package dsx.bps.DBclasses.core
 
-import org.jetbrains.exposed.dao.IntIdTable
 import dsx.bps.core.datamodel.PayableType
+import org.jetbrains.exposed.dao.IntIdTable
 
 object PayableTable: IntIdTable() {
     val type = enumeration("type", PayableType::class)
