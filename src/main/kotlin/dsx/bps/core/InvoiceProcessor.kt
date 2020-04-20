@@ -2,8 +2,8 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.InvoiceService
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.InvoiceService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency

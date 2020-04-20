@@ -3,7 +3,7 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.BPSConfig
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig

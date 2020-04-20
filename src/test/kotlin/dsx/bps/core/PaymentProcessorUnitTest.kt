@@ -3,8 +3,8 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.PaymentService
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.PaymentService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.PaymentProcessorConfig

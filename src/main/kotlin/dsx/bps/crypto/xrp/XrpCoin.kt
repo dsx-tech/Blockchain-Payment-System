@@ -3,8 +3,8 @@ package dsx.bps.crypto.xrp
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
-import dsx.bps.DBservices.XrpService
+import dsx.bps.DBservices.core.TxService
+import dsx.bps.DBservices.crypto.XrpService
 import dsx.bps.config.currencies.XrpConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx

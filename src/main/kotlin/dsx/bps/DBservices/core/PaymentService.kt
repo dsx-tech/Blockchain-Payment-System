@@ -1,6 +1,11 @@
-package dsx.bps.DBservices
+package dsx.bps.DBservices.core
 
-import dsx.bps.DBclasses.core.*
+import dsx.bps.DBclasses.core.PayableEntity
+import dsx.bps.DBclasses.core.PaymentEntity
+import dsx.bps.DBclasses.core.PaymentTable
+import dsx.bps.DBclasses.core.tx.TxEntity
+import dsx.bps.DBclasses.core.tx.TxTable
+import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.*
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and

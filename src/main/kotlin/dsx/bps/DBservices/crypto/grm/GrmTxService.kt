@@ -1,12 +1,13 @@
-package dsx.bps.DBservices
+package dsx.bps.DBservices.crypto.grm
 
-import dsx.bps.DBclasses.core.TxEntity
+import dsx.bps.DBclasses.core.tx.TxEntity
+import dsx.bps.DBclasses.core.tx.TxTable
+import dsx.bps.DBclasses.crypto.grm.GrmInMsgEntity
+import dsx.bps.DBclasses.crypto.grm.GrmInMsgTable
 import dsx.bps.DBclasses.crypto.grm.GrmTxEntity
 import dsx.bps.DBclasses.crypto.grm.GrmTxTable
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.exists
-import org.jetbrains.exposed.sql.max
-import org.jetbrains.exposed.sql.selectAll
+import dsx.bps.DBservices.Datasource
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class GrmTxService(datasource: Datasource) {
@@ -32,13 +33,25 @@ class GrmTxService(datasource: Datasource) {
         return grmNewestKnownTx.tx
     }
 
-    fun add(utime: Long, lt: Long, tx: TxEntity): GrmTxEntity {
+    fun add(utime: Long, lt: Long, inInMsg: GrmInMsgEntity, tx: TxEntity): GrmTxEntity {
         return transaction {
             GrmTxEntity.new {
                 this.utime = utime
                 this.lt = lt
+                this.inMsg = inInMsg
                 this.tx = tx
             }
+        }
+    }
+
+    fun findByInMsgHashAndDest(inMsgHash: String, destination: String): GrmTxEntity? {
+        return transaction {
+            GrmTxEntity.find {
+                ((GrmTxTable.inMsg eq GrmInMsgTable.id) and
+                        (GrmInMsgTable.bodyHash eq inMsgHash) and
+                        (GrmTxTable.txId eq TxTable.id) and
+                        (TxTable.destination eq destination))
+            }.singleOrNull()
         }
     }
 

@@ -1,15 +1,15 @@
 package dsx.bps.crypto.xrp
 
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
-import dsx.bps.DBservices.XrpService
+import dsx.bps.DBservices.core.TxService
+import dsx.bps.DBservices.crypto.XrpService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
 class XrpExplorer(
-    override val coin: XrpCoin, datasource: Datasource,
-    txServ: TxService, frequency: Long
+        override val coin: XrpCoin, datasource: Datasource,
+        txServ: TxService, frequency: Long
 ) : Explorer(frequency) {
 
     override val currency: Currency = coin.currency

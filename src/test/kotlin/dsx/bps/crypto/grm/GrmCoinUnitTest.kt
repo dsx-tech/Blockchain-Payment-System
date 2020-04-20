@@ -3,7 +3,11 @@ package dsx.bps.crypto.grm
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
+import dsx.bps.DBservices.crypto.grm.GrmInMsgService
+import dsx.bps.DBservices.crypto.grm.GrmOutMsgService
+import dsx.bps.DBservices.crypto.grm.GrmQueryInfoService
+import dsx.bps.DBservices.crypto.grm.GrmTxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.GrmConfig
@@ -22,6 +26,10 @@ internal class GrmCoinUnitTest {
     private val grmConnector = Mockito.mock(GrmConnector::class.java)
     private val grmExplorer = Mockito.mock(GrmExplorer::class.java)
     private val datasource = Datasource()
+    private val grmInMsgService: GrmInMsgService
+    private val grmOutMsgService: GrmOutMsgService
+    private val grmQueryInfoService: GrmQueryInfoService
+    private val grmTxService: GrmTxService
     private val grmCoin: GrmCoin
     private val txService: TxService
 
@@ -36,11 +44,14 @@ internal class GrmCoinUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
+        grmInMsgService = GrmInMsgService(datasource)
+        grmOutMsgService = GrmOutMsgService(datasource)
+        grmQueryInfoService = GrmQueryInfoService(datasource)
+        grmTxService = GrmTxService(datasource)
         txService = TxService(datasource)
         grmCoin = GrmCoin(
-            grmConnector, grmExplorer,
-            configPath,
-            datasource, txService
+                grmConnector, grmExplorer, configPath, grmInMsgService,
+                grmOutMsgService, grmQueryInfoService, grmTxService, txService
         )
     }
 
@@ -82,69 +93,31 @@ internal class GrmCoinUnitTest {
     @Test
     @DisplayName("sendPayment test")
     fun sendPaymentTest() {
-        val amount = BigDecimal.TEN
-        val destinationAddress = "destination_address"
-        val tag = "tag"
-        val testHash = "test_hash"
-        val newGrmInternalTxId = GrmInternalTxId(10, testHash)
-        val lastGrmInternalTxId = GrmInternalTxId(8, "hash_body")
-        val ourAddress = grmCoin.config[GrmConfig.Coin.accountAddress]
-
-        Mockito.`when`(grmConnector.getLastInternalTxId(ourAddress))
-            .thenReturn(lastGrmInternalTxId)
-        Mockito.`when`(grmConnector.getLastInternalTxId(destinationAddress))
-            .thenReturn(GrmInternalTxId(0, ""))
-
-        val grmQueryInfo = GrmQueryInfo(1, 2000, "test_hash")
+        val queryInfo = GrmQueryInfo(1, 200, "hash")
         Mockito.`when`(
-            grmConnector.sendPaymentQuery(
-                ourAddress,
-                grmCoin.config[GrmConfig.Coin.privateKey],
-                grmCoin.config[GrmConfig.Coin.localPassword],
-                amount,
-                destinationAddress,
-                tag,
-                grmCoin.config[GrmConfig.Coin.paymentQueryTimeLimit]
-            )
-        ).thenReturn(grmQueryInfo)
-
-        val accountState = GrmFullAccountState(
-            BigDecimal.ONE, newGrmInternalTxId,
-            GrmBlockIdExt(0, 0, 0, "", ""), 30
-        )
-        Mockito.`when`(
-            grmConnector.getFullAccountState(
-                ourAddress
-            )
-        ).thenReturn(accountState)
-
-        val inMsg = GrmRawMessage("", ourAddress, 0, 0, 0, 10, testHash, "")
-        val outMsg = GrmRawMessage(
-            ourAddress, destinationAddress,
-            amount.toLong(), 0, 0, 10, "", tag
-        )
-
-        val grmTx1 = GrmRawTransaction(
-            1000, "",
-            newGrmInternalTxId, 0, 0, 0, inMsg, arrayOf(outMsg)
-        )
-
-        val grmTx2 = GrmRawTransaction(
-            999, "",
-            lastGrmInternalTxId, 0, 0, 0,
-            Mockito.mock(GrmRawMessage::class.java),
-            arrayOf(Mockito.mock(GrmRawMessage::class.java))
-        )
-
-        Mockito.`when`(grmConnector.getOlderAccountTxs(ourAddress, newGrmInternalTxId))
-            .thenReturn(
-                GrmRawTransactions(
-                    arrayOf(grmTx1, grmTx2),
-                    Mockito.mock(GrmInternalTxId::class.java)
+                grmConnector.sendPaymentQuery(
+                        grmCoin.accountAddress, grmCoin.config[GrmConfig.Coin.privateKey],
+                        grmCoin.config[GrmConfig.Coin.localPassword], BigDecimal.TEN,
+                        "address", "tag", grmCoin.config[GrmConfig.Coin.paymentQueryTimeLimit]
                 )
-            )
+        ).thenReturn(queryInfo)
+        val grmQueryFees = GrmQueryFees(
+                GrmFees(0, 0, 0, 0),
+                arrayOf(GrmFees(0, 0, 0, 0)))
+        Mockito.`when`(
+                grmConnector.getQueryEstimateFees(
+                        1, true)
+        ).thenReturn(grmQueryFees)
 
-        grmCoin.sendPayment(amount, destinationAddress, tag)
+        val resultTx = grmCoin.sendPayment(BigDecimal.TEN, "address", "tag")
+        Assertions.assertEquals(resultTx.currency(), grmCoin.currency)
+        Assertions.assertEquals(resultTx.hash(), queryInfo.bodyHash)
+        Assertions.assertEquals(resultTx.txid(), TxId(queryInfo.bodyHash, -1))
+        Assertions.assertEquals(resultTx.amount(), BigDecimal.TEN)
+        Assertions.assertEquals(resultTx.destination(), "address")
+        Assertions.assertEquals(resultTx.paymentReference(), "tag")
+        Assertions.assertEquals(resultTx.fee(), BigDecimal.ZERO)
+        Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
     }
 
     @Test

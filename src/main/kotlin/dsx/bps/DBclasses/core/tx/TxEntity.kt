@@ -1,5 +1,6 @@
-package dsx.bps.DBclasses.core
+package dsx.bps.DBclasses.core.tx
 
+import dsx.bps.DBclasses.core.PayableEntity
 import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.dao.IntEntity
 import org.jetbrains.exposed.dao.IntEntityClass

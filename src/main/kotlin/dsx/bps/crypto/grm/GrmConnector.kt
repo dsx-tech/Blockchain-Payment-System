@@ -157,10 +157,26 @@ class GrmConnector : Connector {
         when (result) {
             is TonApi.Key -> return TonApi.InputKeyRegular(result, localPassword.toByteArray())
             is TonApi.Error -> throw GrmConnectorException(
-                "Error code: ${result.code}. Message: ${result.message}"
+                    "Error code: ${result.code}. Message: ${result.message}"
             )
             else -> throw GrmConnectorException(
-                "${result.javaClass} cannot cast to TonApi.Key or TonApi.Error"
+                    "${result.javaClass} cannot cast to TonApi.Key or TonApi.Error"
+            )
+        }
+    }
+
+    fun getQueryEstimateFees(id: Long, ignoreCheckSig: Boolean): GrmQueryFees {
+        val result = runBlocking {
+            send(TonApi.QueryEstimateFees(id, ignoreCheckSig))
+        }
+
+        when (result) {
+            is TonApi.QueryFees -> return GrmQueryFees(result)
+            is TonApi.Error -> throw GrmConnectorException(
+                    "Error code: ${result.code}. Message: ${result.message}"
+            )
+            else -> throw GrmConnectorException(
+                    "${result.javaClass} cannot cast to TonApi.QueryFees or TonApi.Error"
             )
         }
     }
@@ -168,9 +184,9 @@ class GrmConnector : Connector {
     fun getFullAccountState(accountAddress: String): GrmFullAccountState {
         val result = runBlocking {
             send(
-                TonApi.GetAccountState(
-                    TonApi.AccountAddress(accountAddress)
-                )
+                    TonApi.GetAccountState(
+                            TonApi.AccountAddress(accountAddress)
+                    )
             )
         }
         when (result) {
