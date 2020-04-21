@@ -22,7 +22,7 @@ class GrmExplorer(
 
     override val currency: Currency = coin.currency
 
-    var syncUtime: Long = -1
+    var syncUtime: Long
 
     private val grmInMsgService = grmInMsgServ
     private val grmOutMsgService = grmOutMsgServ
@@ -30,12 +30,14 @@ class GrmExplorer(
     private val txService = txServ
 
     init {
+        syncUtime = grmTxService.getGrmNewestKnownTx()?.utime
+                ?: coin.getFullAccountState().syncUtime
         explore()
     }
 
     override fun explore() {
         var lastTxId: GrmInternalTxId = if (!grmTxService.tableIsEmpty()) {
-            val grmNewestKnownTx: TxEntity = grmTxService.getGrmNewestKnownTx()
+            val grmNewestKnownTx: TxEntity = grmTxService.getGrmNewestKnownTx()!!.tx
             GrmInternalTxId(grmNewestKnownTx.index, grmNewestKnownTx.hash)
         } else {
             coin.getLastInternalTxId()

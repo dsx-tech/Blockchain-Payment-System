@@ -23,14 +23,12 @@ class GrmTxService(datasource: Datasource) {
         return transaction { GrmTxTable.selectAll().empty() }
     }
 
-    fun getGrmNewestKnownTx(): TxEntity {
-        val grmNewestKnownTx = transaction {
+    fun getGrmNewestKnownTx(): GrmTxEntity? {
+        return transaction {
             GrmTxEntity.find {
                 GrmTxTable.txId eq TxTable.id and (TxTable.index eq TxTable.index.max())
-            }.single()
+            }.singleOrNull()
         }
-
-        return grmNewestKnownTx.tx
     }
 
     fun add(utime: Long, inInMsg: GrmInMsgEntity, tx: TxEntity): GrmTxEntity {
@@ -43,13 +41,11 @@ class GrmTxService(datasource: Datasource) {
         }
     }
 
-    fun findByInMsgHashAndDest(inMsgHash: String, destination: String): GrmTxEntity? {
+    fun findByInMsgHash(inMsgHash: String): GrmTxEntity? {
         return transaction {
             GrmTxEntity.find {
                 ((GrmTxTable.inMsg eq GrmInMsgTable.id) and
-                        (GrmInMsgTable.bodyHash eq inMsgHash) and
-                        (GrmTxTable.txId eq TxTable.id) and
-                        (TxTable.destination eq destination))
+                        (GrmInMsgTable.bodyHash eq inMsgHash))
             }.singleOrNull()
         }
     }

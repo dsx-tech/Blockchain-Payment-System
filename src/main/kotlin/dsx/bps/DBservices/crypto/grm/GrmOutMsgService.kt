@@ -4,6 +4,7 @@ import dsx.bps.DBclasses.crypto.grm.GrmOutMsgEntity
 import dsx.bps.DBclasses.crypto.grm.GrmOutMsgTable
 import dsx.bps.DBclasses.crypto.grm.GrmTxEntity
 import dsx.bps.DBservices.Datasource
+import org.jetbrains.exposed.dao.EntityID
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -36,6 +37,14 @@ class GrmOutMsgService(datasource: Datasource) {
                 this.grmTx = grmTx
             }
         }
+    }
+
+    fun getOutMsgs(grmTxId: EntityID<Int>): List<GrmOutMsgEntity> {
+        return transaction {
+            GrmOutMsgEntity.find {
+                GrmOutMsgTable.id eq grmTxId
+            }
+        }.toList()
     }
 
 }

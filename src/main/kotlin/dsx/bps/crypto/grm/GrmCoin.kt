@@ -122,12 +122,15 @@ class GrmCoin : Coin {
 
     private fun updatePaymentTx(txid: TxId): Tx {
         val txEntity = txService.getByTxId(txid.hash, validatingTxIndex)
-        val grmTx = grmTxService.findByInMsgHashAndDest(txid.hash, txEntity.destination)
+        val grmTx = grmTxService.findByInMsgHash(txid.hash)
 
         if (grmTx == null) {
+            // if not found grmTx
             return if (explorer.syncUtime <= grmQueryInfoService.findByHash(txid.hash)?.validUntil ?: -1) {
+                // time limit not exceeded - status VALIDATING
                 txService.constructTxByTxEntity(txEntity)
             } else {
+                // time limit exceeded - status REJECTED
                 object : Tx {
                     override fun currency() = txEntity.currency
                     override fun hash() = txEntity.hash
@@ -139,7 +142,29 @@ class GrmCoin : Coin {
                 }
             }
         } else {
-            return txService.constructTxByTxEntity(grmTx.tx)
+            // if found grmTx
+            if (grmOutMsgService.getOutMsgs(grmTx.id).size == 1) {
+                //if grmTx has one outMsg
+                if (grmTx.tx.destination == txEntity.destination &&
+                        grmTx.tx.tag == txEntity.tag &&
+                        grmTx.tx.amount == txEntity.amount) {
+                    // if outMsg is valid - status CONFIRMED
+                    return txService.constructTxByTxEntity(grmTx.tx)
+                } else {
+                    //if outMsg is not valid - status INCORRECT
+                    return object : Tx {
+                        override fun currency() = grmTx.tx.currency
+                        override fun hash() = grmTx.tx.hash
+                        override fun amount(): BigDecimal = grmTx.tx.amount
+                        override fun destination() = grmTx.tx.destination
+                        override fun paymentReference(): String? = grmTx.tx.tag
+                        override fun fee() = grmTx.tx.fee
+                        override fun status() = TxStatus.INCORRECT
+                    }
+                }
+            } else
+            // if grmTx has zero or more then one outMsg - status INCORRECT
+                return txService.constructTxByTxEntity(grmTx.tx)
         }
     }
 
