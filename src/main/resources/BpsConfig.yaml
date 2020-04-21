@@ -64,7 +64,6 @@ GRM:
     localPassword: "local_password"
     # paymentQueryTimeLimit should be in 0..300
     paymentQueryTimeLimit: 10
-    numberAttemptsSendPaymentQuery: 1
     # lengthTagInBytes should be no more than 50
     lengthTagInBytes: 20
   connection:

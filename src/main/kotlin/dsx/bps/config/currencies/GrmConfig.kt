@@ -8,7 +8,6 @@ object GrmConfig : ConfigSpec("GRM") {
         val privateKey by required<String>()
         val localPassword by required<String>()
         val paymentQueryTimeLimit by required<Int>()
-        val numberAttemptsSendPaymentQuery by required<Int>()
         val lengthTagInBytes by required<Int>()
     }
 

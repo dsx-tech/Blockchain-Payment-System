@@ -26,18 +26,17 @@ class GrmTxService(datasource: Datasource) {
     fun getGrmNewestKnownTx(): TxEntity {
         val grmNewestKnownTx = transaction {
             GrmTxEntity.find {
-                GrmTxTable.lt eq GrmTxTable.lt.max()
+                GrmTxTable.txId eq TxTable.id and (TxTable.index eq TxTable.index.max())
             }.single()
         }
 
         return grmNewestKnownTx.tx
     }
 
-    fun add(utime: Long, lt: Long, inInMsg: GrmInMsgEntity, tx: TxEntity): GrmTxEntity {
+    fun add(utime: Long, inInMsg: GrmInMsgEntity, tx: TxEntity): GrmTxEntity {
         return transaction {
             GrmTxEntity.new {
                 this.utime = utime
-                this.lt = lt
                 this.inMsg = inInMsg
                 this.tx = tx
             }

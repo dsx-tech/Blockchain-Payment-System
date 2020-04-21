@@ -82,6 +82,11 @@ class PaymentProcessor(
                                 pay.status = PaymentStatus.FAILED
                                 // add this payment to resend list if needed
                             }
+                            TxStatus.INCORRECT -> {
+                                txService.updateStatus(TxStatus.INCORRECT, tx.hash(), tx.index())
+                                payService.updateStatus(PaymentStatus.FAILED, pay.id)
+                                pay.status = PaymentStatus.FAILED
+                            }
                         }
                     } else {
                         // resend payment if needed

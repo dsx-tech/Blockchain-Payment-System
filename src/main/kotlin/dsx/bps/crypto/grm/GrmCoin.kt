@@ -31,10 +31,7 @@ class GrmCoin : Coin {
     private val privateKey: String
     private val localPassword: String
     private val paymentQueryTimeLimit: Int
-    private val numberAttemptsSendPaymentQuery: Int
     private val lengthTagInBytes: Int
-    val lengthTagInHex: Int
-        get() = this.lengthTagInBytes * 2
 
     // emptyTxLt and emptyTxHash are used to determine when there are no earlier smart contract transactions
     private val emptyTxLt: Long = 0
@@ -64,7 +61,6 @@ class GrmCoin : Coin {
         privateKey = config[GrmConfig.Coin.privateKey]
         localPassword = config[GrmConfig.Coin.localPassword]
         paymentQueryTimeLimit = config[GrmConfig.Coin.paymentQueryTimeLimit]
-        numberAttemptsSendPaymentQuery = config[GrmConfig.Coin.numberAttemptsSendPaymentQuery]
         lengthTagInBytes = config[GrmConfig.Coin.lengthTagInBytes]
 
         val tonClientConfig = File(config[GrmConfig.Connection.pathToTonClientConfig]).readText()
@@ -102,7 +98,6 @@ class GrmCoin : Coin {
         privateKey = config[GrmConfig.Coin.privateKey]
         localPassword = config[GrmConfig.Coin.localPassword]
         paymentQueryTimeLimit = config[GrmConfig.Coin.paymentQueryTimeLimit]
-        numberAttemptsSendPaymentQuery = config[GrmConfig.Coin.numberAttemptsSendPaymentQuery]
         lengthTagInBytes = config[GrmConfig.Coin.lengthTagInBytes]
 
         connector = grmConnection
@@ -244,7 +239,7 @@ class GrmCoin : Coin {
 
     fun constructPaymentTx(
             hash: String, lt: Long, amount: BigDecimal, destination: String,
-            paymentReference: String?, fee: BigDecimal): Tx {
+            paymentReference: String?, fee: BigDecimal, txStatus: TxStatus): Tx {
         return object : Tx {
             override fun currency() = currency
             override fun hash() = hash
@@ -253,7 +248,7 @@ class GrmCoin : Coin {
             override fun destination() = destination
             override fun paymentReference() = paymentReference
             override fun fee() = fee
-            override fun status() = TxStatus.CONFIRMED
+            override fun status() = txStatus
         }
     }
 

@@ -7,6 +7,7 @@ import dsx.bps.DBservices.crypto.grm.GrmInMsgService
 import dsx.bps.DBservices.crypto.grm.GrmOutMsgService
 import dsx.bps.DBservices.crypto.grm.GrmTxService
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.common.Explorer
 import dsx.bps.crypto.grm.datamodel.GrmInternalTxId
 import dsx.bps.crypto.grm.datamodel.GrmRawTransaction
@@ -68,7 +69,7 @@ class GrmExplorer(
                 //save tx
                 val tx = coin.constructPaymentTx(
                         grmTx.transactionId.hash, grmTx.transactionId.lt, BigDecimal.ZERO,
-                        "", "", BigDecimal.ZERO
+                        "", "", BigDecimal.ZERO, TxStatus.INCORRECT
                 )
                 val newTx = txService.add(
                         tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
@@ -82,7 +83,7 @@ class GrmExplorer(
                         grmInMsg.bodyHash, grmInMsg.msgText
                 )
                 //save grmTx
-                grmTxService.add(grmTx.utime, grmTx.transactionId.lt, inMsg, newTx)
+                grmTxService.add(grmTx.utime, inMsg, newTx)
             } else if (grmTx.outMsg.size == 1) {
                 // if grmTx has one outMsg
                 val grmInMsg = grmTx.inMsg
@@ -97,14 +98,14 @@ class GrmExplorer(
                 val tx = coin.constructPaymentTx(
                         grmTx.transactionId.hash, grmTx.transactionId.lt,
                         BigDecimal(grmOutMsg.value), grmOutMsg.destination, grmOutMsg.msgText,
-                        BigDecimal(grmOutMsg.fwdFee + grmOutMsg.ihrFee)
+                        BigDecimal(grmOutMsg.fwdFee + grmOutMsg.ihrFee), TxStatus.CONFIRMED
                 )
                 val newTx = txService.add(
                         tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
                         tx.fee(), tx.txid().hash, tx.txid().index, tx.currency()
                 )
                 //save grmTx
-                val grmEntity = grmTxService.add(grmTx.utime, grmTx.transactionId.lt, inMsg, newTx)
+                val grmEntity = grmTxService.add(grmTx.utime, inMsg, newTx)
                 //save outMsg
                 if (grmOutMsg.msgText.length <= tagMaxLength) {
                     grmOutMsgService.add(
@@ -113,9 +114,38 @@ class GrmExplorer(
                             grmOutMsg.bodyHash, grmOutMsg.msgText, grmEntity
                     )
                 }
+            } else if (grmTx.outMsg.size > 1) {
+                // if grmTx has many outMsg
+                val grmInMsg = grmTx.inMsg
+                //save inMsg
+                val inMsg = grmInMsgService.add(
+                        grmInMsg.source, grmInMsg.destination, grmInMsg.value,
+                        grmInMsg.fwdFee, grmInMsg.ihrFee, grmInMsg.createdLt,
+                        grmInMsg.bodyHash, grmInMsg.msgText
+                )
+                //save Tx
+                val tx = coin.constructPaymentTx(
+                        grmTx.transactionId.hash, grmTx.transactionId.lt,
+                        BigDecimal.ZERO, "", "",
+                        BigDecimal.ZERO, TxStatus.INCORRECT
+                )
+                val newTx = txService.add(
+                        tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                        tx.fee(), tx.txid().hash, tx.txid().index, tx.currency()
+                )
+                //save grmTx
+                val grmEntity = grmTxService.add(grmTx.utime, inMsg, newTx)
+                //save outMsgs
+                for (grmOutMsg in grmTx.outMsg) {
+                    if (grmOutMsg.msgText.length <= tagMaxLength) {
+                        grmOutMsgService.add(
+                                grmOutMsg.source, grmOutMsg.destination, grmOutMsg.value,
+                                grmOutMsg.fwdFee, grmOutMsg.ihrFee, grmOutMsg.createdLt,
+                                grmOutMsg.bodyHash, grmOutMsg.msgText, grmEntity
+                        )
+                    }
+                }
             }
-            //TODO: Что делать если у трназакции платежа выходных сообщений больше чем одно?
-            // (какое destination ставить в Tx, какая сумма перевода в Tx и т.д.) - пока что игнорим такие транзакции
         } else if (grmTx.inMsg.source != "" && grmTx.inMsg.msgText.length <= tagMaxLength) {
             // if tx process internal message - save tx in db and emit it
             //save tx
@@ -132,14 +162,16 @@ class GrmExplorer(
                     grmInMsg.bodyHash, grmInMsg.msgText
             )
             //save grmTx
-            val grmEntity = grmTxService.add(grmTx.utime, grmTx.transactionId.lt, inMsg, newTx)
+            val grmEntity = grmTxService.add(grmTx.utime, inMsg, newTx)
             //save outMsgs
             for (outMsg in grmTx.outMsg) {
-                grmOutMsgService.add(
-                        outMsg.source, outMsg.destination, outMsg.value,
-                        outMsg.fwdFee, outMsg.ihrFee, outMsg.createdLt,
-                        outMsg.bodyHash, outMsg.msgText, grmEntity
-                )
+                if (outMsg.msgText.length <= tagMaxLength) {
+                    grmOutMsgService.add(
+                            outMsg.source, outMsg.destination, outMsg.value,
+                            outMsg.fwdFee, outMsg.ihrFee, outMsg.createdLt,
+                            outMsg.bodyHash, outMsg.msgText, grmEntity
+                    )
+                }
             }
             emitter.onNext(tx)
         }
