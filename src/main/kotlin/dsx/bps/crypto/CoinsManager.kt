@@ -95,4 +95,9 @@ class CoinsManager {
     fun kill(currency: Currency){
         getCoin(currency).kill()
     }
+
+    @Deprecated("only for tests")
+    fun clearDb(currency: Currency){
+        getCoin(currency).clearDb()
+    }
 }

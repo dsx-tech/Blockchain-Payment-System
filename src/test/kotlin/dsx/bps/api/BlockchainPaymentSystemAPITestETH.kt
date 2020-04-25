@@ -10,7 +10,10 @@ import org.junit.jupiter.api.Assertions.*
 import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.io.File
 import java.math.BigDecimal
+import java.nio.file.Files
+
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
@@ -46,6 +49,7 @@ internal class BlockchainPaymentSystemAPITestETH {
 
         val address = container.containerIpAddress
         val url = "http://$address:8541"
+
         generator = EthRpc(url)
     }
 
@@ -53,6 +57,7 @@ internal class BlockchainPaymentSystemAPITestETH {
     fun tearDown(){
         aliceAPI.kill(Currency.ETH)
         bobAPI.kill(Currency.ETH)
+        removeNewWallets()
     }
 
     @Order(1)
@@ -69,7 +74,10 @@ internal class BlockchainPaymentSystemAPITestETH {
     fun sendPayments() {
         // send first payment
         assertDoesNotThrow {
+            aliceAPI.clearDb(Currency.ETH)
+
             val id1 = aliceAPI.sendPayment(Currency.ETH, 1.0, bobEthAddress)
+            println(generator.getTransactionByHash(aliceAPI.getPayment(id1)!!.txid.hash))
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
@@ -86,7 +94,7 @@ internal class BlockchainPaymentSystemAPITestETH {
                 pay2!!.status != PaymentStatus.SUCCEED) {
                 count += 1
                 waitForSomeBlocksMining()
-                assertNotEquals(5, count, "Payment wasn't confirmed or found in >= 5 blocks")
+                assertNotEquals(10, count, "Payment wasn't confirmed or found in >= 5 blocks")
             }
         }
 
@@ -109,13 +117,22 @@ internal class BlockchainPaymentSystemAPITestETH {
                 pay2!!.status != PaymentStatus.SUCCEED) {
                 count += 1
                 waitForSomeBlocksMining()
-                assertNotEquals(5, count, "Payment wasn't confirmed or found in >= 5 blocks")
+                assertNotEquals(10, count, "Payment wasn't confirmed or found in >= 5 blocks")
             }
         }
     }
 
-    @Disabled
     @Order(3)
+    @Test
+    fun getNewBalance() {
+        assertDoesNotThrow {
+            val realBalance = "50"
+            assertNotEquals(realBalance, aliceAPI.getBalance(Currency.ETH))
+        }
+    }
+
+   // @Disabled
+    @Order(4)
     @Test
     fun createInvoice() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.03)
@@ -131,12 +148,13 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
-    @Disabled
-    @Order(4)
+    //@Disabled
+    @Order(5)
     @Test
     fun createInvoiceWithTwoPayments() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.06)
         val inv = bobAPI.getInvoice(invId)
+
         assertNotNull(inv)
 
         val half = inv!!.amount / BigDecimal(2)
@@ -165,4 +183,15 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
+    private fun removeNewWallets() {
+        val dir = "./src/test/resources/ETH/bobWallet"
+        val fl = File(dir)
+        val files = fl.listFiles { file -> file.isFile }
+
+        for (file in files!!) {
+            if (file.name != "UTC--2020-03-04T08-33-39.016502000Z--0ce59225bcd447feaed698ed754d309feba5fc63") {
+                Files.delete(file.toPath())
+            }
+        }
+    }
 }

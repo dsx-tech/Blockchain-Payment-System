@@ -51,6 +51,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
     @Order(1)
     @Test
     fun getBalance() {
+        Thread.sleep(2000)
         assertDoesNotThrow {
            assertEquals(aliceAPI.getBalance(Currency.BTC), "5050.0")
            assertEquals(bobAPI.getBalance(Currency.BTC),"50.0")

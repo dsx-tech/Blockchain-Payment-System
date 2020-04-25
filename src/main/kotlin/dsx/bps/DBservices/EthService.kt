@@ -29,8 +29,7 @@ class EthService(datasource: Datasource) {
         return newEthTxEntity
     }
 
-    fun getLatestNonce(address: String) : BigInteger?
-    {
+    fun getLatestNonce(address: String) : BigInteger? {
         val nonce = transaction{ EthTxEntity.all().filter { tx -> tx.address == address }.map { tx -> tx.nonce}.max()}
         return nonce?.toBigInteger() ?: return null
     }

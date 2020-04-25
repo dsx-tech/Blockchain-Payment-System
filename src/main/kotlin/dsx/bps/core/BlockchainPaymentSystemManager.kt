@@ -112,7 +112,12 @@ class BlockchainPaymentSystemManager {
     }
 
     @Deprecated("only for tests")
-        fun kill(currency: Currency){
+        fun kill(currency: Currency) {
             coinsManager.kill(currency)
         }
+
+    @Deprecated("only for tests")
+    fun clearDb(currency: Currency) {
+        coinsManager.clearDb(currency)
+    }
 }

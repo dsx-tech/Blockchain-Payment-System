@@ -193,4 +193,9 @@ class EthCoin: Coin {
         this.explorer.kill()
     }
 
+    @Deprecated("only for tests")
+    override fun clearDb() {
+        this.ethService.delete()
+    }
+
 }

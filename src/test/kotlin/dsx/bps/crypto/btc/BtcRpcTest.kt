@@ -40,6 +40,7 @@ internal class BtcRpcTest {
     @Order(1)
     @Test
     fun getBalance() {
+        Thread.sleep(2000)
         assertDoesNotThrow {
             val r = rpc.getBalance()
             assertEquals(5050.0.toBigDecimal(), r)

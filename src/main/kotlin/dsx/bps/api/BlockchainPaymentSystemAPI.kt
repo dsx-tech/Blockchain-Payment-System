@@ -41,4 +41,9 @@ class BlockchainPaymentSystemAPI {
     fun kill(currency: Currency){
         manager.kill(currency)
     }
+
+    @Deprecated("only for tests")
+    fun clearDb(currency: Currency){
+        manager.clearDb(currency)
+    }
 }
