@@ -172,6 +172,7 @@ internal class EthRpcTest {
         }
     }
 
+    @Disabled
     @Order(13)
     @Test
     fun createSmartContractAndCheckMoneyRouting() {

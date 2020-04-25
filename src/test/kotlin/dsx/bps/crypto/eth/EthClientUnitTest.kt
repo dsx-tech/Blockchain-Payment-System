@@ -74,7 +74,7 @@ internal class EthClientUnitTest {
             )
         ).thenReturn("newAddress")
 
-        val address = ethClient.getAddressWithWallet()
+        val address = ethClient.getAddress()
         Assertions.assertEquals("newAddress", address)
     }
 

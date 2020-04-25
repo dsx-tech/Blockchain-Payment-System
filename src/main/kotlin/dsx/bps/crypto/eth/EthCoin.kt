@@ -91,13 +91,17 @@ class EthCoin: Coin {
     override fun getBalance(): BigDecimal = connector.getBalance(accountAddress)
 
     /**
-     * @return account address.
+     * Get new smart-contract address. This is an alternative to getting an address by creating a new wallet.
+     * @return smart-contract address.
      */
-    override fun getAddress(): String{
+    fun getSmartAddress(): String{
         return connector.generateSmartWallet(pathToWallet, password).address
     }
 
-    fun getAddressWithWallet() : String = connector.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
+    /**
+     * @return new account address
+     */
+    override fun getAddress() : String = connector.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
 
     /**
      * @param txid TxId object ( {hash : String, index : Int} )
