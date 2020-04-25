@@ -7,6 +7,7 @@ import dsx.bps.DBclasses.crypto.grm.GrmInMsgTable
 import dsx.bps.DBclasses.crypto.grm.GrmTxEntity
 import dsx.bps.DBclasses.crypto.grm.GrmTxTable
 import dsx.bps.DBservices.Datasource
+import dsx.bps.core.datamodel.Currency
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -26,7 +27,9 @@ class GrmTxService(datasource: Datasource) {
     fun getGrmNewestKnownTx(): GrmTxEntity? {
         return transaction {
             GrmTxEntity.find {
-                GrmTxTable.txId eq TxTable.id and (TxTable.index eq TxTable.index.max())
+                GrmTxTable.txId eq TxTable.id and
+                        (TxTable.index eq TxTable.index.max()) and
+                        (TxTable.currency eq Currency.GRM)
             }.singleOrNull()
         }
     }

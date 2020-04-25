@@ -66,26 +66,21 @@ class PaymentProcessor(
                     if (match(pay, tx)) {
                         when (tx.status()) {
                             TxStatus.VALIDATING -> {
-                                txService.updateStatus(TxStatus.VALIDATING, tx.hash(), tx.index())
+                                txService.updateStatus(tx.status(), tx.hash(), tx.index())
                                 payService.updateStatus(PaymentStatus.PROCESSING, pay.id)
                                 pay.status = PaymentStatus.PROCESSING
                             }
                             TxStatus.CONFIRMED -> {
-                                txService.updateStatus(TxStatus.CONFIRMED, tx.hash(), tx.index())
+                                txService.updateStatus(tx.status(), tx.hash(), tx.index())
                                 payService.updateStatus(PaymentStatus.SUCCEED, pay.id)
                                 pay.status = PaymentStatus.SUCCEED
                                 processing.remove(pay.id)
                             }
-                            TxStatus.REJECTED -> {
-                                txService.updateStatus(TxStatus.REJECTED, tx.hash(), tx.index())
+                            TxStatus.REJECTED, TxStatus.INCORRECT -> {
+                                txService.updateStatus(tx.status(), tx.hash(), tx.index())
                                 payService.updateStatus(PaymentStatus.FAILED, pay.id)
                                 pay.status = PaymentStatus.FAILED
                                 // add this payment to resend list if needed
-                            }
-                            TxStatus.INCORRECT -> {
-                                txService.updateStatus(TxStatus.INCORRECT, tx.hash(), tx.index())
-                                payService.updateStatus(PaymentStatus.FAILED, pay.id)
-                                pay.status = PaymentStatus.FAILED
                             }
                         }
                     } else {

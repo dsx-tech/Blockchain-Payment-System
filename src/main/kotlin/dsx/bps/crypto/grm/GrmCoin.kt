@@ -2,6 +2,7 @@ package dsx.bps.crypto.grm
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBclasses.crypto.grm.GrmConstant
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.DBservices.crypto.grm.GrmInMsgService
@@ -141,31 +142,25 @@ class GrmCoin : Coin {
                     override fun status() = TxStatus.REJECTED
                 }
             }
-        } else {
-            // if found grmTx
-            if (grmOutMsgService.getOutMsgs(grmTx.id).size == 1) {
-                //if grmTx has one outMsg
-                if (grmTx.tx.destination == txEntity.destination &&
-                        grmTx.tx.tag == txEntity.tag &&
-                        grmTx.tx.amount == txEntity.amount) {
-                    // if outMsg is valid - status CONFIRMED
-                    return txService.constructTxByTxEntity(grmTx.tx)
-                } else {
-                    //if outMsg is not valid - status INCORRECT
-                    return object : Tx {
-                        override fun currency() = grmTx.tx.currency
-                        override fun hash() = grmTx.tx.hash
-                        override fun amount(): BigDecimal = grmTx.tx.amount
-                        override fun destination() = grmTx.tx.destination
-                        override fun paymentReference(): String? = grmTx.tx.tag
-                        override fun fee() = grmTx.tx.fee
-                        override fun status() = TxStatus.INCORRECT
-                    }
-                }
-            } else
-            // if grmTx has zero or more then one outMsg - status INCORRECT
-                return txService.constructTxByTxEntity(grmTx.tx)
         }
+        // if grmTx has one outMsg and outMsg is not valid - status INCORRECT
+        if (grmOutMsgService.getOutMsgs(grmTx.id).size == 1 &&
+                (grmTx.tx.destination != txEntity.destination ||
+                        grmTx.tx.tag != txEntity.tag ||
+                        grmTx.tx.amount != txEntity.amount)) {
+            return object : Tx {
+                override fun currency() = grmTx.tx.currency
+                override fun hash() = grmTx.tx.hash
+                override fun amount(): BigDecimal = grmTx.tx.amount
+                override fun destination() = grmTx.tx.destination
+                override fun paymentReference(): String? = grmTx.tx.tag
+                override fun fee() = grmTx.tx.fee
+                override fun status() = TxStatus.INCORRECT
+            }
+        }
+        // if grmTx has one outMsg and outMsg is valid - status CONFIRMED
+        // if grmTx has zero or more then one outMsg - status INCORRECT
+        return txService.constructTxByTxEntity(grmTx.tx)
     }
 
     override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
@@ -256,7 +251,10 @@ class GrmCoin : Coin {
             }
 
             override fun destination() = grmTx.inMsg.destination
-            override fun paymentReference(): String? = grmTx.inMsg.msgText
+            override fun paymentReference(): String? = if (grmTx.inMsg.msgText.length
+                    <= GrmConstant.inMsgTextMaxLength) grmTx.inMsg.msgText
+            else GrmConstant.msgTextOversizeValue
+
             override fun fee() = BigDecimal(grmTx.fee)
             override fun status() = TxStatus.CONFIRMED
         }
