@@ -8,7 +8,10 @@ import dsx.bps.DBclasses.crypto.grm.GrmTxEntity
 import dsx.bps.DBclasses.crypto.grm.GrmTxTable
 import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.Currency
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.exists
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class GrmTxService(datasource: Datasource) {
@@ -25,12 +28,19 @@ class GrmTxService(datasource: Datasource) {
     }
 
     fun getGrmNewestKnownTx(): GrmTxEntity? {
-        return transaction {
-            GrmTxEntity.find {
-                GrmTxTable.txId eq TxTable.id and
-                        (TxTable.index eq TxTable.index.max()) and
-                        (TxTable.currency eq Currency.GRM)
-            }.singleOrNull()
+        val maxIndexTxEntity = transaction {
+            TxEntity.find {
+                TxTable.currency eq Currency.GRM
+            }.maxBy { tx -> tx.index }
+        }
+        return if (maxIndexTxEntity == null)
+            null
+        else {
+            transaction {
+                GrmTxEntity.find {
+                    GrmTxTable.txId eq maxIndexTxEntity.id
+                }.singleOrNull()
+            }
         }
     }
 
