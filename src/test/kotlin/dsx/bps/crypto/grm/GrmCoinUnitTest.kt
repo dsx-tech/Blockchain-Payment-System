@@ -34,7 +34,6 @@ internal class GrmCoinUnitTest {
     private val txService: TxService
 
     init {
-
         val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
         val configFile = File(configPath)
         val databaseConfig = with(Config()) {
