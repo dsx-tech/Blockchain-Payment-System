@@ -53,7 +53,7 @@ internal class XrpClientTest {
 
     @Test
     fun createInvoiceXrp() {
-        val invId = bob.createInvoice(cur, 373)
+        val invId = bob.createInvoice(cur, BigDecimal(373))
         val inv = bob.getInvoice(invId)
         assertNotNull(inv)
         println(

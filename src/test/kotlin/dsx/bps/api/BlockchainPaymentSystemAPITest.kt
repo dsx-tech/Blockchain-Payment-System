@@ -4,9 +4,7 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.btc.BtcRpc
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertNotEquals
-import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
@@ -37,11 +35,11 @@ internal class BlockchainPaymentSystemAPITest {
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
-            val id1 = aliceAPI.sendPayment(Currency.BTC, 50.05, bobBtcAddress)
+            val id1 = aliceAPI.sendPayment(Currency.BTC, BigDecimal(50.05), bobBtcAddress)
             Thread.sleep(1000)
             generator.generate(1)
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.BTC, 25.52, aliceBtcAddress)
+            val id2 = bobAPI.sendPayment(Currency.BTC, BigDecimal(25.52), aliceBtcAddress)
             generator.generate(1)
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -65,7 +63,7 @@ internal class BlockchainPaymentSystemAPITest {
 
     @Test
     fun createInvoice() {
-        val invId = aliceAPI.createInvoice(Currency.BTC, 0.42)
+        val invId = aliceAPI.createInvoice(Currency.BTC, BigDecimal(0.42))
         val inv = aliceAPI.getInvoice(invId)
 
         assertNotNull(inv)
@@ -83,7 +81,7 @@ internal class BlockchainPaymentSystemAPITest {
 
     @Test
     fun createInvoice1() {
-        val invId = aliceAPI.createInvoice(Currency.BTC, 100.2)
+        val invId = aliceAPI.createInvoice(Currency.BTC, BigDecimal(100.2))
         val inv = aliceAPI.getInvoice(invId)
         assertNotNull(inv)
 

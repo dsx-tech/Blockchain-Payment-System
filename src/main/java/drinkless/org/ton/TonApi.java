@@ -33,9 +33,10 @@ public class TonApi {
         public String accountAddress;
 
         /**
-         * Identifier uniquely determining type of the object.
+         *
          */
-        public static final int CONSTRUCTOR = 755613099;
+        public AccountAddress() {
+        }
 
         public AccountAddress(String accountAddress) {
             this.accountAddress = accountAddress;
@@ -122,6 +123,16 @@ public class TonApi {
 
     public static class TestWalletAccountState extends AccountState {
         public int seqno;
+
+        /**
+         *
+         */
+        public TestWalletAccountState() {
+        }
+
+        public TestWalletAccountState(int seqno) {
+            this.seqno = seqno;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -236,6 +247,16 @@ public class TonApi {
         public long walletId;
 
         /**
+         *
+         */
+        public WalletHighloadV2AccountState() {
+        }
+
+        public WalletHighloadV2AccountState(long walletId) {
+            this.walletId = walletId;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = -1803723441;
@@ -317,6 +338,16 @@ public class TonApi {
         public byte[] frozenHash;
 
         /**
+         *
+         */
+        public UninitedAccountState() {
+        }
+
+        public UninitedAccountState(byte[] frozenHash) {
+            this.frozenHash = frozenHash;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = 1522374408;
@@ -346,7 +377,7 @@ public class TonApi {
     public static class ActionNoop extends Action {
 
         /**
-         *
+         * 
          */
         public ActionNoop() {
         }
@@ -398,6 +429,16 @@ public class TonApi {
         public DnsAction[] actions;
 
         /**
+         *
+         */
+        public ActionDns() {
+        }
+
+        public ActionDns(DnsAction[] actions) {
+            this.actions = actions;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = 1193750561;
@@ -422,10 +463,20 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class AdnlAddress extends Object {
         public String adnlAddress;
+
+        /**
+         *
+         */
+        public AdnlAddress() {
+        }
+
+        public AdnlAddress(String adnlAddress) {
+            this.adnlAddress = adnlAddress;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -452,13 +503,13 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Bip39Hints extends Object {
         public String[] words;
 
         /**
-         *
+         * 
          */
         public Bip39Hints() {
         }
@@ -482,7 +533,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Config extends Object {
         public String config;
@@ -518,10 +569,20 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Data extends Object {
         public byte[] bytes;
+
+        /**
+         *
+         */
+        public Data() {
+        }
+
+        public Data(byte[] bytes) {
+            this.bytes = bytes;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -548,7 +609,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Error extends Object {
         public int code;
@@ -580,15 +641,16 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class ExportedEncryptedKey extends Object {
         public byte[] data;
 
         /**
-         * Identifier uniquely determining type of the object.
+         *
          */
-        public static final int CONSTRUCTOR = 2024406612;
+        public ExportedEncryptedKey() {
+        }
 
         public ExportedEncryptedKey(byte[] data) {
             this.data = data;
@@ -640,13 +702,13 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class ExportedPemKey extends Object {
         public String pem;
 
         /**
-         *
+         * 
          */
         public ExportedPemKey() {
         }
@@ -670,13 +732,13 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class ExportedUnencryptedKey extends Object {
         public byte[] data;
 
         /**
-         *
+         * 
          */
         public ExportedUnencryptedKey() {
         }
@@ -700,7 +762,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Fees extends Object {
         public long inFwdFee;
@@ -736,7 +798,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class FullAccountState extends Object {
         public long balance;
@@ -808,7 +870,7 @@ public class TonApi {
     public static class TestGiverInitialAccountState extends InitialAccountState {
 
         /**
-         *
+         * 
          */
         public TestGiverInitialAccountState() {
         }
@@ -829,6 +891,16 @@ public class TonApi {
 
     public static class TestWalletInitialAccountState extends InitialAccountState {
         public String publicKey;
+
+        /**
+         *
+         */
+        public TestWalletInitialAccountState() {
+        }
+
+        public TestWalletInitialAccountState(String publicKey) {
+            this.publicKey = publicKey;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -856,6 +928,16 @@ public class TonApi {
 
     public static class WalletInitialAccountState extends InitialAccountState {
         public String publicKey;
+
+        /**
+         *
+         */
+        public WalletInitialAccountState() {
+        }
+
+        public WalletInitialAccountState(String publicKey) {
+            this.publicKey = publicKey;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -1032,7 +1114,7 @@ public class TonApi {
     public static class InputKeyFake extends InputKey {
 
         /**
-         *
+         * 
          */
         public InputKeyFake() {
         }
@@ -1052,7 +1134,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Key extends Object {
         public String publicKey;
@@ -1090,6 +1172,16 @@ public class TonApi {
         public String directory;
 
         /**
+         *
+         */
+        public KeyStoreTypeDirectory() {
+        }
+
+        public KeyStoreTypeDirectory(String directory) {
+            this.directory = directory;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = -378990038;
@@ -1116,7 +1208,7 @@ public class TonApi {
     public static class KeyStoreTypeInMemory extends KeyStoreType {
 
         /**
-         *
+         * 
          */
         public KeyStoreTypeInMemory() {
         }
@@ -1313,7 +1405,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Ok extends Object {
 
@@ -1338,7 +1430,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class Options extends Object {
         public Config config;
@@ -1375,7 +1467,7 @@ public class TonApi {
     public static class SyncStateDone extends SyncState {
 
         /**
-         *
+         * 
          */
         public SyncStateDone() {
         }
@@ -1426,7 +1518,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class UnpackedAccountAddress extends Object {
         public int workchainId;
@@ -1497,6 +1589,16 @@ public class TonApi {
         public SyncState syncState;
 
         /**
+         *
+         */
+        public UpdateSyncState() {
+        }
+
+        public UpdateSyncState(SyncState syncState) {
+            this.syncState = syncState;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = 1204298718;
@@ -1526,7 +1628,7 @@ public class TonApi {
     public static class DnsActionDeleteAll extends DnsAction {
 
         /**
-         *
+         * 
          */
         public DnsActionDeleteAll() {
         }
@@ -1578,7 +1680,7 @@ public class TonApi {
         public DnsEntry entry;
 
         /**
-         *
+         * 
          */
         public DnsActionSet() {
         }
@@ -1602,7 +1704,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class DnsEntry extends Object {
         public String name;
@@ -1642,7 +1744,7 @@ public class TonApi {
         public byte[] bytes;
 
         /**
-         *
+         * 
          */
         public DnsEntryDataUnknown() {
         }
@@ -1667,6 +1769,16 @@ public class TonApi {
 
     public static class DnsEntryDataText extends DnsEntryData {
         public String text;
+
+        /**
+         *
+         */
+        public DnsEntryDataText() {
+        }
+
+        public DnsEntryDataText(String text) {
+            this.text = text;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -1723,6 +1835,16 @@ public class TonApi {
         public AccountAddress smcAddress;
 
         /**
+         *
+         */
+        public DnsEntryDataSmcAddress() {
+        }
+
+        public DnsEntryDataSmcAddress(AccountAddress smcAddress) {
+            this.smcAddress = smcAddress;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = -1759937982;
@@ -1748,6 +1870,16 @@ public class TonApi {
 
     public static class DnsEntryDataAdnlAddress extends DnsEntryData {
         public AdnlAddress adnlAddress;
+
+        /**
+         *
+         */
+        public DnsEntryDataAdnlAddress() {
+        }
+
+        public DnsEntryDataAdnlAddress(AdnlAddress adnlAddress) {
+            this.adnlAddress = adnlAddress;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -1778,6 +1910,16 @@ public class TonApi {
      */
     public static class DnsResolved extends Object {
         public DnsEntry[] entries;
+
+        /**
+         *
+         */
+        public DnsResolved() {
+        }
+
+        public DnsResolved(DnsEntry[] entries) {
+            this.entries = entries;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -1838,7 +1980,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class InternalTransactionId extends Object {
         public long lt;
@@ -1870,7 +2012,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class LiteServerInfo extends Object {
         public long now;
@@ -1910,7 +2052,7 @@ public class TonApi {
         public byte[] body;
 
         /**
-         *
+         * 
          */
         public MsgDataRaw() {
         }
@@ -1937,7 +2079,7 @@ public class TonApi {
         public byte[] text;
 
         /**
-         *
+         * 
          */
         public MsgDataText() {
         }
@@ -1964,9 +2106,10 @@ public class TonApi {
         public byte[] text;
 
         /**
-         * Identifier uniquely determining type of the object.
+         *
          */
-        public static final int CONSTRUCTOR = -1289133895;
+        public MsgDataDecryptedText() {
+        }
 
         public MsgDataDecryptedText(byte[] text) {
             this.text = text;
@@ -1989,6 +2132,16 @@ public class TonApi {
 
     public static class MsgDataEncryptedText extends MsgData {
         public byte[] text;
+
+        /**
+         *
+         */
+        public MsgDataEncryptedText() {
+        }
+
+        public MsgDataEncryptedText(byte[] text) {
+            this.text = text;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2047,7 +2200,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class MsgDataDecryptedArray extends Object {
         public MsgDataDecrypted[] elements;
@@ -2077,7 +2230,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class MsgDataEncrypted extends Object {
         public AccountAddress source;
@@ -2109,7 +2262,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class MsgDataEncryptedArray extends Object {
         public MsgDataEncrypted[] elements;
@@ -2139,7 +2292,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class MsgMessage extends Object {
         public AccountAddress destination;
@@ -2174,10 +2327,20 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class OptionsConfigInfo extends Object {
         public long defaultWalletId;
+
+        /**
+         *
+         */
+        public OptionsConfigInfo() {
+        }
+
+        public OptionsConfigInfo(long defaultWalletId) {
+            this.defaultWalletId = defaultWalletId;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2208,6 +2371,16 @@ public class TonApi {
      */
     public static class OptionsInfo extends Object {
         public OptionsConfigInfo configInfo;
+
+        /**
+         *
+         */
+        public OptionsInfo() {
+        }
+
+        public OptionsInfo(OptionsConfigInfo configInfo) {
+            this.configInfo = configInfo;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2266,7 +2439,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class QueryInfo extends Object {
         public long id;
@@ -2300,7 +2473,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class RawFullAccountState extends Object {
         public long balance;
@@ -2342,7 +2515,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class RawMessage extends Object {
         public AccountAddress source;
@@ -2385,7 +2558,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class RawTransaction extends Object {
         public long utime;
@@ -2461,10 +2634,20 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class SmcInfo extends Object {
         public long id;
+
+        /**
+         *
+         */
+        public SmcInfo() {
+        }
+
+        public SmcInfo(long id) {
+            this.id = id;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2497,6 +2680,16 @@ public class TonApi {
         public int number;
 
         /**
+         *
+         */
+        public SmcMethodIdNumber() {
+        }
+
+        public SmcMethodIdNumber(int number) {
+            this.number = number;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = -1541162500;
@@ -2524,7 +2717,7 @@ public class TonApi {
         public String name;
 
         /**
-         *
+         * 
          */
         public SmcMethodIdName() {
         }
@@ -2548,7 +2741,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class SmcRunResult extends Object {
         public long gasUsed;
@@ -2620,15 +2813,16 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class TvmCell extends Object {
         public byte[] bytes;
 
         /**
-         * Identifier uniquely determining type of the object.
+         *
          */
-        public static final int CONSTRUCTOR = -413424735;
+        public TvmCell() {
+        }
 
         public TvmCell(byte[] bytes) {
             this.bytes = bytes;
@@ -2654,6 +2848,16 @@ public class TonApi {
      */
     public static class TvmList extends Object {
         public TvmStackEntry[] elements;
+
+        /**
+         *
+         */
+        public TvmList() {
+        }
+
+        public TvmList(TvmStackEntry[] elements) {
+            this.elements = elements;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2710,10 +2914,20 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class TvmSlice extends Object {
         public byte[] bytes;
+
+        /**
+         *
+         */
+        public TvmSlice() {
+        }
+
+        public TvmSlice(byte[] bytes) {
+            this.bytes = bytes;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2746,6 +2960,16 @@ public class TonApi {
         public TvmSlice slice;
 
         /**
+         *
+         */
+        public TvmStackEntrySlice() {
+        }
+
+        public TvmStackEntrySlice(TvmSlice slice) {
+            this.slice = slice;
+        }
+
+        /**
          * Identifier uniquely determining type of the object.
          */
         public static final int CONSTRUCTOR = 1395485477;
@@ -2771,6 +2995,16 @@ public class TonApi {
 
     public static class TvmStackEntryCell extends TvmStackEntry {
         public TvmCell cell;
+
+        /**
+         *
+         */
+        public TvmStackEntryCell() {
+        }
+
+        public TvmStackEntryCell(TvmCell cell) {
+            this.cell = cell;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2800,9 +3034,10 @@ public class TonApi {
         public TvmNumberDecimal number;
 
         /**
-         * Identifier uniquely determining type of the object.
+         *
          */
-        public static final int CONSTRUCTOR = 1358642622;
+        public TvmStackEntryNumber() {
+        }
 
         public TvmStackEntryNumber(TvmNumberDecimal number) {
             this.number = number;
@@ -2825,6 +3060,16 @@ public class TonApi {
 
     public static class TvmStackEntryTuple extends TvmStackEntry {
         public TvmTuple tuple;
+
+        /**
+         *
+         */
+        public TvmStackEntryTuple() {
+        }
+
+        public TvmStackEntryTuple(TvmTuple tuple) {
+            this.tuple = tuple;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2852,6 +3097,16 @@ public class TonApi {
 
     public static class TvmStackEntryList extends TvmStackEntry {
         public TvmList list;
+
+        /**
+         * 
+         */
+        public TvmStackEntryList() {
+        }
+
+        public TvmStackEntryList(TvmList list) {
+            this.list = list;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2900,10 +3155,20 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      */
     public static class TvmTuple extends Object {
         public TvmStackEntry[] elements;
+
+        /**
+         * 
+         */
+        public TvmTuple() {
+        }
+
+        public TvmTuple(TvmStackEntry[] elements) {
+            this.elements = elements;
+        }
 
         /**
          * Identifier uniquely determining type of the object.
@@ -2980,6 +3245,8 @@ public class TonApi {
     }
 
     /**
+     * 
+     *
      * <p> Returns {@link Key Key} </p>
      */
     public static class ChangeLocalPassword extends Function {
@@ -2988,6 +3255,18 @@ public class TonApi {
 
         /**
          * Identifier uniquely determining type of the object.
+         */
+        public static final int CONSTRUCTOR = -401590337;
+
+        public ChangeLocalPassword(InputKey inputKey, byte[] newLocalPassword) {
+            this.inputKey = inputKey;
+            this.newLocalPassword = newLocalPassword;
+        }
+
+        /**
+         * Default constructor for a function, which
+         *
+         * <p> Returns {@link Key Key} </p>
          */
         public static final int CONSTRUCTOR = -401590337;
 
@@ -3043,7 +3322,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Key Key} </p>
      */
@@ -3081,7 +3360,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link QueryInfo QueryInfo} </p>
      */
@@ -3121,7 +3400,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Data Data} </p>
      */
@@ -3134,17 +3413,17 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = 357991854;
 
+        public Decrypt(byte[] encryptedData, byte[] secret) {
+            this.encryptedData = encryptedData;
+            this.secret = secret;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Data Data} </p>
          */
         public Decrypt() {
-        }
-
-        public Decrypt(byte[] encryptedData, byte[] secret) {
-            this.encryptedData = encryptedData;
-            this.secret = secret;
         }
 
         /**
@@ -3184,7 +3463,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Ok Ok} </p>
      */
@@ -3196,16 +3475,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1579595571;
 
+        public DeleteKey(Key key) {
+            this.key = key;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Ok Ok} </p>
          */
         public DeleteKey() {
-        }
-
-        public DeleteKey(Key key) {
-            this.key = key;
         }
 
         /**
@@ -3256,7 +3535,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Data Data} </p>
      */
@@ -3292,7 +3571,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link ExportedEncryptedKey ExportedEncryptedKey} </p>
      */
@@ -3340,16 +3619,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1622353549;
 
+        public ExportKey(InputKey inputKey) {
+            this.inputKey = inputKey;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link ExportedKey ExportedKey} </p>
          */
         public ExportKey() {
-        }
-
-        public ExportKey(InputKey inputKey) {
-            this.inputKey = inputKey;
         }
 
         /**
@@ -3362,6 +3641,8 @@ public class TonApi {
     }
 
     /**
+     *
+     *
      * <p> Returns {@link ExportedPemKey ExportedPemKey} </p>
      */
     public static class ExportPemKey extends Function {
@@ -3396,7 +3677,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link ExportedUnencryptedKey ExportedUnencryptedKey} </p>
      */
@@ -3408,16 +3689,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -634665152;
 
+        public ExportUnencryptedKey(InputKey inputKey) {
+            this.inputKey = inputKey;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link ExportedUnencryptedKey ExportedUnencryptedKey} </p>
          */
         public ExportUnencryptedKey() {
-        }
-
-        public ExportUnencryptedKey(InputKey inputKey) {
-            this.inputKey = inputKey;
         }
 
         /**
@@ -3430,6 +3711,8 @@ public class TonApi {
     }
 
     /**
+     *
+     *
      * <p> Returns {@link AccountAddress AccountAddress} </p>
      */
     public static class GetAccountAddress extends Function {
@@ -3441,17 +3724,17 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1159101819;
 
+        public GetAccountAddress(InitialAccountState initialAccountState, int revision) {
+            this.initialAccountState = initialAccountState;
+            this.revision = revision;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link AccountAddress AccountAddress} </p>
          */
         public GetAccountAddress() {
-        }
-
-        public GetAccountAddress(InitialAccountState initialAccountState, int revision) {
-            this.initialAccountState = initialAccountState;
-            this.revision = revision;
         }
 
         /**
@@ -3474,16 +3757,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -2116357050;
 
+        public GetAccountState(AccountAddress accountAddress) {
+            this.accountAddress = accountAddress;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link FullAccountState FullAccountState} </p>
          */
         public GetAccountState() {
-        }
-
-        public GetAccountState(AccountAddress accountAddress) {
-            this.accountAddress = accountAddress;
         }
 
         /**
@@ -3506,16 +3789,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1889640982;
 
+        public GetBip39Hints(String prefix) {
+            this.prefix = prefix;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Bip39Hints Bip39Hints} </p>
          */
         public GetBip39Hints() {
-        }
-
-        public GetBip39Hints(String prefix) {
-            this.prefix = prefix;
         }
 
         /**
@@ -3671,16 +3954,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = 1463344293;
 
+        public GuessAccountRevision(InitialAccountState initialAccountState) {
+            this.initialAccountState = initialAccountState;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link AccountRevisionList AccountRevisionList} </p>
          */
         public GuessAccountRevision() {
-        }
-
-        public GuessAccountRevision(InitialAccountState initialAccountState) {
-            this.initialAccountState = initialAccountState;
         }
 
         /**
@@ -3729,7 +4012,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Key Key} </p>
      */
@@ -3767,7 +4050,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Key Key} </p>
      */
@@ -3805,7 +4088,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Key Key} </p>
      */
@@ -3818,17 +4101,17 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1184671467;
 
+        public ImportUnencryptedKey(byte[] localPassword, ExportedUnencryptedKey exportedUnencryptedKey) {
+            this.localPassword = localPassword;
+            this.exportedUnencryptedKey = exportedUnencryptedKey;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Key Key} </p>
          */
         public ImportUnencryptedKey() {
-        }
-
-        public ImportUnencryptedKey(byte[] localPassword, ExportedUnencryptedKey exportedUnencryptedKey) {
-            this.localPassword = localPassword;
-            this.exportedUnencryptedKey = exportedUnencryptedKey;
         }
 
         /**
@@ -3851,16 +4134,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1000594762;
 
+        public Init(Options options) {
+            this.options = options;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link OptionsInfo OptionsInfo} </p>
          */
         public Init() {
-        }
-
-        public Init(Options options) {
-            this.options = options;
         }
 
         /**
@@ -3909,7 +4192,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link LiteServerInfo LiteServerInfo} </p>
      */
@@ -3938,7 +4221,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link MsgDataDecryptedArray MsgDataDecryptedArray} </p>
      */
@@ -3951,17 +4234,17 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = 223596297;
 
-        public MsgDecrypt(InputKey inputKey, MsgDataEncryptedArray data) {
-            this.inputKey = inputKey;
-            this.data = data;
-        }
-
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link MsgDataDecryptedArray MsgDataDecryptedArray} </p>
          */
         public MsgDecrypt() {
+        }
+
+        public MsgDecrypt(InputKey inputKey, MsgDataEncryptedArray data) {
+            this.inputKey = inputKey;
+            this.data = data;
         }
 
         /**
@@ -4008,6 +4291,8 @@ public class TonApi {
     }
 
     /**
+     * 
+     *
      * <p> Returns {@link Ok Ok} </p>
      */
     public static class OnLiteServerQueryError extends Function {
@@ -4016,6 +4301,18 @@ public class TonApi {
 
         /**
          * Identifier uniquely determining type of the object.
+         */
+        public static final int CONSTRUCTOR = -677427533;
+
+        public OnLiteServerQueryError(long id, Error error) {
+            this.id = id;
+            this.error = error;
+        }
+
+        /**
+         * Default constructor for a function, which
+         *
+         * <p> Returns {@link Ok Ok} </p>
          */
         public static final int CONSTRUCTOR = -677427533;
 
@@ -4042,8 +4339,6 @@ public class TonApi {
     }
 
     /**
-     *
-     *
      * <p> Returns {@link Ok Ok} </p>
      */
     public static class OnLiteServerQueryResult extends Function {
@@ -4088,16 +4383,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = 1870064579;
 
+        public OptionsSetConfig(Config config) {
+            this.config = config;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link OptionsConfigInfo OptionsConfigInfo} </p>
          */
         public OptionsSetConfig() {
-        }
-
-        public OptionsSetConfig(Config config) {
-            this.config = config;
         }
 
         /**
@@ -4120,16 +4415,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -346965447;
 
+        public OptionsValidateConfig(Config config) {
+            this.config = config;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link OptionsConfigInfo OptionsConfigInfo} </p>
          */
         public OptionsValidateConfig() {
-        }
-
-        public OptionsValidateConfig(Config config) {
-            this.config = config;
         }
 
         /**
@@ -4152,16 +4447,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1388561940;
 
+        public PackAccountAddress(UnpackedAccountAddress accountAddress) {
+            this.accountAddress = accountAddress;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link AccountAddress AccountAddress} </p>
          */
         public PackAccountAddress() {
-        }
-
-        public PackAccountAddress(UnpackedAccountAddress accountAddress) {
-            this.accountAddress = accountAddress;
         }
 
         /**
@@ -4185,17 +4480,17 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -957002175;
 
+        public QueryEstimateFees(long id, boolean ignoreChksig) {
+            this.id = id;
+            this.ignoreChksig = ignoreChksig;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link QueryFees QueryFees} </p>
          */
         public QueryEstimateFees() {
-        }
-
-        public QueryEstimateFees(long id, boolean ignoreChksig) {
-            this.id = id;
-            this.ignoreChksig = ignoreChksig;
         }
 
         /**
@@ -4218,16 +4513,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1211985313;
 
+        public QueryForget(long id) {
+            this.id = id;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Ok Ok} </p>
          */
         public QueryForget() {
-        }
-
-        public QueryForget(long id) {
-            this.id = id;
         }
 
         /**
@@ -4250,16 +4545,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -799333669;
 
+        public QueryGetInfo(long id) {
+            this.id = id;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link QueryInfo QueryInfo} </p>
          */
         public QueryGetInfo() {
-        }
-
-        public QueryGetInfo(long id) {
-            this.id = id;
         }
 
         /**
@@ -4282,16 +4577,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = 925242739;
 
+        public QuerySend(long id) {
+            this.id = id;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Ok Ok} </p>
          */
         public QuerySend() {
-        }
-
-        public QuerySend(long id) {
-            this.id = id;
         }
 
         /**
@@ -4340,7 +4635,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link QueryInfo QueryInfo} </p>
      */
@@ -4380,7 +4675,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link RawFullAccountState RawFullAccountState} </p>
      */
@@ -4392,16 +4687,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1327847118;
 
+        public RawGetAccountState(AccountAddress accountAddress) {
+            this.accountAddress = accountAddress;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link RawFullAccountState RawFullAccountState} </p>
          */
         public RawGetAccountState() {
-        }
-
-        public RawGetAccountState(AccountAddress accountAddress) {
-            this.accountAddress = accountAddress;
         }
 
         /**
@@ -4450,7 +4745,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link Ok Ok} </p>
      */
@@ -4462,16 +4757,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -1789427488;
 
+        public RawSendMessage(byte[] body) {
+            this.body = body;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Ok Ok} </p>
          */
         public RawSendMessage() {
-        }
-
-        public RawSendMessage(byte[] body) {
-            this.body = body;
         }
 
         /**
@@ -4494,16 +4789,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -2039925427;
 
+        public RunTests(String dir) {
+            this.dir = dir;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link Ok Ok} </p>
          */
         public RunTests() {
-        }
-
-        public RunTests(String dir) {
-            this.dir = dir;
         }
 
         /**
@@ -4654,7 +4949,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link TvmCell TvmCell} </p>
      */
@@ -4666,16 +4961,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -2115626088;
 
+        public SmcGetCode(long id) {
+            this.id = id;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link TvmCell TvmCell} </p>
          */
         public SmcGetCode() {
-        }
-
-        public SmcGetCode(long id) {
-            this.id = id;
         }
 
         /**
@@ -4698,16 +4993,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -427601079;
 
+        public SmcGetData(long id) {
+            this.id = id;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link TvmCell TvmCell} </p>
          */
         public SmcGetData() {
-        }
-
-        public SmcGetData(long id) {
-            this.id = id;
         }
 
         /**
@@ -4730,16 +5025,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -214390293;
 
+        public SmcGetState(long id) {
+            this.id = id;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link TvmCell TvmCell} </p>
          */
         public SmcGetState() {
-        }
-
-        public SmcGetState(long id) {
-            this.id = id;
         }
 
         /**
@@ -4762,16 +5057,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -903491521;
 
+        public SmcLoad(AccountAddress accountAddress) {
+            this.accountAddress = accountAddress;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link SmcInfo SmcInfo} </p>
          */
         public SmcLoad() {
-        }
-
-        public SmcLoad(AccountAddress accountAddress) {
-            this.accountAddress = accountAddress;
         }
 
         /**
@@ -4820,7 +5115,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link TonBlockIdExt TonBlockIdExt} </p>
      */
@@ -4849,7 +5144,7 @@ public class TonApi {
     }
 
     /**
-     *
+     * 
      *
      * <p> Returns {@link UnpackedAccountAddress UnpackedAccountAddress} </p>
      */
@@ -4861,16 +5156,16 @@ public class TonApi {
          */
         public static final int CONSTRUCTOR = -682459063;
 
+        public UnpackAccountAddress(String accountAddress) {
+            this.accountAddress = accountAddress;
+        }
+
         /**
          * Default constructor for a function, which
          *
          * <p> Returns {@link UnpackedAccountAddress UnpackedAccountAddress} </p>
          */
         public UnpackAccountAddress() {
-        }
-
-        public UnpackAccountAddress(String accountAddress) {
-            this.accountAddress = accountAddress;
         }
 
         /**
