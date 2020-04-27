@@ -2,7 +2,7 @@ package dsx.bps.crypto.grm
 
 import drinkless.org.ton.Client
 import drinkless.org.ton.TonApi
-import dsx.bps.connection.Connector
+import dsx.bps.connector.Connector
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.grm.datamodel.*
 import dsx.bps.exception.connector.grm.GrmConnectorException
@@ -98,12 +98,95 @@ class GrmConnector : Connector {
         }
     }
 
+    fun sendPaymentQuery(
+        accountAddress: String, privateKey: String,
+        localPassword: String, amount: BigDecimal,
+        address: String, tag: String?, timeLimit: Int
+    ): GrmQueryInfo {
+        val inputKeyRegular: TonApi.InputKeyRegular = importKey(privateKey, localPassword)
+
+        val msgData: TonApi.MsgData = TonApi.MsgDataText(tag?.toByteArray() ?: "".toByteArray())
+        val msg: TonApi.MsgMessage = TonApi.MsgMessage(
+            TonApi.AccountAddress(address), inputKeyRegular.key.publicKey, amount.toLong(), msgData
+        )
+        val actionMsg: TonApi.ActionMsg = TonApi.ActionMsg(arrayOf(msg), true)
+
+        val query: TonApi.CreateQuery = TonApi.CreateQuery(
+            inputKeyRegular,
+            TonApi.AccountAddress(accountAddress), timeLimit, actionMsg
+        )
+        val resultCreateQuery: TonApi.Object = runBlocking {
+            send(query)
+        }
+
+        val queryInfo: TonApi.QueryInfo = when (resultCreateQuery) {
+            is TonApi.QueryInfo -> resultCreateQuery
+            is TonApi.Error -> throw GrmConnectorException(
+                "Error code: ${resultCreateQuery.code}. Message: ${resultCreateQuery.message}"
+            )
+            else -> throw GrmConnectorException(
+                "${resultCreateQuery.javaClass} cannot cast to TonApi.QueryInfo or TonApi.Error"
+            )
+        }
+
+        val resultSendQuery: TonApi.Object = runBlocking {
+            send(TonApi.QuerySend(queryInfo.id))
+        }
+
+        when (resultSendQuery) {
+            is TonApi.Ok -> return GrmQueryInfo(queryInfo)
+            is TonApi.Error -> throw GrmConnectorException(
+                "Error code: ${resultSendQuery.code}. Message: ${resultSendQuery.message}"
+            )
+            else -> throw GrmConnectorException(
+                "${resultSendQuery.javaClass} cannot cast to TonApi.Ok or TonApi.Error"
+            )
+        }
+    }
+
+    private fun importKey(privateKey: String, localPassword: String): TonApi.InputKeyRegular {
+        val result = runBlocking {
+            send(
+                TonApi.ImportUnencryptedKey(
+                    localPassword.toByteArray(),
+                    TonApi.ExportedUnencryptedKey(hexToByteArray(privateKey))
+                )
+            )
+        }
+
+        when (result) {
+            is TonApi.Key -> return TonApi.InputKeyRegular(result, localPassword.toByteArray())
+            is TonApi.Error -> throw GrmConnectorException(
+                    "Error code: ${result.code}. Message: ${result.message}"
+            )
+            else -> throw GrmConnectorException(
+                    "${result.javaClass} cannot cast to TonApi.Key or TonApi.Error"
+            )
+        }
+    }
+
+    fun getQueryEstimateFees(id: Long, ignoreCheckSig: Boolean): GrmQueryFees {
+        val result = runBlocking {
+            send(TonApi.QueryEstimateFees(id, ignoreCheckSig))
+        }
+
+        when (result) {
+            is TonApi.QueryFees -> return GrmQueryFees(result)
+            is TonApi.Error -> throw GrmConnectorException(
+                    "Error code: ${result.code}. Message: ${result.message}"
+            )
+            else -> throw GrmConnectorException(
+                    "${result.javaClass} cannot cast to TonApi.QueryFees or TonApi.Error"
+            )
+        }
+    }
+
     fun getFullAccountState(accountAddress: String): GrmFullAccountState {
         val result = runBlocking {
             send(
-                TonApi.GetAccountState(
-                    TonApi.AccountAddress(accountAddress)
-                )
+                    TonApi.GetAccountState(
+                            TonApi.AccountAddress(accountAddress)
+                    )
             )
         }
         when (result) {

@@ -2,8 +2,8 @@ package dsx.bps.crypto.xrp
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import dsx.bps.connection.rpc.JsonRpcHttpClient
-import dsx.bps.connection.rpc.RpcResponse
+import dsx.bps.connector.rpc.JsonRpcHttpClient
+import dsx.bps.connector.rpc.RpcResponse
 import dsx.bps.crypto.xrp.datamodel.*
 import dsx.bps.exception.connector.xrp.XrpRpcException
 import java.math.BigDecimal

@@ -1,7 +1,7 @@
 package dsx.bps.crypto.btc
 
 import com.google.gson.reflect.TypeToken
-import dsx.bps.connection.rpc.JsonRpcHttpClient
+import dsx.bps.connector.rpc.JsonRpcHttpClient
 import dsx.bps.crypto.btc.datamodel.BtcBlock
 import dsx.bps.crypto.btc.datamodel.BtcListSinceBlock
 import dsx.bps.crypto.btc.datamodel.BtcTx

@@ -1,8 +1,8 @@
 package dsx.bps.crypto.trx
 
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TrxService
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
+import dsx.bps.DBservices.crypto.TrxService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer

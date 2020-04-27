@@ -2,9 +2,9 @@ package dsx.bps.crypto.btc
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.BtcService
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
+import dsx.bps.DBservices.crypto.BtcService
 import dsx.bps.config.currencies.BtcConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
