@@ -72,6 +72,7 @@ GRM:
     pathToTonClientConfig: "/home/dmitrypogrebnoy/Рабочий стол/Blockchain-Payment-System/src/main/resources/TonClientConfig.json"
     # absolute path
     keyStorePath: "/home/dmitrypogrebnoy/TonKeyStore"
+    # logVerbosityLevel in 1..5
     logVerbosityLevel: 1
   explorer:
     frequency: 5000
