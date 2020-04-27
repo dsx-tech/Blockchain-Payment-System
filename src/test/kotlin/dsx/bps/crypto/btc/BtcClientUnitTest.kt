@@ -3,7 +3,7 @@ package dsx.bps.crypto.btc
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.core.datamodel.Tx
@@ -109,8 +109,8 @@ internal class BtcClientUnitTest {
         Assertions.assertEquals(result.index(), txService.getByTxId("hash", 1).index)
         Assertions.assertEquals(result.hash(), txService.getByTxId("hash", 1).hash)
         Assertions.assertEquals(
-            result.amount(),
-            txService.getByTxId("hash", 1).amount.stripTrailingZeros().add(BigDecimal.ZERO)
+                result.amount(),
+                txService.getByTxId("hash", 1).amount.stripTrailingZeros().add(BigDecimal.ZERO)
         )
         Assertions.assertEquals(result.currency(), btcCoin.currency)
         Assertions.assertEquals(result.destination(), btcTxDetail.address)

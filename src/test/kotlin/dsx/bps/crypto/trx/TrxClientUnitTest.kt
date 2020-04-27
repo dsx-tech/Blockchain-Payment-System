@@ -3,7 +3,7 @@ package dsx.bps.crypto.trx
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.TestUtils.Companion.getResourcePath
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import java.io.File
 import java.math.BigDecimal
-import java.net.URI
 
 internal class TrxClientUnitTest {
 

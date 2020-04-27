@@ -3,8 +3,8 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.InvoiceService
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.InvoiceService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
@@ -103,15 +103,17 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.txid()).thenReturn(TxId("hash2", 2))
 
             txService.add(
-                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
-                "hash2", 2, tx1.currency()
+                    tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                    "hash2", 2, tx1.currency()
             )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
-            Assertions.assertFalse(transaction { txService.getByTxId("hash2", 2).payable ==
-                    invService.getBySystemId(invoice.id).payable})
+            Assertions.assertFalse(transaction {
+                txService.getByTxId("hash2", 2).payable ==
+                        invService.getBySystemId(invoice.id).payable
+            })
             Assertions.assertEquals(invoice.status, InvoiceStatus.UNPAID)
             Assertions.assertEquals(invoice.received, BigDecimal.ZERO)
             Assertions.assertFalse(invoice.txids.contains(TxId("hash2", 2)))
@@ -126,18 +128,20 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.paymentReference()).thenReturn("1")
             Mockito.`when`(tx1.amount()).thenReturn(BigDecimal.TEN)
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
-            Mockito.`when`(tx1.txid()).thenReturn(TxId("hash3",3))
+            Mockito.`when`(tx1.txid()).thenReturn(TxId("hash3", 3))
 
             txService.add(
-                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
-                "hash3", 3, tx1.currency()
+                    tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                    "hash3", 3, tx1.currency()
             )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
-            Assertions.assertFalse(transaction { txService.getByTxId("hash3", 3).payable ==
-                    invService.getBySystemId(invoice.id).payable})
+            Assertions.assertFalse(transaction {
+                txService.getByTxId("hash3", 3).payable ==
+                        invService.getBySystemId(invoice.id).payable
+            })
             Assertions.assertEquals(invoice.status, InvoiceStatus.UNPAID)
             Assertions.assertEquals(invoice.received, BigDecimal.ZERO)
             Assertions.assertFalse(invoice.txids.contains(TxId("hash3", 3)))
@@ -153,18 +157,20 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.paymentReference()).thenReturn("1")
             Mockito.`when`(tx1.amount()).thenReturn(BigDecimal.TEN)
             Mockito.`when`(tx1.status()).thenReturn(TxStatus.CONFIRMED)
-            Mockito.`when`(tx1.txid()).thenReturn(TxId("hash4",4))
+            Mockito.`when`(tx1.txid()).thenReturn(TxId("hash4", 4))
 
             txService.add(
-                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
-                "hash4", 4, tx1.currency()
+                    tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                    "hash4", 4, tx1.currency()
             )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
-            Assertions.assertFalse(transaction { txService.getByTxId("hash4", 4).payable ==
-                    invService.getBySystemId(invoice.id).payable})
+            Assertions.assertFalse(transaction {
+                txService.getByTxId("hash4", 4).payable ==
+                        invService.getBySystemId(invoice.id).payable
+            })
             Assertions.assertEquals(invoice.status, InvoiceStatus.UNPAID)
             Assertions.assertEquals(invoice.received, BigDecimal.ZERO)
             Assertions.assertFalse(invoice.txids.contains(TxId("hash4", 4)))
@@ -180,18 +186,20 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx1.paymentReference()).thenReturn("1")
             Mockito.`when`(tx1.amount()).thenReturn(BigDecimal.TEN)
             Mockito.`when`(tx1.status()).thenReturn(txStatus)
-            Mockito.`when`(tx1.txid()).thenReturn(TxId("hash5",5))
+            Mockito.`when`(tx1.txid()).thenReturn(TxId("hash5", 5))
 
             txService.add(
-                tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
-                "hash5", 5, tx1.currency()
+                    tx1.status(), "testaddress", "1", BigDecimal.TEN, BigDecimal.ZERO,
+                    "hash5", 5, tx1.currency()
             )
             val invoice = invoiceProcessor.createInvoice(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
             invoiceProcessor.onNext(tx1)
             Assertions.assertEquals(InvoiceStatus.UNPAID, invService.getBySystemId(invoice.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
-            Assertions.assertFalse(transaction { txService.getByTxId("hash5", 5).payable ==
-                    invService.getBySystemId(invoice.id).payable})
+            Assertions.assertFalse(transaction {
+                txService.getByTxId("hash5", 5).payable ==
+                        invService.getBySystemId(invoice.id).payable
+            })
             Assertions.assertEquals(invoice.status, InvoiceStatus.UNPAID)
             Assertions.assertEquals(invoice.received, BigDecimal.ZERO)
             Assertions.assertFalse(invoice.txids.contains(TxId("hash5", 5)))
@@ -206,16 +214,18 @@ internal class InvoiceProcessorUnitTest {
             Mockito.`when`(tx.paymentReference()).thenReturn(null)
             Mockito.`when`(tx.amount()).thenReturn(BigDecimal.ONE)
             Mockito.`when`(tx.status()).thenReturn(TxStatus.CONFIRMED)
-            Mockito.`when`(tx.txid()).thenReturn(TxId("txhash1",1))
+            Mockito.`when`(tx.txid()).thenReturn(TxId("txhash1", 1))
 
             txService.add(tx.status(), "txhash1", null, BigDecimal.ONE, BigDecimal.ZERO,
-                "txhash1", 1, Currency.BTC)
+                    "txhash1", 1, Currency.BTC)
             val invoice = invoiceProcessor.getInvoice("inv1")
             invoiceProcessor.onNext(tx)
             Assertions.assertEquals(InvoiceStatus.PAID, invService.getBySystemId(invoice!!.id).status)
             Assertions.assertEquals(invoice.received, invService.getBySystemId(invoice.id).received.setScale(0))
-            Assertions.assertTrue(transaction { txService.getByTxId("txhash1", 1).payable ==
-                    invService.getBySystemId(invoice.id).payable})
+            Assertions.assertTrue(transaction {
+                txService.getByTxId("txhash1", 1).payable ==
+                        invService.getBySystemId(invoice.id).payable
+            })
             Assertions.assertEquals(invoice.status, InvoiceStatus.PAID)
             Assertions.assertEquals(invoice.received, BigDecimal.ONE)
             Assertions.assertTrue(invoice.txids.contains(TxId("txhash1", 1)))
