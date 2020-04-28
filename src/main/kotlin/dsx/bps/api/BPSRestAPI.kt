@@ -68,7 +68,7 @@ fun Application.module() {
     }
     install(CallLogging)
     routing {
-        get("/getBalance/{currency}") {
+        get("/balance/{currency}") {
             val currentCurrencyName: String? = call.parameters["currency"]
             if (currentCurrencyName == null) {
                 call.respond(
@@ -93,7 +93,7 @@ fun Application.module() {
             }
         }
 
-        get("/getInvoice/{id}") {
+        get("/invoice/{id}") {
             val invoiceId = call.parameters["id"]
             if (invoiceId == null) {
                 call.respond(
@@ -113,7 +113,7 @@ fun Application.module() {
             }
         }
 
-        get("/getPayment/{id}") {
+        get("/payment/{id}") {
             val paymentId = call.parameters["id"]
             if (paymentId == null) {
                 call.respond(
@@ -133,7 +133,7 @@ fun Application.module() {
             }
         }
 
-        post("/createInvoice") {
+        post("/invoice") {
             val data: Map<String, String> = call.receive()
             val currentCurrencyName: String? = data["currency"]
             val amount: BigDecimal? = data["amount"]?.toBigDecimalOrNull()
@@ -157,7 +157,7 @@ fun Application.module() {
             }
         }
 
-        post("/sendPayment") {
+        post("/payment") {
             val data: Map<String, String> = call.receive()
             val currentCurrencyName: String? = data["currency"]
             val amount: BigDecimal? = data["amount"]?.toBigDecimalOrNull()
