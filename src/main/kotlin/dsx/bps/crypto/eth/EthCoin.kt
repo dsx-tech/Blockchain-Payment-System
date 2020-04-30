@@ -11,6 +11,7 @@ import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.common.Coin
+import dsx.bps.crypto.eth.datamodel.EthAccount
 import org.web3j.crypto.WalletUtils
 import org.web3j.protocol.core.methods.response.EthBlock.Block
 import org.web3j.protocol.core.methods.response.Transaction
@@ -23,19 +24,21 @@ class EthCoin: Coin {
     override val config: Config
 
     val scanningCount : Int
-    private val accountAddress: String
+    internal val accountAddress: String
     private val password: String
     private val pathToWallet: String
     private val defaultPasswordForNewAddresses: String
     private val walletsDir: String
 
     override val connector: EthRpc
+    private val ethRouter: EthRouter
     override val explorer: EthExplorer
 
-    private val confirmations: Int
+    internal val confirmations: Int
 
-    private val ethService: EthService
-    private val txService: TxService
+    internal val ethService: EthService
+    internal val txService: TxService
+
 
     constructor(conf: Config, datasource: Datasource, txServ: TxService) {
         ethService = EthService(datasource)
@@ -56,9 +59,11 @@ class EthCoin: Coin {
         connector = EthRpc(url)
 
         confirmations = config[EthConfig.Coin.confirmations]
-
         val frequency = config[EthConfig.Explorer.frequency]
-        explorer = EthExplorer(this, frequency, datasource, txService)
+
+        val microCoin = EthMicroCoin(connector, accountAddress, confirmations, ethService, txService)
+        ethRouter = EthRouter(microCoin)
+        explorer = EthExplorer(this, frequency, datasource, txService, ethRouter)
     }
 
     constructor(ethRpc: EthRpc, ethExplorer: EthExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
@@ -83,6 +88,9 @@ class EthCoin: Coin {
         explorer = ethExplorer
 
         confirmations = config[EthConfig.Coin.confirmations]
+
+        val microCoin = EthMicroCoin(connector, accountAddress, confirmations, ethService, txService)
+        ethRouter = EthRouter(microCoin)
     }
 
     /**
@@ -101,7 +109,11 @@ class EthCoin: Coin {
     /**
      * @return new account address
      */
-    override fun getAddress() : String = connector.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
+    override fun getAddress() : String {
+        val newAccount = connector.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
+        ethRouter.addAccount(newAccount)
+        return newAccount.address
+    }
 
     /**
      * @param txid TxId object ( {hash : String, index : Int} )
@@ -158,26 +170,7 @@ class EthCoin: Coin {
      * @return Tx oject - generalized transaction template in the system
      */
     override fun sendPayment(amount: BigDecimal, address: String, tag: String?): Tx {
-        var nonce = ethService.getLatestNonce(this.accountAddress)
-        if (nonce == null)
-        {
-            nonce = connector.getTransactionCount(accountAddress)
-        }
-        else
-        {
-            nonce ++
-        }
-
-        val rawTransaction = connector.createRawTransaction(nonce, toAddress = address, value = amount)
-        val credentials = WalletUtils.loadCredentials(password, pathToWallet)
-        val signedTransaction = connector.signTransaction(rawTransaction, credentials)
-        val resultHash = connector.sendTransaction(signedTransaction)
-        val transaction = constructTx(connector.getTransactionByHash(resultHash))
-
-        val txs = txService.add(transaction.status(), transaction.destination(),"",
-            transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
-        ethService.add( accountAddress, nonce.toLong(), txs)
-        return constructTx(connector.getTransactionByHash(resultHash))
+        return send(EthAccount(accountAddress, pathToWallet, password), address, amount)
     }
 
     fun getLatestBlock(): Block {
@@ -196,6 +189,29 @@ class EthCoin: Coin {
     @Deprecated("only for tests")
     override fun clearDb() {
         this.ethService.delete()
+    }
+
+    fun send(account: EthAccount, to: String, amount : BigDecimal = connector.getBalance(account.address)) : Tx {
+        var nonce = ethService.getLatestNonce(account.address)
+        if (nonce == null)
+        {
+            nonce = connector.getTransactionCount(account.address)
+        }
+        else
+        {
+            nonce ++
+        }
+
+        val rawTransaction = connector.createRawTransaction(nonce, toAddress = to, value = amount)
+        val credentials = WalletUtils.loadCredentials(account.password, account.wallet)
+        val signedTransaction = connector.signTransaction(rawTransaction, credentials)
+        val resultHash = connector.sendTransaction(signedTransaction)
+        val transaction = constructTx(connector.getTransactionByHash(resultHash))
+
+        val txs = txService.add(transaction.status(), transaction.destination(),"",
+            transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+        ethService.add(account.address, nonce.toLong(), txs)
+        return constructTx(connector.getTransactionByHash(resultHash))
     }
 
 }
