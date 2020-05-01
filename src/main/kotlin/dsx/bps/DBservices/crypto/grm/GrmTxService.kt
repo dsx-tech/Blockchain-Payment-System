@@ -27,19 +27,16 @@ class GrmTxService(datasource: Datasource) {
     }
 
     fun getGrmNewestKnownTx(): GrmTxEntity? {
-        val maxIndexTxEntity = transaction {
+        val maxIndexTxEntity: TxEntity = transaction {
             TxEntity.find {
                 TxTable.currency eq Currency.GRM
             }.maxBy { tx -> tx.index }
-        }
-        return if (maxIndexTxEntity == null)
-            null
-        else {
-            transaction {
-                GrmTxEntity.find {
-                    GrmTxTable.txId eq maxIndexTxEntity.id
-                }.singleOrNull()
-            }
+        } ?: return null
+
+        return transaction {
+            GrmTxEntity.find {
+                GrmTxTable.txId eq maxIndexTxEntity.id
+            }.singleOrNull()
         }
     }
 

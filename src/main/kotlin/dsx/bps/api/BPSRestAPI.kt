@@ -142,7 +142,7 @@ fun Application.module() {
                     HttpStatusCode.BadRequest,
                     "Currency is incorrect."
                 )
-            } else if (amount == null || amount < BigDecimal.ZERO) {
+            } else if (amount == null) {
                 call.respond(
                     HttpStatusCode.BadRequest,
                     "Amount is incorrect."
@@ -168,7 +168,7 @@ fun Application.module() {
                     HttpStatusCode.BadRequest,
                     "Currency is incorrect."
                 )
-            } else if (amount == null || amount < BigDecimal.ZERO) {
+            } else if (amount == null) {
                 call.respond(
                     HttpStatusCode.BadRequest,
                     "Amount is incorrect."
