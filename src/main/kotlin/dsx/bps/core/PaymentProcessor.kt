@@ -2,7 +2,8 @@ package dsx.bps.core
 
 import com.uchuhimo.konf.Config
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.PaymentService
+import dsx.bps.DBservices.core.PaymentService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
 import dsx.bps.core.datamodel.Currency
@@ -11,10 +12,14 @@ import java.math.BigDecimal
 import java.util.*
 import kotlin.concurrent.timer
 
-class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, config: Config, datasource: Datasource) {
+class PaymentProcessor(
+    private val manager: BlockchainPaymentSystemManager,
+    config: Config, datasource: Datasource, txServ: TxService
+) {
 
     var frequency: Long = config[PaymentProcessorConfig.frequency]
 
+    private val txService = txServ
     private val payService = PaymentService(datasource)
     private val pending = payService.getStatusedPayments(PaymentStatus.PENDING)
     private val processing = payService.getStatusedPayments(PaymentStatus.PROCESSING)
@@ -61,15 +66,18 @@ class PaymentProcessor(private val manager: BlockchainPaymentSystemManager, conf
                     if (match(pay, tx)) {
                         when (tx.status()) {
                             TxStatus.VALIDATING -> {
+                                txService.updateStatus(tx.status(), tx.hash(), tx.index())
                                 payService.updateStatus(PaymentStatus.PROCESSING, pay.id)
                                 pay.status = PaymentStatus.PROCESSING
                             }
                             TxStatus.CONFIRMED -> {
+                                txService.updateStatus(tx.status(), tx.hash(), tx.index())
                                 payService.updateStatus(PaymentStatus.SUCCEED, pay.id)
                                 pay.status = PaymentStatus.SUCCEED
                                 processing.remove(pay.id)
                             }
-                            TxStatus.REJECTED -> {
+                            TxStatus.REJECTED, TxStatus.INCORRECT -> {
+                                txService.updateStatus(tx.status(), tx.hash(), tx.index())
                                 payService.updateStatus(PaymentStatus.FAILED, pay.id)
                                 pay.status = PaymentStatus.FAILED
                                 // add this payment to resend list if needed

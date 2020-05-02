@@ -3,16 +3,17 @@ package dsx.bps.crypto.grm
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
+import dsx.bps.DBservices.crypto.grm.GrmInMsgService
+import dsx.bps.DBservices.crypto.grm.GrmOutMsgService
+import dsx.bps.DBservices.crypto.grm.GrmQueryInfoService
+import dsx.bps.DBservices.crypto.grm.GrmTxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.GrmConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
-import dsx.bps.crypto.grm.datamodel.GrmInternalTxId
-import dsx.bps.crypto.grm.datamodel.GrmRawMessage
-import dsx.bps.crypto.grm.datamodel.GrmRawTransaction
-import dsx.bps.crypto.grm.datamodel.GrmRawTransactions
+import dsx.bps.crypto.grm.datamodel.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -22,9 +23,13 @@ import java.math.BigDecimal
 
 internal class GrmCoinUnitTest {
 
-    private val grmConnection = Mockito.mock(GrmConnector::class.java)
+    private val grmConnector = Mockito.mock(GrmConnector::class.java)
     private val grmExplorer = Mockito.mock(GrmExplorer::class.java)
     private val datasource = Datasource()
+    private val grmInMsgService: GrmInMsgService
+    private val grmOutMsgService: GrmOutMsgService
+    private val grmQueryInfoService: GrmQueryInfoService
+    private val grmTxService: GrmTxService
     private val grmCoin: GrmCoin
     private val txService: TxService
 
@@ -39,11 +44,14 @@ internal class GrmCoinUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
+        grmInMsgService = GrmInMsgService(datasource)
+        grmOutMsgService = GrmOutMsgService(datasource)
+        grmQueryInfoService = GrmQueryInfoService(datasource)
+        grmTxService = GrmTxService(datasource)
         txService = TxService(datasource)
         grmCoin = GrmCoin(
-            grmConnection, grmExplorer,
-            configPath,
-            datasource, txService
+                grmConnector, grmExplorer, configPath, grmInMsgService,
+                grmOutMsgService, grmQueryInfoService, grmTxService, txService
         )
     }
 
@@ -52,7 +60,7 @@ internal class GrmCoinUnitTest {
     @DisplayName("getBalance test")
     fun getBalanceTest() {
         grmCoin.getBalance()
-        Mockito.verify(grmConnection, Mockito.only()).getBalance(grmCoin.config[GrmConfig.Coin.accountAddress])
+        Mockito.verify(grmConnector, Mockito.only()).getBalance(grmCoin.config[GrmConfig.Coin.accountAddress])
     }
 
     @Test
@@ -70,20 +78,53 @@ internal class GrmCoinUnitTest {
     @Test
     @DisplayName("getTx test")
     fun getTxTest() {
-        //TODO: Not implement
+        val txId = TxId("test", 1)
+        Mockito.`when`(
+            grmConnector.getTransaction(
+                grmCoin.config[GrmConfig.Coin.accountAddress], txId
+            )
+        ).thenReturn(Mockito.mock(GrmRawTransaction::class.java))
+
+        grmCoin.getTx(txId)
+        Mockito.verify(grmConnector, Mockito.only())
+            .getTransaction(grmCoin.config[GrmConfig.Coin.accountAddress], txId)
     }
 
     @Test
     @DisplayName("sendPayment test")
     fun sendPaymentTest() {
-        //TODO: Not implement
+        val queryInfo = GrmQueryInfo(1, 200, "hash")
+        Mockito.`when`(
+                grmConnector.sendPaymentQuery(
+                        grmCoin.accountAddress, grmCoin.config[GrmConfig.Coin.privateKey],
+                        grmCoin.config[GrmConfig.Coin.localPassword], BigDecimal.TEN,
+                        "address", "tag", grmCoin.config[GrmConfig.Coin.paymentQueryTimeLimit]
+                )
+        ).thenReturn(queryInfo)
+        val grmQueryFees = GrmQueryFees(
+                GrmFees(0, 0, 0, 0),
+                arrayOf(GrmFees(0, 0, 0, 0)))
+        Mockito.`when`(
+                grmConnector.getQueryEstimateFees(
+                        1, true)
+        ).thenReturn(grmQueryFees)
+
+        val resultTx = grmCoin.sendPayment(BigDecimal.TEN, "address", "tag")
+        Assertions.assertEquals(resultTx.currency(), grmCoin.currency)
+        Assertions.assertEquals(resultTx.hash(), queryInfo.bodyHash)
+        Assertions.assertEquals(resultTx.txid(), TxId(queryInfo.bodyHash, -1))
+        Assertions.assertEquals(resultTx.amount(), BigDecimal.TEN)
+        Assertions.assertEquals(resultTx.destination(), "address")
+        Assertions.assertEquals(resultTx.paymentReference(), "tag")
+        Assertions.assertEquals(resultTx.fee(), BigDecimal.ZERO)
+        Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
     }
 
     @Test
     @DisplayName("getFullAccountState test")
     fun getFullAccountStateTest() {
         grmCoin.getFullAccountState()
-        Mockito.verify(grmConnection, Mockito.only())
+        Mockito.verify(grmConnector, Mockito.only())
             .getFullAccountState(grmCoin.config[GrmConfig.Coin.accountAddress])
     }
 
@@ -91,7 +132,7 @@ internal class GrmCoinUnitTest {
     @DisplayName("getLastInternalTxId test")
     fun getLastInternalTxIdTest() {
         grmCoin.getLastInternalTxId()
-        Mockito.verify(grmConnection, Mockito.only())
+        Mockito.verify(grmConnector, Mockito.only())
             .getLastInternalTxId(grmCoin.config[GrmConfig.Coin.accountAddress])
     }
 
@@ -101,14 +142,14 @@ internal class GrmCoinUnitTest {
         val grmInternalTxId = GrmInternalTxId(0L, "0000000000000000000000000000000000000000000000000000000000000000")
 
         Mockito.`when`(
-            grmConnection.getOlderAccountTxs(
+            grmConnector.getOlderAccountTxs(
                 grmCoin.config[GrmConfig.Coin.accountAddress], grmInternalTxId
             )
         ).thenReturn(GrmRawTransactions(arrayOf<GrmRawTransaction>(), grmInternalTxId))
 
-        grmCoin.getAccountTxs(grmInternalTxId, grmInternalTxId)
+        grmCoin.getAccountTxs(grmCoin.config[GrmConfig.Coin.accountAddress], grmInternalTxId, grmInternalTxId)
 
-        Mockito.verify(grmConnection, Mockito.only())
+        Mockito.verify(grmConnector, Mockito.only())
             .getOlderAccountTxs(grmCoin.config[GrmConfig.Coin.accountAddress], grmInternalTxId)
     }
 

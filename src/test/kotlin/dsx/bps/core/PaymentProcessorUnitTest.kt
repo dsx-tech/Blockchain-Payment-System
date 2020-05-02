@@ -3,8 +3,8 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.PaymentService
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.PaymentService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.PaymentProcessorConfig
@@ -48,9 +48,9 @@ internal class PaymentProcessorUnitTest {
 
         datasource.initConnection(databaseConfig)
         DatabaseCreation(datasource).createPayments()
-        paymentProcessor = PaymentProcessor(manager, testConfig, datasource)
         payService = PaymentService(datasource)
         txService = TxService(datasource)
+        paymentProcessor = PaymentProcessor(manager, testConfig, datasource, txService)
     }
 
     @ParameterizedTest
@@ -61,6 +61,7 @@ internal class PaymentProcessorUnitTest {
         val receivePayment = paymentProcessor.getPayment(payment.id)
         Assertions.assertEquals(payment, payService.makePaymentFromDB(payService.getBySystemId(payment.id)))
         Assertions.assertEquals(payment, receivePayment)
+        payService.deleteAll()
     }
 
     @Test
@@ -94,6 +95,7 @@ internal class PaymentProcessorUnitTest {
         Assertions.assertTrue(transaction { txService.getByTxId("txhash1", 1).payable ==
                 payService.getBySystemId(payment.id).payable})
         Assertions.assertNotNull(paymentProcessor.getPayment("pay1"))
+        payService.deleteAll()
     }
 
     @Nested

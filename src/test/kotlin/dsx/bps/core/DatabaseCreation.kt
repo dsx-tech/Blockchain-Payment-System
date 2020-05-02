@@ -1,8 +1,8 @@
 package dsx.bps.core
 
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.InvoiceService
-import dsx.bps.DBservices.PaymentService
+import dsx.bps.DBservices.core.InvoiceService
+import dsx.bps.DBservices.core.PaymentService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus

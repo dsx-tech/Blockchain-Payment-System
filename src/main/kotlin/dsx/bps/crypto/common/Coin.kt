@@ -1,7 +1,7 @@
 package dsx.bps.crypto.common
 
 import com.uchuhimo.konf.Config
-import dsx.bps.connection.Connector
+import dsx.bps.connector.Connector
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId

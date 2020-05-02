@@ -19,7 +19,6 @@ public final class Client implements Runnable {
     static {
         System.loadLibrary("native-lib");
     }
-
     private static final int MAX_EVENTS = 1000;
     private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
@@ -69,7 +68,6 @@ public final class Client implements Runnable {
     public void send(TonApi.Function query, ResultHandler resultHandler) {
         send(query, resultHandler, null);
     }
-
     private final Lock readLock = readWriteLock.readLock();
 
     /**
@@ -93,7 +91,6 @@ public final class Client implements Runnable {
     public void setUpdatesHandler(ResultHandler updatesHandler) {
         setUpdatesHandler(updatesHandler, null);
     }
-
     private final Lock writeLock = readWriteLock.writeLock();
 
     /**
@@ -105,7 +102,6 @@ public final class Client implements Runnable {
             receiveQueries(300.0 /*seconds*/);
         }
     }
-
     private final long nativeClientId;
 
     /**
@@ -133,19 +129,9 @@ public final class Client implements Runnable {
         }
     }
 
-    private final ConcurrentHashMap<Long, Handler> handlers = new ConcurrentHashMap<Long, Handler>();
-    private final AtomicLong currentQueryId = new AtomicLong();
-    private final long[] eventIds = new long[MAX_EVENTS];
-    private final TonApi.Object[] events = new TonApi.Object[MAX_EVENTS];
     private volatile boolean stopFlag = false;
     private volatile boolean isClientDestroyed = false;
     private volatile ExceptionHandler defaultExceptionHandler = null;
-
-    private Client(ResultHandler updatesHandler, ExceptionHandler updateExceptionHandler, ExceptionHandler defaultExceptionHandler) {
-        nativeClientId = createNativeClient();
-        handlers.put(0L, new Handler(updatesHandler, updateExceptionHandler));
-        this.defaultExceptionHandler = defaultExceptionHandler;
-    }
 
     /**
      * Synchronously executes a tonlib request. Only a few marked accordingly requests can be executed synchronously.
@@ -177,11 +163,23 @@ public final class Client implements Runnable {
 
     private static native long createNativeClient();
 
+    private final ConcurrentHashMap<Long, Handler> handlers = new ConcurrentHashMap<Long, Handler>();
+    private final AtomicLong currentQueryId = new AtomicLong();
+
     private static native void nativeClientSend(long nativeClientId, long eventId, TonApi.Function function);
 
     private static native int nativeClientReceive(long nativeClientId, long[] eventIds, TonApi.Object[] events, double timeout);
 
+    private final long[] eventIds = new long[MAX_EVENTS];
+    private final TonApi.Object[] events = new TonApi.Object[MAX_EVENTS];
+
     private static native TonApi.Object nativeClientExecute(TonApi.Function function);
+
+    private Client(ResultHandler updatesHandler, ExceptionHandler updateExceptionHandler, ExceptionHandler defaultExceptionHandler) {
+        nativeClientId = createNativeClient();
+        handlers.put(0L, new Handler(updatesHandler, updateExceptionHandler));
+        this.defaultExceptionHandler = defaultExceptionHandler;
+    }
 
     @Override
     protected void finalize() throws Throwable {
@@ -242,8 +240,6 @@ public final class Client implements Runnable {
         }
     }
 
-    private static native void destroyNativeClient(long nativeClientId);
-
     /**
      * Replaces default exception handler to be invoked on exceptions thrown from updatesHandler and all other ResultHandler.
      *
@@ -288,4 +284,6 @@ public final class Client implements Runnable {
             this.exceptionHandler = exceptionHandler;
         }
     }
+
+    private static native void destroyNativeClient(long nativeClientId);
 }

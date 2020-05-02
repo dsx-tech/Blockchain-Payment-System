@@ -3,7 +3,7 @@ package dsx.bps.core
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.BPSConfig
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.InvoiceProcessorConfig
@@ -64,7 +64,7 @@ class BlockchainPaymentSystemManager {
         paymentProcessorConfig.validateRequired()
 
         invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource, txService)
-        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource)
+        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource, txService)
     }
 
     constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor, paymentProcessor: PaymentProcessor) {
