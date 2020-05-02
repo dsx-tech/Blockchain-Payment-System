@@ -35,12 +35,12 @@ internal class BtcRpcTest {
         val port = container.firstMappedPort
         url = "http://alice:password@$address:$port/"
         rpc = BtcRpc(url)
+        Thread.sleep(4000)
     }
 
     @Order(1)
     @Test
     fun getBalance() {
-        Thread.sleep(2000)
         assertDoesNotThrow {
             val r = rpc.getBalance()
             assertEquals(5050.0.toBigDecimal(), r)
