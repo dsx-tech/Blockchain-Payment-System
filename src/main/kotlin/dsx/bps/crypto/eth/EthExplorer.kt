@@ -1,8 +1,8 @@
 package dsx.bps.crypto.eth
 
 import dsx.bps.DBservices.Datasource
-import dsx.bps.DBservices.EthService
-import dsx.bps.DBservices.TxService
+import dsx.bps.DBservices.core.TxService
+import dsx.bps.DBservices.crypto.EthService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import org.web3j.protocol.core.methods.response.Transaction

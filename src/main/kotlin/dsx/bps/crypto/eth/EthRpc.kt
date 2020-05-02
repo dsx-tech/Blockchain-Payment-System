@@ -1,6 +1,6 @@
 package dsx.bps.crypto.eth
 
-import dsx.bps.connection.Connector
+import dsx.bps.connector.Connector
 import dsx.bps.crypto.eth.datamodel.EthAccount
 import dsx.bps.crypto.eth.datamodel.Proxy
 import dsx.bps.crypto.eth.datamodel.SmartContract

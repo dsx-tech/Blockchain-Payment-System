@@ -1,8 +1,9 @@
-package dsx.bps.DBservices
+package dsx.bps.DBservices.crypto
 
-import dsx.bps.DBclasses.EthTxEntity
-import dsx.bps.DBclasses.EthTxTable
-import dsx.bps.DBclasses.TxEntity
+import dsx.bps.DBclasses.core.tx.TxEntity
+import dsx.bps.DBclasses.crypto.eth.EthTxEntity
+import dsx.bps.DBclasses.crypto.eth.EthTxTable
+import dsx.bps.DBservices.Datasource
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
