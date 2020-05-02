@@ -1,6 +1,7 @@
 package dsx.bps.crypto.eth
 
 import dsx.bps.connection.Connector
+import dsx.bps.crypto.eth.datamodel.EthAccount
 import dsx.bps.crypto.eth.datamodel.Proxy
 import dsx.bps.crypto.eth.datamodel.SmartContract
 import org.web3j.crypto.Credentials
@@ -91,13 +92,13 @@ class EthRpc(url: String): Connector() {
         return ethGetTransactionCount.transactionCount
     }
 
-    fun generateWalletFile(password: String, pathToWallet: String): String {
+    fun generateWalletFile(password: String, pathToWallet: String): EthAccount {
         val fileName = WalletUtils.generateNewWalletFile(
             password,
             File(pathToWallet)
         )
         val credentials = WalletUtils.loadCredentials(password, "$pathToWallet/$fileName")
-        return credentials.address
+        return EthAccount(credentials.address, "$pathToWallet/$fileName", password)
     }
 
     fun generateSmartWallet(pathToWallet: String, password: String): SmartContract{

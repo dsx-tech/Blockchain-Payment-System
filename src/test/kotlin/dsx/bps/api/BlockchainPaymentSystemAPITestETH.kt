@@ -48,7 +48,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
 
         val address = container.containerIpAddress
-        val url = "http://$address:8541"
+        val url = "http://$address:8542"
 
         generator = EthRpc(url)
     }
@@ -124,34 +124,36 @@ internal class BlockchainPaymentSystemAPITestETH {
 
     @Order(3)
     @Test
-    fun getNewBalance() {
-        assertDoesNotThrow {
-            val realBalance = "50"
-            assertNotEquals(realBalance, aliceAPI.getBalance(Currency.ETH))
-        }
-    }
-
-   // @Disabled
-    @Order(4)
-    @Test
     fun createInvoice() {
-        val invId = bobAPI.createInvoice(Currency.ETH, 0.03)
-        val inv = bobAPI.getInvoice(invId)
+        val aliceBalance = aliceAPI.getBalance(Currency.ETH)
+        val invId = aliceAPI.createInvoice(Currency.ETH, 0.03)
+        val inv = aliceAPI.getInvoice(invId)
 
         assertNotNull(inv)
-        aliceAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
-        var count = 0
+        bobAPI.sendPayment(inv!!.currency, inv.amount, inv.address)
+
+        var count1 = 0
         while (inv.status != InvoiceStatus.PAID) {
             waitForSomeBlocksMining()
-            count += 1
-            assertNotEquals(10, count, "Invoice wasn't paid or found in >= 10 blocks")
+            count1 += 1
+            Thread.sleep(2000)
+            assertNotEquals(6, count1, "Invoice wasn't paid or found in >= 6 blocks")
         }
+
+       var count2 = 0
+       while (aliceAPI.getBalance(Currency.ETH) == aliceBalance)
+       {
+           waitForSomeBlocksMining()
+           count2 += 1
+           Thread.sleep(2000)
+           assertNotEquals(6, count2, "Money was not transferred to a hot wallet in >= 6 blocks")
+       }
     }
 
-    //@Disabled
-    @Order(5)
+    @Order(4)
     @Test
     fun createInvoiceWithTwoPayments() {
+        val bobBalance = bobAPI.getBalance(Currency.ETH)
         val invId = bobAPI.createInvoice(Currency.ETH, 0.06)
         val inv = bobAPI.getInvoice(invId)
 
@@ -162,16 +164,28 @@ internal class BlockchainPaymentSystemAPITestETH {
         waitForSomeBlocksMining()
 
         aliceAPI.sendPayment(inv.currency, half, inv.address)
-        var count = 0
+        var count1 = 0
         while (inv.status != InvoiceStatus.PAID) {
             waitForSomeBlocksMining()
-            count += 1
-            Thread.sleep(1000)
-            assertNotEquals(10, count, "Invoice wasn't paid or found in >= 10 blocks")
+            count1 += 1
+            Thread.sleep(3000)
+            assertNotEquals(10, count1, "Invoice wasn't paid or found in >= 6 blocks")
         }
+
+        var count2 = 0
+        println("bob start balance $bobBalance")
+        while ((bobAPI.getBalance(Currency.ETH).toDouble() - bobBalance.toDouble()) <= 0.05)
+        {
+            println("bob balance ${bobAPI.getBalance(Currency.ETH)}")
+            waitForSomeBlocksMining()
+            count2 += 1
+            Thread.sleep(2000)
+            assertNotEquals(6, count2, "Money was not transferred to a hot wallet in >= 6 blocks")
+        }
+
     }
 
-    fun waitForSomeBlocksMining() {
+    private fun waitForSomeBlocksMining() {
         val latestHash = generator.getLatestBlock()
         var count = 0
         while (generator.getLatestBlock() == latestHash && count < 160) {
@@ -184,12 +198,25 @@ internal class BlockchainPaymentSystemAPITestETH {
     }
 
     private fun removeNewWallets() {
-        val dir = "./src/test/resources/ETH/bobWallet"
-        val fl = File(dir)
-        val files = fl.listFiles { file -> file.isFile }
+        val bobDir = "./src/test/resources/ETH/bobWallet"
+        val aliceDir = "./src/test/resources/ETH/aliceWallet"
 
-        for (file in files!!) {
-            if (file.name != "UTC--2020-03-04T08-33-39.016502000Z--0ce59225bcd447feaed698ed754d309feba5fc63") {
+        val fl_bob = File(bobDir)
+        val files_bob = fl_bob.listFiles { file -> file.isFile }
+
+        for (file in files_bob!!) {
+            if (file.name != "UTC--2020-03-04T08-33-39.016502000Z--0ce59225bcd447feaed698ed754d309feba5fc63")
+            {
+                Files.delete(file.toPath())
+            }
+        }
+
+        val fl_alice = File(aliceDir)
+        val files_alice = fl_alice.listFiles { file -> file.isFile }
+
+        for (file in files_alice!!) {
+            if (file.name != "UTC--2020-03-04T08-33-21.065924100Z--073cfa4b6635b1a1b96f6363a9e499a8076b6107")
+            {
                 Files.delete(file.toPath())
             }
         }

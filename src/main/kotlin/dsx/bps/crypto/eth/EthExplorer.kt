@@ -10,12 +10,12 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.concurrent.timer
 
-class EthExplorer(override val coin: EthCoin, frequency: Long, datasource: Datasource, txServ: TxService): Explorer(frequency) {
+class EthExplorer(override val coin: EthCoin, frequency: Long, datasource: Datasource,
+                  private val txService: TxService, private val ethRouter: EthRouter
+): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
     private val ethService = EthService(datasource)
-    private val txService = txServ
-
 
     private lateinit var Timer : Timer
 
@@ -41,6 +41,7 @@ class EthExplorer(override val coin: EthCoin, frequency: Long, datasource: Datas
                     new.transactions
                         .forEach {
                             val transaction = coin.constructTx(it.get() as Transaction)
+                            ethRouter.checkAddress(transaction.destination())
                             val txs = txService.add(transaction.status(), transaction.destination(), "",
                                 transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
                             ethService.add( (it.get() as Transaction).from, (it.get() as Transaction).nonce.toLong(), txs)

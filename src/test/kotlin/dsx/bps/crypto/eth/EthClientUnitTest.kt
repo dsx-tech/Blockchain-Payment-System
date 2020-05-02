@@ -9,6 +9,7 @@ import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
+import dsx.bps.crypto.eth.datamodel.EthAccount
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -72,7 +73,7 @@ internal class EthClientUnitTest {
                 testConfig[EthConfig.Coin.defaultPasswordForNewAddresses],
                 testConfig[EthConfig.Coin.walletsDir]
             )
-        ).thenReturn("newAddress")
+        ).thenReturn(EthAccount("newAddress", "pathToWallet", "myCoolPassword"))
 
         val address = ethClient.getAddress()
         Assertions.assertEquals("newAddress", address)
