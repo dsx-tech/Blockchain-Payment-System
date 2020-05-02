@@ -5,61 +5,79 @@ import dsx.bps.core.datamodel.InvoiceStatus
 import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.crypto.eth.EthRpc
 import dsx.bps.crypto.eth.KFixedHostPortGenericContainer
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.TestInstance
+import org.testcontainers.containers.wait.strategy.Wait
 import org.testcontainers.junit.jupiter.Container
 import org.testcontainers.junit.jupiter.Testcontainers
+import java.io.File
 import java.math.BigDecimal
+import java.nio.file.Files
 
-@Testcontainers
+
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
+@Testcontainers
 internal class BlockchainPaymentSystemAPITestETH {
 
-    private val aliceConfigPath = javaClass.classLoader.getResource("AliceConfigETH.yaml")?.path
-    private val bobConfigPath = javaClass.classLoader.getResource("BobConfigETH.yaml")?.path
+    private val aliceConfigPath = "./src/test/resources/AliceConfigETH.yaml"
+    private val bobConfigPath = "./src/test/resources/BobConfigETH.yaml"
 
     private lateinit var aliceAPI: BlockchainPaymentSystemAPI
     private lateinit var bobAPI: BlockchainPaymentSystemAPI
 
-    private val aliceEthAddress = "0xacfd9f1452e191fa39ff882e5fea428b999fb2af"
-    private val bobEthAddress = "0x940c955f4072201fd9732bb5000c2d66dec449b6"
+    private val aliceEthAddress = "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    private val bobEthAddress = "0x0ce59225bcd447feaed698ed754d309feba5fc63"
 
     private lateinit var generator: EthRpc
 
     companion object {
         @Container
         @JvmStatic
-        val container = KFixedHostPortGenericContainer("siandreev/ethereum-rpc-test:mining")
-            .withFixedExposedPort(8545, 8545)
+        val container = KFixedHostPortGenericContainer("siandreev/ethereum-rpc-test:PoA-mining")
+            .withFixedExposedPort(8541, 8541)
+            .withFixedExposedPort(8542, 8542)
+            .waitingFor(
+                Wait.forLogMessage(".*The node is ready!.*", 1)
+            )
     }
 
-    @BeforeEach
+    @BeforeAll
     fun setUp() {
-        aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath!!)
-        bobAPI = BlockchainPaymentSystemAPI(bobConfigPath!!)
+        aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath)
+        bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
 
         val address = container.containerIpAddress
-        val url = "http://$address:8545"
+        val url = "http://$address:8541"
+
         generator = EthRpc(url)
     }
 
-    @Disabled
+    @AfterAll
+    fun tearDown(){
+        aliceAPI.kill(Currency.ETH)
+        bobAPI.kill(Currency.ETH)
+        removeNewWallets()
+    }
+
+    @Order(1)
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            assertNotEquals(aliceAPI.getBalance(Currency.ETH), "0")
-            //TODO: create another etherbase account
+            val realBalance = "50"
+            assertEquals(realBalance, aliceAPI.getBalance(Currency.ETH))
         }
     }
 
-    @Disabled
+    @Order(2)
     @Test
-    fun sendPayment() {
+    fun sendPayments() {
+        // send first payment
         assertDoesNotThrow {
+            aliceAPI.clearDb(Currency.ETH)
+
             val id1 = aliceAPI.sendPayment(Currency.ETH, 1.0, bobEthAddress)
+            println(generator.getTransactionByHash(aliceAPI.getPayment(id1)!!.txid.hash))
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
@@ -76,12 +94,45 @@ internal class BlockchainPaymentSystemAPITestETH {
                 pay2!!.status != PaymentStatus.SUCCEED) {
                 count += 1
                 waitForSomeBlocksMining()
-                assertNotEquals(5, count, "Payment wasn't confirmed or found in >= 5 blocks")
+                assertNotEquals(10, count, "Payment wasn't confirmed or found in >= 5 blocks")
+            }
+        }
+
+        // send second payment
+        assertDoesNotThrow {
+            val id1 = aliceAPI.sendPayment(Currency.ETH, 1.1, bobEthAddress)
+            Thread.sleep(1000)
+            waitForSomeBlocksMining()
+            Thread.sleep(1000)
+            val id2 = bobAPI.sendPayment(Currency.ETH, 0.22, aliceEthAddress)
+            waitForSomeBlocksMining()
+
+            val pay1 = aliceAPI.getPayment(id1)
+            val pay2 = bobAPI.getPayment(id2)
+            assertNotNull(pay1)
+            assertNotNull(pay2)
+
+            var count = 0
+            while (pay1!!.status != PaymentStatus.SUCCEED ||
+                pay2!!.status != PaymentStatus.SUCCEED) {
+                count += 1
+                waitForSomeBlocksMining()
+                assertNotEquals(10, count, "Payment wasn't confirmed or found in >= 5 blocks")
             }
         }
     }
 
-    @Disabled
+    @Order(3)
+    @Test
+    fun getNewBalance() {
+        assertDoesNotThrow {
+            val realBalance = "50"
+            assertNotEquals(realBalance, aliceAPI.getBalance(Currency.ETH))
+        }
+    }
+
+   // @Disabled
+    @Order(4)
     @Test
     fun createInvoice() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.03)
@@ -97,11 +148,13 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
-    @Disabled
+    //@Disabled
+    @Order(5)
     @Test
     fun createInvoiceWithTwoPayments() {
         val invId = bobAPI.createInvoice(Currency.ETH, 0.06)
         val inv = bobAPI.getInvoice(invId)
+
         assertNotNull(inv)
 
         val half = inv!!.amount / BigDecimal(2)
@@ -130,4 +183,15 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
+    private fun removeNewWallets() {
+        val dir = "./src/test/resources/ETH/bobWallet"
+        val fl = File(dir)
+        val files = fl.listFiles { file -> file.isFile }
+
+        for (file in files!!) {
+            if (file.name != "UTC--2020-03-04T08-33-39.016502000Z--0ce59225bcd447feaed698ed754d309feba5fc63") {
+                Files.delete(file.toPath())
+            }
+        }
+    }
 }

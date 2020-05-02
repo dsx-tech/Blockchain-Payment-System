@@ -27,4 +27,10 @@ abstract class Coin {
     abstract fun getTx(txid: TxId): Tx
 
     abstract fun sendPayment(amount: BigDecimal, address: String, tag: String? = null): Tx
+
+    @Deprecated("only for tests")
+    open fun kill(){ }
+
+    @Deprecated("only for tests")
+    open fun clearDb(){ }
 }

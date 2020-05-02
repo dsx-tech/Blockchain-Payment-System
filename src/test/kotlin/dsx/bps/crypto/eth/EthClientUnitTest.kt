@@ -2,6 +2,10 @@ package dsx.bps.crypto.eth
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
+import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.TxService
+import dsx.bps.TestUtils
+import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
@@ -23,11 +27,14 @@ internal class EthClientUnitTest {
     private val ethBlockchainListener = Mockito.mock(EthExplorer::class.java)
     private val ethClient: EthCoin
     private val testConfig: Config
+    private val datasource = Datasource()
+    private val txService: TxService
 
     init {
 
         val initConfig = Config()
-        val configFile = File(javaClass.getResource("/TestBpsConfig.yaml").path)
+        val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
+        val configFile = File(configPath)
         testConfig = with(initConfig) {
             addSpec(EthConfig)
             from.yaml.file(configFile)
@@ -35,9 +42,18 @@ internal class EthClientUnitTest {
         testConfig.validateRequired()
         Mockito.`when`(ethRpc.getTransactionCount(testConfig[EthConfig.Coin.accountAddress]))
             .thenReturn(0.toBigInteger())
+        val databaseConfig = with(Config()) {
+            addSpec(DatabaseConfig)
+            from.yaml.file(configFile)
+        }
+        databaseConfig.validateRequired()
+
+        datasource.initConnection(databaseConfig)
+        txService = TxService(datasource)
+        
         ethClient = EthCoin(
             ethRpc, ethBlockchainListener,
-            javaClass.getResource("/TestBpsConfig.yaml").path
+            configPath, datasource, txService
         )
     }
 
@@ -137,7 +153,7 @@ internal class EthClientUnitTest {
     @Test
     @DisplayName("check nonce work")
     fun sendSecondPayment() {
-        sendPaymentTest()
+
         val password = testConfig[EthConfig.Coin.password]
         val pathToWallet = testConfig[EthConfig.Coin.pathToWallet]
 
@@ -146,6 +162,7 @@ internal class EthClientUnitTest {
 
         Mockito.`when`(ethRpc.createRawTransaction(1.toBigInteger(), toAddress = "to", value = 1.toBigDecimal()))
             .thenReturn(rawTx)
+
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
         Mockito.`when`(ethRpc.signTransaction(rawTx, credentials)).thenReturn("signedHex")
         Mockito.`when`(ethRpc.sendTransaction("signedHex")).thenReturn("hash2")
@@ -182,7 +199,7 @@ internal class EthClientUnitTest {
         Assertions.assertEquals(resultTx.hash(), "hash1")
         Assertions.assertEquals((resultTx.amount()).toString(), "1")
         Assertions.assertEquals(resultTx.destination(), "to")
-        Assertions.assertEquals(resultTx.fee(), 235000.toBigDecimal())
+        Assertions.assertEquals(resultTx.fee(), Convert.fromWei(BigDecimal.valueOf(235000), Convert.Unit.ETHER))
         Assertions.assertEquals(resultTx.status(), TxStatus.CONFIRMED)
     }
 
@@ -204,7 +221,7 @@ internal class EthClientUnitTest {
         Assertions.assertEquals(resultTx.hash(), "hash2")
         Assertions.assertEquals((resultTx.amount()).toString(), "1")
         Assertions.assertEquals(resultTx.destination(), "to")
-        Assertions.assertEquals(resultTx.fee(), 450000.toBigDecimal())
+        Assertions.assertEquals(resultTx.fee(), Convert.fromWei(BigDecimal.valueOf(450000), Convert.Unit.ETHER))
         Assertions.assertEquals(resultTx.status(), TxStatus.VALIDATING)
     }
 

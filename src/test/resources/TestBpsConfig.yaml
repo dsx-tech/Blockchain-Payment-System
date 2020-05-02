@@ -20,6 +20,7 @@ enabledCurrencies:
     - BTC
     - XRP
     - TRX
+    - ETH
     - GRM
 
 # Example values
@@ -55,6 +56,21 @@ XRP:
   connection:
     host: "127.0.0.1"
     port: "51234"
+  explorer:
+    frequency: 5000
+
+ETH:
+  coin:
+    accountAddress: "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    pathToWallet: "./src/test/resources/ETH/aliceWallet/UTC--2020-03-04T08-33-21.065924100Z--073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    password: "password1"
+    confirmations: 2
+    defaultPasswordForNewAddresses: "newPassword"
+    walletsDir: "./src/test/resources/ETH/aliceWallet/"
+    scanningCount: 30
+  connection:
+    host: "127.0.0.1"
+    port: "8545"
   explorer:
     frequency: 5000
 

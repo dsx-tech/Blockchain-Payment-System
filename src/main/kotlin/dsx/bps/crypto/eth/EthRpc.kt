@@ -1,6 +1,8 @@
 package dsx.bps.crypto.eth
 
-import dsx.bps.crypto.common.Connector
+import dsx.bps.connection.Connector
+import dsx.bps.crypto.eth.datamodel.Proxy
+import dsx.bps.crypto.eth.datamodel.SmartContract
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
@@ -14,32 +16,33 @@ import org.web3j.protocol.core.methods.response.Transaction
 import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.protocol.http.HttpService
 import org.web3j.tx.Transfer
+import org.web3j.tx.gas.DefaultGasProvider
 import org.web3j.utils.Convert
 import org.web3j.utils.Numeric
 import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
 
-class EthRpc(url: String): Connector {
+
+class EthRpc(url: String): Connector() {
 
     private val web3j = Web3j.build(HttpService(url))
     private val basicGasLimit = 90000
 
     fun getBalance(address: String): BigDecimal {
         val ethGetBalance: EthGetBalance = web3j.ethGetBalance(address, DefaultBlockParameter.valueOf("latest"))
-            .sendAsync()
-            .get()
+            .send()
         return Convert.fromWei(ethGetBalance.balance.toString(), Convert.Unit.ETHER)
 
     }
 
     fun getTransactionByHash(hash: String): Transaction {
-        val transactionInfo = web3j.ethGetTransactionByHash(hash).sendAsync().get()
+        val transactionInfo = web3j.ethGetTransactionByHash(hash).send()
         return transactionInfo.transaction.get()
     }
 
     fun getBlockByHash(hash: String): EthBlock.Block {
-        val blockInfo = web3j.ethGetBlockByHash(hash, true).sendAsync().get()
+        val blockInfo = web3j.ethGetBlockByHash(hash, true).send()
         return blockInfo.block
     }
 
@@ -47,7 +50,7 @@ class EthRpc(url: String): Connector {
         val ethBlock = web3j.ethGetBlockByNumber(
             DefaultBlockParameterName.LATEST,
             true
-        ).sendAsync().get()
+        ).send()
         return ethBlock.block
     }
 
@@ -55,42 +58,36 @@ class EthRpc(url: String): Connector {
         val ethBlock = web3j.ethGetBlockByNumber(
             DefaultBlockParameterName.PENDING,
             true
-        ).sendAsync().get()
+        ).send()
         return ethBlock.block.transactions.size
     }
 
-    fun getPendingTransactionsCount(address: String): Int {
-        val ethBlock = web3j.ethGetBlockByNumber(
-            DefaultBlockParameterName.PENDING,
-            true
-        ).sendAsync().get()
-        val tx =
-            ethBlock.block.transactions.map { it.get() as EthBlock.TransactionObject }
-        return tx.filter { it.from == address }.size
+    fun getPendingTransactionsCount(address: String): BigInteger {
+
+        return web3j.ethGetTransactionCount(address, DefaultBlockParameterName.PENDING).send().transactionCount
     }
 
     fun getAllTransactionsCount(address: String): BigInteger {
         val ethGetTransactionCount = web3j.ethGetTransactionCount(
             address, DefaultBlockParameterName.LATEST
-        ).sendAsync().get()
+        ).send()
         return ethGetTransactionCount.transactionCount + getPendingTransactionsCount(address)
-            .toBigInteger()
     }
 
     fun getTransactionReceiptByHash(hash: String): TransactionReceipt {
-        val receiptInfo = web3j.ethGetTransactionReceipt(hash).sendAsync().get()
+        val receiptInfo = web3j.ethGetTransactionReceipt(hash).send()
         return receiptInfo.transactionReceipt.get()
     }
 
     fun getGasPrice(): BigInteger {
-        val result = web3j.ethGasPrice().sendAsync().get()
+        val result = web3j.ethGasPrice().send()
         return result.gasPrice
     }
 
     fun getTransactionCount(address: String): BigInteger {
         val ethGetTransactionCount = web3j.ethGetTransactionCount(
             address, DefaultBlockParameterName.LATEST
-        ).sendAsync().get()
+        ).send()
         return ethGetTransactionCount.transactionCount
     }
 
@@ -99,8 +96,16 @@ class EthRpc(url: String): Connector {
             password,
             File(pathToWallet)
         )
-        val credentials = WalletUtils.loadCredentials(password, pathToWallet + "/" + fileName)
+        val credentials = WalletUtils.loadCredentials(password, "$pathToWallet/$fileName")
         return credentials.address
+    }
+
+    fun generateSmartWallet(pathToWallet: String, password: String): SmartContract{
+        val credentials = WalletUtils.loadCredentials(password, pathToWallet)
+        val contract = Proxy.deploy(web3j, credentials, DefaultGasProvider()).send()
+        val fee = Convert.fromWei(this.getGasPrice()
+            .multiply(contract.transactionReceipt.get().gasUsed).toString(), Convert.Unit.ETHER)
+        return SmartContract(contract.contractAddress, fee)
     }
 
     fun createRawTransaction(
@@ -120,7 +125,7 @@ class EthRpc(url: String): Connector {
     }
 
     fun sendTransaction(hexValue: String): String {
-        val ethSendTransaction = web3j.ethSendRawTransaction(hexValue).sendAsync().get()
+        val ethSendTransaction = web3j.ethSendRawTransaction(hexValue).send()
         return ethSendTransaction.transactionHash
     }
 
@@ -131,5 +136,9 @@ class EthRpc(url: String): Connector {
             value, Convert.Unit.ETHER
         ).send()
         return transactionReceipt.transactionHash
+    }
+
+    fun getBLockByNumber(number : BigInteger) : EthBlock.Block{
+        return web3j.ethGetBlockByNumber(DefaultBlockParameter.valueOf(number), true).send().block
     }
 }

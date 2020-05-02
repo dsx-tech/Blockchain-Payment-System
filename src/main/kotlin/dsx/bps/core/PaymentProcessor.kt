@@ -95,4 +95,5 @@ class PaymentProcessor(
         pay.amount.compareTo(tx.amount()) == 0 &&
         pay.address == tx.destination() &&
                 pay.tag == tx.paymentReference()
+
 }

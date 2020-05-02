@@ -8,6 +8,11 @@ invoiceProcessor:
 paymentProcessor:
   frequency: 3000
 
+database:
+  connectionURL: "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;"
+  driver: "org.h2.Driver"
+  maximumPoolSize: 5
+
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX, ETH
 enabledCurrencies:
@@ -16,15 +21,15 @@ enabledCurrencies:
 
 ETH:
   coin:
-    accountAddress: "0x940c955f4072201fd9732bb5000c2d66dec449b6"
-    pathToWallet: "./src/test/resources/ETH/bobWallet/UTC--2019-11-26T13-19-50.774016100Z--940c955f4072201fd9732bb5000c2d66dec449b6"
-    password: "test"
+    accountAddress: "0x0ce59225bcd447feaed698ed754d309feba5fc63"
+    pathToWallet: "./src/test/resources/ETH/bobWallet/UTC--2020-03-04T08-33-39.016502000Z--0ce59225bcd447feaed698ed754d309feba5fc63"
+    password: "password2"
     confirmations: 2
     defaultPasswordForNewAddresses: "newPassword"
     walletsDir: "./src/test/resources/ETH/bobWallet/"
     scanningCount: 30
   connection:
     host: "127.0.0.1"
-    port: "8545"
+    port: "8542"
   explorer:
     frequency: 5000

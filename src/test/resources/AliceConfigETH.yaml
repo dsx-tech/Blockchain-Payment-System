@@ -8,6 +8,11 @@ invoiceProcessor:
 paymentProcessor:
   frequency: 3000
 
+database:
+  connectionURL: "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;"
+  driver: "org.h2.Driver"
+  maximumPoolSize: 5
+
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX, ETH
 enabledCurrencies:
@@ -16,15 +21,15 @@ enabledCurrencies:
 
 ETH:
   coin:
-    accountAddress: "0xacfd9f1452e191fa39ff882e5fea428b999fb2af"
-    pathToWallet: "./src/test/resources/ETH/aliceWallet/UTC--2019-11-26T13-14-22.792555600Z--acfd9f1452e191fa39ff882e5fea428b999fb2af"
-    password: "root"
+    accountAddress: "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    pathToWallet: "./src/test/resources/ETH/aliceWallet/UTC--2020-03-04T08-33-21.065924100Z--073cfa4b6635b1a1b96f6363a9e499a8076b6107"
+    password: "password1"
     confirmations: 2
     defaultPasswordForNewAddresses: "newPassword"
     walletsDir: "./src/test/resources/ETH/aliceWallet/"
     scanningCount: 30
   connection:
     host: "127.0.0.1"
-    port: "8545"
+    port: "8541"
   explorer:
     frequency: 5000
