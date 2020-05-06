@@ -29,6 +29,7 @@ class BlockchainPaymentSystemManager {
     private val datasource = Datasource()
     private val invoiceProcessor: InvoiceProcessor
     private val paymentProcessor: PaymentProcessor
+    private val depositAccountProcessor: DepositAccountProcessor
 
     constructor(confPath: String = DEFAULT_CONFIG_PATH) {
         val configFile = File(confPath)
@@ -65,9 +66,15 @@ class BlockchainPaymentSystemManager {
 
         invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource, txService)
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource, txService)
+        depositAccountProcessor = DepositAccountProcessor(this, datasource, txService)
     }
 
-    constructor(coinsManager: CoinsManager, invoiceProcessor: InvoiceProcessor, paymentProcessor: PaymentProcessor) {
+    constructor(
+        coinsManager: CoinsManager,
+        invoiceProcessor: InvoiceProcessor,
+        paymentProcessor: PaymentProcessor,
+        depositAccountProcessor: DepositAccountProcessor
+    ) {
         this.coinsManager = coinsManager
 
         val threadPool: ExecutorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
@@ -75,6 +82,7 @@ class BlockchainPaymentSystemManager {
 
         this.invoiceProcessor = invoiceProcessor
         this.paymentProcessor = paymentProcessor
+        this.depositAccountProcessor = depositAccountProcessor
     }
 
     fun getBalance(currency: Currency): BigDecimal {
@@ -105,6 +113,24 @@ class BlockchainPaymentSystemManager {
 
     fun getTxs(currency: Currency, txids: List<TxId>): List<Tx> {
         return coinsManager.getTxs(currency, txids)
+    }
+
+    fun createNewAccount(id: String, currencies: List<Currency>) {
+        depositAccountProcessor.createNewAccount(id, currencies)
+    }
+
+    fun createNewAddress(id: String, currency: Currency): String {
+        val address = coinsManager.getAddress(currency)
+        depositAccountProcessor.createNewAddress(id, currency, address)
+        return address
+    }
+
+    fun getAllTx(id: String, currency: Currency): List<Tx> {
+        return depositAccountProcessor.getAllTx(id, currency)
+    }
+
+    fun getLastTx(id: String, currency: Currency, amount: Int): List<Tx> {
+        return depositAccountProcessor.getLastTx(id, currency, amount)
     }
 
     fun subscribe(observer: Observer<Tx>) {
