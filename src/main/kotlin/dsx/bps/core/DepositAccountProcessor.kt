@@ -7,6 +7,7 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.DepositAccount
 import dsx.bps.core.datamodel.TxStatus
+import dsx.bps.exception.core.depositAccount.DepositAccountException
 import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import kotlin.concurrent.timer
@@ -20,7 +21,7 @@ class DepositAccountProcessor(
     private val txService = txServ
     private val depositAccounts = depositAccountService.getDepositAccounts()
     private val depositIds = depositAccountService.getDepositIds()
-    val frequency: Long = 0 // TODO frequency from config
+    val frequency: Long = 5000 // TODO frequency from config
 
     init {
         manager.subscribe(this)
@@ -36,8 +37,10 @@ class DepositAccountProcessor(
     private fun recalculate(depositAccount: DepositAccount) {
         synchronized(depositAccount) {
             depositAccount.enabledCurrency.forEach {
-                manager.getTxs(it, depositAccount.txids[it]!!).forEach { tx ->
-                    //TODO depositAccount.txids[it]!! ex
+                manager.getTxs(
+                    it,
+                    depositAccount.txids[it] ?: throw DepositAccountException("no transactions for currency $it")
+                ).forEach { tx ->
                     if (tx.status() == TxStatus.REJECTED) {
                         txService.updateStatus(TxStatus.REJECTED, tx.hash(), tx.index())
                     } else if (tx.status() == TxStatus.CONFIRMED) {
@@ -68,16 +71,24 @@ class DepositAccountProcessor(
     }
 
     fun createNewAddress(id: String, currency: Currency, address: String): String {
-        depositAccountService.addNewAddress(address, currency, id)
-        depositAccounts[id]!!.addNewAddress(address, currency) //TODO ex if no id
-        return address
+        if (depositIds.contains(id)) {
+            depositAccountService.addNewAddress(address, currency, id)
+            depositAccounts[id]!!.addNewAddress(address, currency)
+            return address
+        }
+        else
+            throw DepositAccountException("no such id $id")
     }
 
     fun getAllTx(id: String, currency: Currency): List<Tx> {
+        if (!depositIds.contains(id))
+            throw DepositAccountException("no such id $id")
         return depositAccountService.getAllTx(id, currency).map { txService.constructTxByTxEntity(it) }
     }
 
     fun getLastTx(id: String, currency: Currency, amount: Int): List<Tx> {
+        if (!depositIds.contains(id))
+            throw DepositAccountException("no such id $id")
         return depositAccountService.getLastTx(id, currency, amount).map { txService.constructTxByTxEntity(it) }
     }
 

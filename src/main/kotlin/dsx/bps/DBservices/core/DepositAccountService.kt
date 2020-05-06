@@ -86,9 +86,11 @@ class DepositAccountService(datasource: Datasource) {
 
     fun makeDepositAccountFromDB(depositAccount: DepositAccountEntity): DepositAccount {
         return transaction {
-            val depAcc = DepositAccount(depositAccount.depositAccountId, depositAccount.enabledCurrency.toList().map { it.currency })
-            depositAccount.address.forEach { depAcc.addresses[it.currency]!!.add(it.address) } // TODO ex if no cur
-            depositAccount.payable.txs.forEach { depAcc.txids[it.currency]!!.add(TxId(it.hash, it.index)) } //TODO ex if no cur
+            val depAcc = DepositAccount(
+                depositAccount.depositAccountId,
+                depositAccount.enabledCurrency.toList().map { it.currency })
+            depositAccount.address.forEach { depAcc.addresses[it.currency]!!.add(it.address) }
+            depositAccount.payable.txs.forEach { depAcc.txids[it.currency]!!.add(TxId(it.hash, it.index)) }
 
             return@transaction depAcc
         }

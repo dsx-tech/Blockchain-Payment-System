@@ -1,5 +1,6 @@
 package dsx.bps.core.datamodel
 
+import dsx.bps.exception.core.depositAccount.DepositAccountException
 import java.util.Collections
 
 class DepositAccount(val depositId: String, currencies: List<Currency>) {
@@ -14,15 +15,21 @@ class DepositAccount(val depositId: String, currencies: List<Currency>) {
         }
     }
 
-    fun getAddresses(currency: Currency): MutableList<String> { //TODO ex if not in enabled
+    fun getAddresses(currency: Currency): MutableList<String> {
+        if (!enabledCurrency.contains(currency))
+            throw DepositAccountException("this currency is not enabled $currency")
         return addresses[currency]!!
     }
 
     fun addNewAddress(address: String, currency: Currency) {
-        addresses[currency]!!.add(address) // TODO ex if no cur
+        if (!enabledCurrency.contains(currency))
+            throw DepositAccountException("this currency is not enabled $currency")
+        addresses[currency]!!.add(address)
     }
 
     fun addTx(tx: Tx) {
-        txids[tx.currency()]!!.add(tx.txid()) // TODO ex if no cur
+        if (!enabledCurrency.contains(tx.currency()))
+            throw DepositAccountException("this currency is not enabled ${tx.currency()}")
+        txids[tx.currency()]!!.add(tx.txid())
     }
 }
