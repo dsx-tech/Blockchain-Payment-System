@@ -12,7 +12,7 @@ object InvoiceTable: IntIdTable() {
     val invoiceId: Column<String> = varchar("invoiceId", 100)
     val currency = enumeration("currency", Currency::class)
     val amount: Column<BigDecimal> = decimal("amount", 30, 15)
-    val address: Column<String> = varchar("address", 100)
-    val tag: Column<String?> = varchar("tag", 100).nullable()
+    val address: Column<String> = varchar("address", TableConstants.addressMaxLength)
+    val tag: Column<String?> = varchar("tag", TableConstants.tagMaxLength).nullable()
     val payableId = reference("payableId", PayableTable)
 }

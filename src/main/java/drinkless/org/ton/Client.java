@@ -128,9 +128,6 @@ public final class Client implements Runnable {
             writeLock.unlock();
         }
     }
-
-    private volatile boolean stopFlag = false;
-    private volatile boolean isClientDestroyed = false;
     private volatile ExceptionHandler defaultExceptionHandler = null;
 
     /**
@@ -160,6 +157,9 @@ public final class Client implements Runnable {
         new Thread(client, "tonlib thread").start();
         return client;
     }
+
+    private volatile boolean stopFlag = false;
+    private volatile boolean isClientDestroyed = false;
 
     private static native long createNativeClient();
 

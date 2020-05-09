@@ -1,3 +1,7 @@
+RESTAPI:
+  host: 0.0.0.0
+  port: 8080
+
 BPS:
   threadsForInvoiceObserver: 2
 
@@ -13,12 +17,9 @@ database:
   maximumPoolSize: 5
 
 # Enabled currencies
-# Supported сurrencies: BTC, XRP, TRX
+# Supported сurrencies: BTC, XRP, TRX, GRM
 enabledCurrencies:
   coins:
-    - BTC
-    - XRP
-    - TRX
     - GRM
 
 # Example values
@@ -67,8 +68,11 @@ GRM:
     # lengthTagInBytes should be no more than 50
     lengthTagInBytes: 20
   connection:
-    pathToTonClientConfig: "src/main/resources/TonClientConfig.json"
-    keyStorePath: "src/main/resources/TonKeyStore/"
-    logVerbosityLevel: 4
+    # absolute path
+    pathToTonClientConfig: "/home/dmitrypogrebnoy/Рабочий стол/Blockchain-Payment-System/src/main/resources/TonClientConfig.json"
+    # absolute path
+    keyStorePath: "/home/dmitrypogrebnoy/TonKeyStore"
+    # logVerbosityLevel in 1..5
+    logVerbosityLevel: 1
   explorer:
     frequency: 5000

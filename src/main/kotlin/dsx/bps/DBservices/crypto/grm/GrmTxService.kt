@@ -9,7 +9,6 @@ import dsx.bps.DBclasses.crypto.grm.GrmTxTable
 import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.Currency
 import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -28,19 +27,16 @@ class GrmTxService(datasource: Datasource) {
     }
 
     fun getGrmNewestKnownTx(): GrmTxEntity? {
-        val maxIndexTxEntity = transaction {
+        val maxIndexTxEntity: TxEntity = transaction {
             TxEntity.find {
                 TxTable.currency eq Currency.GRM
             }.maxBy { tx -> tx.index }
-        }
-        return if (maxIndexTxEntity == null)
-            null
-        else {
-            transaction {
-                GrmTxEntity.find {
-                    GrmTxTable.txId eq maxIndexTxEntity.id
-                }.singleOrNull()
-            }
+        } ?: return null
+
+        return transaction {
+            GrmTxEntity.find {
+                GrmTxTable.txId eq maxIndexTxEntity.id
+            }.singleOrNull()
         }
     }
 
@@ -55,11 +51,20 @@ class GrmTxService(datasource: Datasource) {
     }
 
     fun findByInMsgHash(inMsgHash: String): GrmTxEntity? {
-        return transaction {
-            GrmTxEntity.find {
-                ((GrmTxTable.inMsg eq GrmInMsgTable.id) and
-                        (GrmInMsgTable.bodyHash eq inMsgHash))
+        val inMsgEntity = transaction {
+            GrmInMsgEntity.find {
+                GrmInMsgTable.bodyHash eq inMsgHash
             }.singleOrNull()
+        }
+
+        return if (inMsgEntity == null) {
+            null
+        } else {
+            transaction {
+                GrmTxEntity.find {
+                    (GrmTxTable.inMsg eq inMsgEntity.id)
+                }.singleOrNull()
+            }
         }
     }
 
