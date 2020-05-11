@@ -44,6 +44,7 @@ internal class BlockchainPaymentSystemAPITestERC20 {
 
     @BeforeAll
     fun setUp() {
+        Thread.sleep(4000)
         aliceAPI = BlockchainPaymentSystemAPI(aliceConfigPath)
         bobAPI = BlockchainPaymentSystemAPI(bobConfigPath)
 

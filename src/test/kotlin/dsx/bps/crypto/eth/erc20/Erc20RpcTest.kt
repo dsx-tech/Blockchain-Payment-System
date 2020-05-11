@@ -17,7 +17,7 @@ internal class Erc20RpcTest {
     private lateinit var aliceRpc: Erc20Rpc
     private lateinit var bobRpc: Erc20Rpc
 
-    private val contractAddress = "0x70009254e451916fb5543d161768f489289384fb"
+    private val contractAddress = "0x56bc568b19d37b5742f60ac3f4c56a3b3d266aee"
     private val aliceAddress = "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
     private val bobAddress = "0x0ce59225bcd447feaed698ed754d309feba5fc63"
     private val aliceWalletPath =
