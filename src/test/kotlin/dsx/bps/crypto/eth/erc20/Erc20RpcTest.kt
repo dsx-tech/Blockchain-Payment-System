@@ -42,6 +42,7 @@ internal class Erc20RpcTest {
 
     @BeforeAll
     fun setUp() {
+        Thread.sleep(4000)
         val address = container.containerIpAddress
 
         val alicePort = container.getMappedPort(8541)
