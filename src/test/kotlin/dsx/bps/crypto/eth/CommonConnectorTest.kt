@@ -13,10 +13,10 @@ import java.nio.file.Files
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
-internal class EthRpcTest {
+internal class CommonConnectorTest {
 
-    private lateinit var aliceRpc: EthRpc
-    private lateinit var bobRpc: EthRpc
+    private lateinit var aliceRpc: CommonConnector
+    private lateinit var bobRpc: CommonConnector
 
     private val aliceAddress = "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107"
     private val bobAddress = "0x0ce59225bcd447feaed698ed754d309feba5fc63"
@@ -46,11 +46,11 @@ internal class EthRpcTest {
 
         val alicePort = container.getMappedPort(8541)
         val aliceUrl = "http://$address:$alicePort"
-        aliceRpc = EthRpc(aliceUrl)
+        aliceRpc = CommonConnector(aliceUrl)
 
         val bobPort = container.getMappedPort(8542)
         val bobUrl = "http://$address:$bobPort"
-        bobRpc = EthRpc(bobUrl)
+        bobRpc = CommonConnector(bobUrl)
     }
 
     @Order(1)

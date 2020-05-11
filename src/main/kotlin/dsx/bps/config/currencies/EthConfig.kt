@@ -13,6 +13,10 @@ object EthConfig: ConfigSpec("ETH") {
         val scanningCount by required<Int>()
     }
 
+    object Erc20: ConfigSpec("erc20") {
+        val tokens by required<Map<String, String>>()
+    }
+
     object Connection: ConfigSpec("connection") {
         val host by required<String>()
         val port by required<String>()

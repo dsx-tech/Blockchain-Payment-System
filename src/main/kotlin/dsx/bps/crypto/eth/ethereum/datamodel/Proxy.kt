@@ -1,4 +1,4 @@
-package dsx.bps.crypto.eth.datamodel
+package dsx.bps.crypto.eth.ethereum.datamodel
 
 import org.web3j.crypto.Credentials
 import org.web3j.protocol.Web3j

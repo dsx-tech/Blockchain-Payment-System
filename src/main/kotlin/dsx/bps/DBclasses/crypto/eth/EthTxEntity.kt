@@ -8,6 +8,7 @@ import org.jetbrains.exposed.dao.IntEntityClass
 class EthTxEntity (id: EntityID<Int>): IntEntity(id) {
     companion object: IntEntityClass<EthTxEntity>(EthTxTable)
     var address by EthTxTable.address
+    var contractAddress by EthTxTable.contractAddress
     var nonce by EthTxTable.nonce
     var tx by TxEntity referencedOn EthTxTable.txId
 }

@@ -1,9 +1,9 @@
 package dsx.bps.crypto.eth
 
 import dsx.bps.connector.Connector
-import dsx.bps.crypto.eth.datamodel.EthAccount
-import dsx.bps.crypto.eth.datamodel.Proxy
-import dsx.bps.crypto.eth.datamodel.SmartContract
+import dsx.bps.crypto.eth.ethereum.datamodel.EthAccount
+import dsx.bps.crypto.eth.ethereum.datamodel.Proxy
+import dsx.bps.crypto.eth.ethereum.datamodel.SmartContract
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
@@ -24,11 +24,9 @@ import java.io.File
 import java.math.BigDecimal
 import java.math.BigInteger
 
-
-class EthRpc(url: String): Connector() {
-
-    private val web3j = Web3j.build(HttpService(url))
-    private val basicGasLimit = 90000
+class CommonConnector(url: String) : Connector() {
+    val web3j = Web3j.build(HttpService(url))
+    val basicGasLimit = BigInteger("90000")
 
     fun getBalance(address: String): BigDecimal {
         val ethGetBalance: EthGetBalance = web3j.ethGetBalance(address, DefaultBlockParameter.valueOf("latest"))
@@ -101,7 +99,7 @@ class EthRpc(url: String): Connector() {
         return EthAccount(credentials.address, "$pathToWallet/$fileName", password)
     }
 
-    fun generateSmartWallet(pathToWallet: String, password: String): SmartContract{
+    fun generateSmartWallet(pathToWallet: String, password: String): SmartContract {
         val credentials = WalletUtils.loadCredentials(password, pathToWallet)
         val contract = Proxy.deploy(web3j, credentials, DefaultGasProvider()).send()
         val fee = Convert.fromWei(this.getGasPrice()
@@ -111,7 +109,7 @@ class EthRpc(url: String): Connector() {
 
     fun createRawTransaction(
         nonce: BigInteger, gasPrice: BigInteger = getGasPrice(),
-        gasLimit: BigInteger = basicGasLimit.toBigInteger(), toAddress: String,
+        gasLimit: BigInteger = basicGasLimit, toAddress: String,
         value: BigDecimal
     ): RawTransaction {
         val weiValue = Convert.toWei(value, Convert.Unit.ETHER).toBigInteger()

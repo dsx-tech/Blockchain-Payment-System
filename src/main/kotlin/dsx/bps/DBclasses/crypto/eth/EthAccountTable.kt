@@ -1,12 +1,11 @@
 package dsx.bps.DBclasses.crypto.eth
 
-import dsx.bps.DBclasses.core.tx.TxTable
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
 
-object EthTxTable: IntIdTable() {
+object EthAccountTable: IntIdTable() {
     val address: Column<String> = varchar("address", 100)
+    val password: Column<String> = varchar("password", 100)
+    val wallet: Column<String> = varchar("wallet", 100)
     var contractAddress: Column<String> = varchar("contractAddress", 100)
-    val nonce: Column<Long> = long("nonce")
-    val txId = reference("TxId", TxTable)
 }

@@ -18,6 +18,8 @@ database:
 enabledCurrencies:
   coins:
     - ETH
+    - USDT
+    #- BNB
 
 ETH:
   coin:
@@ -28,6 +30,10 @@ ETH:
     defaultPasswordForNewAddresses: "newPassword"
     walletsDir: "./src/test/resources/ETH/aliceWallet/"
     scanningCount: 30
+  erc20:
+    tokens:
+       USDT: "0x56bc568b19d37b5742f60ac3f4c56a3b3d266aee"
+       BNB: "0x56bc568b19d37b5742f60ac3f4c56a3b3d266aee"
   connection:
     host: "127.0.0.1"
     port: "8541"

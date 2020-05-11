@@ -18,7 +18,7 @@ import java.nio.file.Files
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation::class)
 @Testcontainers
-internal class BlockchainPaymentSystemAPITestETH {
+internal class BlockchainPaymentSystemAPITestERC20 {
 
     private val aliceConfigPath = "./src/test/resources/AliceConfigETH.yaml"
     private val bobConfigPath = "./src/test/resources/BobConfigETH.yaml"
@@ -55,17 +55,19 @@ internal class BlockchainPaymentSystemAPITestETH {
 
     @AfterAll
     fun tearDown(){
-     //   aliceAPI.kill(Currency.ETH)
-     //   bobAPI.kill(Currency.ETH)
-        removeNewWallets()
+        //aliceAPI.kill(Currency.ETH)
+        //bobAPI.kill(Currency.ETH)
+      //  removeNewWallets()
     }
 
     @Order(1)
     @Test
     fun getBalance() {
         assertDoesNotThrow {
-            val realBalance = "50"
-            assertEquals(realBalance, aliceAPI.getBalance(Currency.ETH))
+            val realBalance = BigDecimal.valueOf(1000)
+            val expected = BigDecimal(aliceAPI.getBalance(Currency.USDT))
+            val result = realBalance.compareTo(expected)
+            assertEquals(result, 0)
         }
     }
 
@@ -74,14 +76,13 @@ internal class BlockchainPaymentSystemAPITestETH {
     fun sendPayments() {
         // send first payment
         assertDoesNotThrow {
-            aliceAPI.clearDb(Currency.ETH)
+            aliceAPI.clearDb(Currency.USDT)
 
-            val id1 = aliceAPI.sendPayment(Currency.ETH, 1.0, bobEthAddress)
-            println(generator.getTransactionByHash(aliceAPI.getPayment(id1)!!.txid.hash))
+            val id1 = aliceAPI.sendPayment(Currency.USDT, 10.0, bobEthAddress)
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.ETH, 0.2, aliceEthAddress)
+            val id2 = bobAPI.sendPayment(Currency.USDT, 7.0, aliceEthAddress)
             waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -100,11 +101,11 @@ internal class BlockchainPaymentSystemAPITestETH {
 
         // send second payment
         assertDoesNotThrow {
-            val id1 = aliceAPI.sendPayment(Currency.ETH, 1.1, bobEthAddress)
+            val id1 = aliceAPI.sendPayment(Currency.USDT, 30, bobEthAddress)
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.ETH, 0.22, aliceEthAddress)
+            val id2 = bobAPI.sendPayment(Currency.USDT, 12, aliceEthAddress)
             waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -122,11 +123,12 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
+    @Disabled
     @Order(3)
     @Test
     fun createInvoice() {
-        val aliceBalance = aliceAPI.getBalance(Currency.ETH)
-        val invId = aliceAPI.createInvoice(Currency.ETH, 3.03)
+        val aliceBalance = aliceAPI.getBalance(Currency.USDT)
+        val invId = aliceAPI.createInvoice(Currency.USDT, 34.5)
         val inv = aliceAPI.getInvoice(invId)
 
         assertNotNull(inv)
@@ -140,6 +142,8 @@ internal class BlockchainPaymentSystemAPITestETH {
             assertNotEquals(6, count1, "Invoice wasn't paid or found in >= 6 blocks")
         }
 
+        /*
+
        var count2 = 0
        while (aliceAPI.getBalance(Currency.ETH) == aliceBalance)
        {
@@ -147,10 +151,10 @@ internal class BlockchainPaymentSystemAPITestETH {
            count2 += 1
            Thread.sleep(2000)
            assertNotEquals(6, count2, "Money was not transferred to a hot wallet in >= 6 blocks")
-       }
-        println("ALICE bal. is ${aliceAPI.getBalance(Currency.ETH)}")
+       } */
     }
 
+    @Disabled
     @Order(4)
     @Test
     fun createInvoiceWithTwoPayments() {

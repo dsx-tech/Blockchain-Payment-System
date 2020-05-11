@@ -1,4 +1,4 @@
-package dsx.bps.crypto.eth.datamodel
+package dsx.bps.crypto.eth.ethereum.datamodel
 
 import java.math.BigDecimal
 

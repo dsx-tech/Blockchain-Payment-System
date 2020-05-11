@@ -10,7 +10,8 @@ import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.btc.BtcCoin
 import dsx.bps.crypto.common.Coin
-import dsx.bps.crypto.eth.EthCoin
+import dsx.bps.crypto.eth.erc20.Erc20Coin
+import dsx.bps.crypto.eth.ethereum.EthCoin
 import dsx.bps.crypto.grm.GrmCoin
 import dsx.bps.crypto.trx.TrxCoin
 import dsx.bps.crypto.xrp.XrpCoin
@@ -43,6 +44,7 @@ class CoinsManager {
                 Currency.XRP -> XrpCoin(coinConfig, datasource, txServ)
                 Currency.ETH -> EthCoin(coinConfig, datasource, txServ)
                 Currency.GRM -> GrmCoin(coinConfig, datasource, txServ)
+                Currency.USDT, Currency.BNB -> Erc20Coin(enabledCurrency, coinConfig, datasource, txServ)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()
