@@ -68,7 +68,10 @@ class EthExplorer(override val coin: EthCoin, frequency: Long, datasource: Datas
                             ethService.addEthTransaction( (it.get() as Transaction).from, nonce, txs, "")
                             emitter.onNext(transaction)
                             Thread {
-                                router.resendTx(transaction)
+                                if ((it.get() as Transaction).from != coin.getSystemAddress())
+                                {
+                                    router.resendTx(transaction)
+                                }
                             }.start()
 
                         }

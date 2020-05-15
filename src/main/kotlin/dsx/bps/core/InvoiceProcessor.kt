@@ -84,13 +84,11 @@ class InvoiceProcessor(
     override fun onNext(tx: Tx) {
         if (unpaid.isEmpty())
             return
-
         unpaid
             .mapNotNull { id -> invoices[id] }
             .filter { inv -> match(inv, tx) }
             .forEach { inv ->
                 recalculate(inv)
-
                 invService.addTx(inv.id, tx.txid())
                 synchronized(inv) {
                     inv.txids.add(tx.txid())

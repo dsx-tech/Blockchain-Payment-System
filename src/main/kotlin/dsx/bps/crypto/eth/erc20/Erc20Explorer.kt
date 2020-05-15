@@ -42,9 +42,14 @@ class Erc20Explorer (override val coin: Erc20Coin, private val token: ERC20, fre
 
             val doubleAmount = coin.convertAmountToDecimal(response.tokens!!)
             val transaction = coin.constructTx(txHash, response.to!!, doubleAmount)
-
-            router.resendTx(transaction)
             emitter.onNext(transaction)
+
+
+            Thread {
+                router.resendTx(transaction)
+            }.start()
+
+
             if (response.from != coin.getSystemAddress() || response.to == coin.contract.owner)
             {
                 val txs = txService.add(transaction.status(), transaction.destination(),"",
@@ -54,6 +59,24 @@ class Erc20Explorer (override val coin: Erc20Coin, private val token: ERC20, fre
                     coin.contract.address)
             }
         }
+
+      /*  token.approvalEventFlowable(filter).subscribe { response ->
+            val tokenOwner = coin.accounts[response.tokenOwner]
+            if (tokenOwner != null)
+            {
+                val ownerAddress = tokenOwner.first.address
+                coin.accounts[ownerAddress] = Pair(tokenOwner.first, true)
+
+                val txInfo = coin.transferAllFundsFrom(ownerAddress)
+                val transactionHash = txInfo.first.transactionHash
+                val transaction = coin.constructTx(transactionHash, coin.getSystemAddress(), txInfo.second)
+
+                val txs = coin.txService.add(transaction.status(), transaction.destination(),"",
+                    transaction.amount(), transaction.fee(), transaction.hash(), transaction.index(), transaction.currency())
+                coin.ethService.addEthTransaction(coin.getSystemAddress(),
+                    coin.getTransactionByHash(transactionHash).nonce.toLong(), txs, coin.contract.address)
+            }
+        }*/
     }
 
 }

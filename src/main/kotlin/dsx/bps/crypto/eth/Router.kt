@@ -37,7 +37,7 @@ class Router {
 
         if (erc20Router != null)
         {
-            val erc20Account = erc20Router!!.erc20Coin.accounts.find { elem -> elem.address == tx.destination() }
+            val erc20Account = erc20Router!!.coin.accounts[tx.destination()]
             if (erc20Account != null)
             {
                 erc20Router!!.resend(tx)

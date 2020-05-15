@@ -13,7 +13,6 @@ import org.web3j.protocol.core.methods.response.EthBlock.Block
 import org.web3j.protocol.core.methods.response.Transaction
 import org.web3j.utils.Convert
 import java.math.BigDecimal
-import java.math.BigInteger
 
 class EthCoin(conf: Config, datasource: Datasource, txServ: TxService) : EthManager(conf, datasource, txServ) {
     override val currency = Currency.ETH
@@ -128,10 +127,6 @@ class EthCoin(conf: Config, datasource: Datasource, txServ: TxService) : EthMana
 
     fun getBlockByHash(hash: String): Block {
         return connector.getBlockByHash(hash)
-    }
-
-    fun getGasPrice(): BigInteger {
-        return connector.getGasPrice()
     }
 
     fun getAccountByAddress(address: String): EthAccount {

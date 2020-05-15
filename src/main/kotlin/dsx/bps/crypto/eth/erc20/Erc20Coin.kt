@@ -12,6 +12,7 @@ import dsx.bps.crypto.eth.EthManager
 import dsx.bps.crypto.eth.erc20.datamodel.Erc20Contract
 import dsx.bps.crypto.eth.ethereum.datamodel.EthAccount
 import org.web3j.crypto.WalletUtils
+import org.web3j.protocol.core.methods.response.TransactionReceipt
 import org.web3j.utils.Convert
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -22,7 +23,7 @@ class Erc20Coin(token: Currency, conf: Config, datasource: Datasource, txServ: T
     override val connector: Erc20Rpc
     override  val explorer: Erc20Explorer
     val contract: Erc20Contract
-    val accounts = mutableListOf<EthAccount>()
+    val accounts = mutableMapOf<String, Pair<EthAccount,Boolean>>()
 
 
     init {
@@ -47,7 +48,7 @@ class Erc20Coin(token: Currency, conf: Config, datasource: Datasource, txServ: T
 
     override fun getAddress() : String {
         val newAccount = connector.ethRpc.generateWalletFile(defaultPasswordForNewAddresses, walletsDir)
-        accounts.add(newAccount)
+        accounts[newAccount.address] = Pair(newAccount, false)
         return newAccount.address
     }
 
@@ -56,7 +57,7 @@ class Erc20Coin(token: Currency, conf: Config, datasource: Datasource, txServ: T
         return constructTx(txid.hash, erc20Tx.to, erc20Tx.amount)
     }
 
-    fun constructTx(ethTxHash: String, to: String, amount: BigDecimal): Tx {
+    fun constructTx(ethTxHash: String, to: String, amount: BigDecimal, currency: Currency = this.currency): Tx {
         val ethTx = connector.ethRpc.getTransactionByHash(ethTxHash)
         return object: Tx {
             override fun currency() = currency
@@ -79,7 +80,7 @@ class Erc20Coin(token: Currency, conf: Config, datasource: Datasource, txServ: T
 
             override fun status(): TxStatus {
                 val latestBlock = connector.ethRpc.getLatestBlock()
-                if (ethTx.blockHash == null) {
+                if (connector.ethRpc.getTransactionByHash(ethTxHash).blockHash == null) {
                     return TxStatus.VALIDATING
                 } else {
                     val conf = latestBlock.number - ethTx.blockNumber
@@ -114,10 +115,20 @@ class Erc20Coin(token: Currency, conf: Config, datasource: Datasource, txServ: T
         return (amount * Math.pow(10.0, contract.decimals.toDouble()).toBigDecimal()).toBigInteger()
     }
 
+    fun transferFrom(holder: String, amount: BigDecimal): TransactionReceipt {
+        val intAmount = convertAmountToInteger(amount)
+        return connector.transferFrom(holder, systemAccount.address, intAmount)
+    }
 
+    fun transferAllFundsFrom(holder: String): Pair<TransactionReceipt, BigDecimal> {
+        val balance = connector.balanceOf(holder)
+        return Pair(connector.transferFrom(holder, systemAccount.address, balance), convertAmountToDecimal(balance))
+    }
 
-    /* fun send(account: EthAccount, rpc: Erc20Rpc, to: String, amount : BigInteger) : Tx {
-
-    } */
+    fun approveFrom(owner: EthAccount): TransactionReceipt {
+        val amount = BigInteger("2").pow(256).subtract(BigInteger.ONE)
+            .divide(BigInteger.TEN.pow(contract.decimals))
+        return connector.approveSystem(systemAccount.address, owner, amount)
+    }
 
 }

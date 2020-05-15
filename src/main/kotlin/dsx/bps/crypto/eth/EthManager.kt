@@ -20,8 +20,6 @@ abstract class EthManager: Coin {
     protected val walletsDir: String
     protected val commonConnector: CommonConnector
 
-   // private val ethRouter: EthRouter
-  //  override val explorer: EthExplorer
     protected val url: String
 
     protected val frequency: Long
@@ -55,7 +53,11 @@ abstract class EthManager: Coin {
 
     fun getSystemAddress() = systemAccount.address
 
-    fun send(account: EthAccount, to: String, amount : BigDecimal, gasLimit: BigInteger = commonConnector.basicGasLimit ) : String {
+    fun getGasPrice(): BigInteger {
+        return commonConnector.getGasPrice()
+    }
+
+    fun send(account: EthAccount = systemAccount, to: String, amount : BigDecimal, gasLimit: BigInteger = commonConnector.basicGasLimit ) : String {
         var nonce = ethService.getLatestNonce(account.address)
         if (nonce == null)
         {

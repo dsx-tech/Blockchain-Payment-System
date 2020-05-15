@@ -56,9 +56,9 @@ internal class BlockchainPaymentSystemAPITestERC20 {
 
     @AfterAll
     fun tearDown(){
-        //aliceAPI.kill(Currency.ETH)
-        //bobAPI.kill(Currency.ETH)
-      //  removeNewWallets()
+        aliceAPI.kill(Currency.ETH)
+        bobAPI.kill(Currency.ETH)
+        removeNewWallets()
     }
 
     @Order(1)
@@ -124,7 +124,6 @@ internal class BlockchainPaymentSystemAPITestERC20 {
         }
     }
 
-    @Disabled
     @Order(3)
     @Test
     fun createInvoice() {
@@ -143,52 +142,14 @@ internal class BlockchainPaymentSystemAPITestERC20 {
             assertNotEquals(6, count1, "Invoice wasn't paid or found in >= 6 blocks")
         }
 
-        /*
-
        var count2 = 0
-       while (aliceAPI.getBalance(Currency.ETH) == aliceBalance)
+       while (aliceAPI.getBalance(Currency.USDT) == aliceBalance)
        {
            waitForSomeBlocksMining()
            count2 += 1
            Thread.sleep(2000)
            assertNotEquals(6, count2, "Money was not transferred to a hot wallet in >= 6 blocks")
-       } */
-    }
-
-    @Disabled
-    @Order(4)
-    @Test
-    fun createInvoiceWithTwoPayments() {
-        val bobBalance = bobAPI.getBalance(Currency.ETH)
-        val invId = bobAPI.createInvoice(Currency.ETH, 0.06)
-        val inv = bobAPI.getInvoice(invId)
-
-        assertNotNull(inv)
-
-        val half = inv!!.amount / BigDecimal(2)
-        aliceAPI.sendPayment(inv.currency, half, inv.address)
-        waitForSomeBlocksMining()
-
-        aliceAPI.sendPayment(inv.currency, half, inv.address)
-        var count1 = 0
-        while (inv.status != InvoiceStatus.PAID) {
-            waitForSomeBlocksMining()
-            count1 += 1
-            Thread.sleep(3000)
-            assertNotEquals(10, count1, "Invoice wasn't paid or found in >= 6 blocks")
-        }
-
-        var count2 = 0
-        println("bob start balance $bobBalance")
-        while ((bobAPI.getBalance(Currency.ETH).toDouble() - bobBalance.toDouble()) <= 0.05)
-        {
-            println("bob balance ${bobAPI.getBalance(Currency.ETH)}")
-            waitForSomeBlocksMining()
-            count2 += 1
-            Thread.sleep(2000)
-            assertNotEquals(6, count2, "Money was not transferred to a hot wallet in >= 6 blocks")
-        }
-
+       }
     }
 
     private fun waitForSomeBlocksMining() {
