@@ -79,11 +79,11 @@ internal class BlockchainPaymentSystemAPITestERC20 {
         assertDoesNotThrow {
             aliceAPI.clearDb(Currency.USDT)
 
-            val id1 = aliceAPI.sendPayment(Currency.USDT, 10.0, bobEthAddress)
+            val id1 = aliceAPI.sendPayment(Currency.USDT, BigDecimal.valueOf(10.0), bobEthAddress)
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.USDT, 7.0, aliceEthAddress)
+            val id2 = bobAPI.sendPayment(Currency.USDT, BigDecimal.valueOf(7.0), aliceEthAddress)
             waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -102,11 +102,11 @@ internal class BlockchainPaymentSystemAPITestERC20 {
 
         // send second payment
         assertDoesNotThrow {
-            val id1 = aliceAPI.sendPayment(Currency.USDT, 30, bobEthAddress)
+            val id1 = aliceAPI.sendPayment(Currency.USDT, BigDecimal.valueOf(30), bobEthAddress)
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.USDT, 12, aliceEthAddress)
+            val id2 = bobAPI.sendPayment(Currency.USDT, BigDecimal.valueOf(12), aliceEthAddress)
             waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -128,7 +128,7 @@ internal class BlockchainPaymentSystemAPITestERC20 {
     @Test
     fun createInvoice() {
         val aliceBalance = aliceAPI.getBalance(Currency.USDT)
-        val invId = aliceAPI.createInvoice(Currency.USDT, 34.5)
+        val invId = aliceAPI.createInvoice(Currency.USDT, BigDecimal.valueOf(34.5))
         val inv = aliceAPI.getInvoice(invId)
 
         assertNotNull(inv)

@@ -76,12 +76,12 @@ internal class BlockchainPaymentSystemAPITestETH {
         assertDoesNotThrow {
             aliceAPI.clearDb(Currency.ETH)
 
-            val id1 = aliceAPI.sendPayment(Currency.ETH, 1.0, bobEthAddress)
+            val id1 = aliceAPI.sendPayment(Currency.ETH, BigDecimal.valueOf(1.0), bobEthAddress)
             println(generator.getTransactionByHash(aliceAPI.getPayment(id1)!!.txid.hash))
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.ETH, 0.2, aliceEthAddress)
+            val id2 = bobAPI.sendPayment(Currency.ETH, BigDecimal.valueOf(0.2), aliceEthAddress)
             waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -100,11 +100,11 @@ internal class BlockchainPaymentSystemAPITestETH {
 
         // send second payment
         assertDoesNotThrow {
-            val id1 = aliceAPI.sendPayment(Currency.ETH, 1.1, bobEthAddress)
+            val id1 = aliceAPI.sendPayment(Currency.ETH, BigDecimal.valueOf(1.1), bobEthAddress)
             Thread.sleep(1000)
             waitForSomeBlocksMining()
             Thread.sleep(1000)
-            val id2 = bobAPI.sendPayment(Currency.ETH, 0.22, aliceEthAddress)
+            val id2 = bobAPI.sendPayment(Currency.ETH, BigDecimal.valueOf(0.22), aliceEthAddress)
             waitForSomeBlocksMining()
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -126,7 +126,7 @@ internal class BlockchainPaymentSystemAPITestETH {
     @Test
     fun createInvoice() {
         val aliceBalance = aliceAPI.getBalance(Currency.ETH)
-        val invId = aliceAPI.createInvoice(Currency.ETH, 3.03)
+        val invId = aliceAPI.createInvoice(Currency.ETH, BigDecimal.valueOf(3.03))
         val inv = aliceAPI.getInvoice(invId)
 
         assertNotNull(inv)
@@ -155,7 +155,7 @@ internal class BlockchainPaymentSystemAPITestETH {
     @Test
     fun createInvoiceWithTwoPayments() {
         val bobBalance = bobAPI.getBalance(Currency.ETH)
-        val invId = bobAPI.createInvoice(Currency.ETH, 0.06)
+        val invId = bobAPI.createInvoice(Currency.ETH, BigDecimal.valueOf(0.06))
         val inv = bobAPI.getInvoice(invId)
 
         assertNotNull(inv)

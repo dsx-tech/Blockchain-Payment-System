@@ -62,10 +62,10 @@ internal class BlockchainPaymentSystemAPITestBTC {
     @Test
     fun sendPayment() {
         assertDoesNotThrow {
-            val id1 = aliceAPI.sendPayment(Currency.BTC, 5.05, bobBtcAddress)
+            val id1 = aliceAPI.sendPayment(Currency.BTC, BigDecimal.valueOf(5.05), bobBtcAddress)
             Thread.sleep(1000)
 
-            val id2 = bobAPI.sendPayment(Currency.BTC, 2.52, aliceBtcAddress)
+            val id2 = bobAPI.sendPayment(Currency.BTC, BigDecimal.valueOf(2.52), aliceBtcAddress)
             Thread.sleep(1000)
 
             val pay1 = aliceAPI.getPayment(id1)
@@ -88,7 +88,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
     @Order(3)
     @Test
     fun createInvoice() {
-        val invId = aliceAPI.createInvoice(Currency.BTC, 0.42)
+        val invId = aliceAPI.createInvoice(Currency.BTC, BigDecimal.valueOf(0.42))
         val inv = aliceAPI.getInvoice(invId)
         assertNotNull(inv)
 
@@ -110,7 +110,7 @@ internal class BlockchainPaymentSystemAPITestBTC {
     @Order(4)
     @Test
     fun createInvoiceWithTwoPayments() {
-        val invId = aliceAPI.createInvoice(Currency.BTC, 10.2)
+        val invId = aliceAPI.createInvoice(Currency.BTC, BigDecimal.valueOf(10.2))
         val inv = aliceAPI.getInvoice(invId)
         assertNotNull(inv)
 
