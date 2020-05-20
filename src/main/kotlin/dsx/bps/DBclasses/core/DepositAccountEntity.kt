@@ -9,8 +9,7 @@ class DepositAccountEntity(id: EntityID<Int>): IntEntity(id) {
 
     var depositAccountId by DepositAccountTable.depositAccountId
     val enabledCurrency by EnabledCurrencyEntity referrersOn EnabledCurrencyTable.depositAccountTable
-    val address by AddressEntity referrersOn AddressTable.depositAccountTable
-    var payable by PayableEntity referencedOn DepositAccountTable.payableId
+    val depositAddress by DepositAddressEntity referrersOn DepositAddressTable.depositAccountTable
 }
 
 class EnabledCurrencyEntity(id: EntityID<Int>): IntEntity(id) {
@@ -20,10 +19,9 @@ class EnabledCurrencyEntity(id: EntityID<Int>): IntEntity(id) {
     var depositAccount by DepositAccountEntity referencedOn EnabledCurrencyTable.depositAccountTable
 }
 
-class AddressEntity(id: EntityID<Int>): IntEntity(id) {
-    companion object: IntEntityClass<AddressEntity>(AddressTable)
+class DepositAddressEntity(id: EntityID<Int>): IntEntity(id) {
+    companion object: IntEntityClass<DepositAddressEntity>(DepositAddressTable)
 
-    var currency by AddressTable.currency
-    var address by AddressTable.address
-    var depositAccount by DepositAccountEntity referencedOn AddressTable.depositAccountTable
+    var cryptoAddress by CryptoAddressEntity referencedOn DepositAddressTable.cryptoAddressTable
+    var depositAccount by DepositAccountEntity referencedOn DepositAddressTable.depositAccountTable
 }

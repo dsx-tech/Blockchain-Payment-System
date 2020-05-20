@@ -2,6 +2,7 @@ package dsx.bps.api
 
 import dsx.bps.core.BlockchainPaymentSystemManager
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.DepositAccount
 import dsx.bps.core.datamodel.Invoice
 import dsx.bps.core.datamodel.Payment
 import dsx.bps.core.datamodel.Tx
@@ -46,12 +47,15 @@ class BlockchainPaymentSystemAPI {
         return manager.createNewAddress(id, currency)
     }
 
+    fun getDepositAccount(id: String): DepositAccount? = manager.getDepositAccount(id)
+
+
     fun getAllTx(id: String, currency: Currency): List<Tx> {
         return manager.getAllTx(id, currency)
     }
 
-    fun getLastTx(id: String, currency: Currency, amount: Int): List<Tx> {
-        return manager.getLastTx(id, currency, amount)
+    fun getLastTxToAddress(id: String, currency: Currency, address: String, amount: Int): List<Tx> {
+        return manager.getLastTxToAddress(id, currency, address, amount)
     }
 
 }

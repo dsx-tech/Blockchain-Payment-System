@@ -7,6 +7,9 @@ invoiceProcessor:
 paymentProcessor:
   frequency: 3000
 
+depositAccountProcessor:
+  frequency: 5000
+
 database:
   connectionURL: "jdbc:h2:~/db"
   driver: "org.h2.Driver"

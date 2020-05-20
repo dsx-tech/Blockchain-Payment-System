@@ -1,10 +1,12 @@
 package dsx.bps.DBservices.core
 
-import dsx.bps.DBclasses.core.AddressEntity
 import dsx.bps.DBclasses.core.DepositAccountEntity
 import dsx.bps.DBclasses.core.DepositAccountTable
 import dsx.bps.DBclasses.core.EnabledCurrencyEntity
-import dsx.bps.DBclasses.core.PayableEntity
+import dsx.bps.DBclasses.core.EnabledCurrencyTable
+import dsx.bps.DBclasses.core.CryptoAddressEntity
+import dsx.bps.DBclasses.core.DepositAddressEntity
+import dsx.bps.DBclasses.core.DepositAddressTable
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.core.tx.TxTable
 import dsx.bps.DBservices.Datasource
@@ -23,6 +25,10 @@ class DepositAccountService(datasource: Datasource) {
         transaction(datasource.getConnection()) {
             if (!DepositAccountTable.exists())
                 SchemaUtils.create(DepositAccountTable)
+            if (!EnabledCurrencyTable.exists())
+                SchemaUtils.create(EnabledCurrencyTable)
+            if (!DepositAddressTable.exists())
+                SchemaUtils.create(DepositAddressTable)
             if (!TxTable.exists())
                 SchemaUtils.create(TxTable)
         }
@@ -32,7 +38,6 @@ class DepositAccountService(datasource: Datasource) {
         transaction {
             val depAcc = DepositAccountEntity.new {
                 depositAccountId = depositId
-                payable = PayableEntity.new { type = PayableType.DepositAccount }
             }
 
             enabledCurrency.forEach { cur ->
@@ -46,10 +51,14 @@ class DepositAccountService(datasource: Datasource) {
 
     fun addNewAddress(address: String, currency: Currency, depositId: String) {
         transaction {
-            AddressEntity.new {
-                this.currency = currency
+            val crAdd = CryptoAddressEntity.new {
                 this.address = address
-                depositAccount = getByDepositId(depositId)
+                this.currency = currency
+                this.type = PayableType.DepositAccount
+            }
+            DepositAddressEntity.new {
+                this.cryptoAddress = crAdd
+                this.depositAccount = getByDepositId(depositId)
             }
         }
     }
@@ -60,8 +69,9 @@ class DepositAccountService(datasource: Datasource) {
 
     fun addTx(depositId: String, tx: TxId) {
         transaction {
-            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index) }.forEach {
-                it.payable = getByDepositId(depositId).payable
+            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index) }.forEach { txEntity ->
+                getByDepositId(depositId).depositAddress.map { it.cryptoAddress }
+                    .filter { it.address == txEntity.destination }.forEach { txEntity.payable = it }
             }
         }
     }
@@ -89,22 +99,29 @@ class DepositAccountService(datasource: Datasource) {
             val depAcc = DepositAccount(
                 depositAccount.depositAccountId,
                 depositAccount.enabledCurrency.toList().map { it.currency })
-            depositAccount.address.forEach { depAcc.addresses[it.currency]!!.add(it.address) }
-            depositAccount.payable.txs.forEach { depAcc.txids[it.currency]!!.add(TxId(it.hash, it.index)) }
-
+            depositAccount.depositAddress.map { it.cryptoAddress }.forEach{ crAdd ->
+                depAcc.addresses[crAdd.currency]!!.add(crAdd.address)
+                crAdd.txs.forEach { txEntity ->
+                    depAcc.txids[crAdd.currency]!!.add(TxId(txEntity.hash, txEntity.index))
+                }
+            }
             return@transaction depAcc
         }
     }
 
     fun getAllTx(depositId: String, currency: Currency): List<TxEntity> {
-        return transaction {
-            getByDepositId(depositId).payable.txs.filter { it.currency == currency }.toList()
+        val txList = mutableListOf<TxEntity>()
+        transaction {
+            getByDepositId(depositId).depositAddress.map { it.cryptoAddress }.filter { it.currency == currency }.forEach { crAdd ->
+                txList.addAll(crAdd.txs.toList())
+            }
         }
+        return txList
     }
 
-    fun getLastTx(depositId: String, currency: Currency, amount: Int): List<TxEntity> {
+    fun getLastTxToAddress(depositId: String, currency: Currency, address: String, amount: Int): List<TxEntity> {
         return transaction {
-            val txList = getByDepositId(depositId).payable.txs.filter { it.currency == currency }.sortedBy { it.id }
+            val txList = getByDepositId(depositId).depositAddress.map { it.cryptoAddress }.filter { it.currency == currency && it.address == address }.first().txs.sortedBy { it.id }
             return@transaction txList.subList(max(txList.size - amount, 0), txList.size)
         }
     }

@@ -1,8 +1,10 @@
 package dsx.bps.core
 
+import com.uchuhimo.konf.Config
 import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.DepositAccountService
 import dsx.bps.DBservices.core.TxService
+import dsx.bps.config.DepositAccountProcessorConfig
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.DepositAccount
@@ -14,19 +16,21 @@ import kotlin.concurrent.timer
 
 class DepositAccountProcessor(
     private val manager: BlockchainPaymentSystemManager,
-    datasource: Datasource, txServ: TxService
+    config: Config, datasource: Datasource, txServ: TxService
 ): Observer<Tx> {
 
     private val depositAccountService = DepositAccountService(datasource)
     private val txService = txServ
     private val depositAccounts = depositAccountService.getDepositAccounts()
     private val depositIds = depositAccountService.getDepositIds()
-    val frequency: Long = 5000 // TODO frequency from config
+    var frequency: Long = config[DepositAccountProcessorConfig.frequency]
 
     init {
         manager.subscribe(this)
         check()
     }
+
+    fun getDepositAccount(id: String): DepositAccount? = depositAccounts[id]
 
     private fun check() {
         timer(this::class.toString(), true, 0, frequency) {
@@ -53,21 +57,27 @@ class DepositAccountProcessor(
 
     override fun onNext(tx: Tx) {
         depositIds.mapNotNull { id -> depositAccounts[id] }.filter { dep -> hasAddress(dep, tx) }.forEach { dep ->
+            recalculate(dep)
             synchronized(dep) {
-                depositAccountService.addTx(dep.depositId, tx.txid())
+                depositAccountService.addTx(dep.id, tx.txid())
                 dep.addTx(tx)
             }
         }
     }
 
     private fun hasAddress(depositAccount: DepositAccount, tx: Tx): Boolean {
-        return depositAccount.getAddresses(tx.currency()).contains(tx.destination())
+        if (!depositAccount.enabledCurrency.contains(tx.currency()))
+            return false
+        else
+            return depositAccount.getAddresses(tx.currency()).contains(tx.destination())
     }
 
-    fun createNewAccount(id: String, currencies: List<Currency>) {
+    fun createNewAccount(id: String, currencies: List<Currency>): DepositAccount {
         depositAccountService.add(id, currencies)
-        depositAccounts[id] = DepositAccount(id, currencies)
+        val depAcc = DepositAccount(id, currencies)
+        depositAccounts[id] = depAcc
         depositIds.add(id)
+        return depAcc
     }
 
     fun createNewAddress(id: String, currency: Currency, address: String): String {
@@ -75,8 +85,7 @@ class DepositAccountProcessor(
             depositAccountService.addNewAddress(address, currency, id)
             depositAccounts[id]!!.addNewAddress(address, currency)
             return address
-        }
-        else
+        } else
             throw DepositAccountException("no such id $id")
     }
 
@@ -86,10 +95,10 @@ class DepositAccountProcessor(
         return depositAccountService.getAllTx(id, currency).map { txService.constructTxByTxEntity(it) }
     }
 
-    fun getLastTx(id: String, currency: Currency, amount: Int): List<Tx> {
+    fun getLastTxToAddress(id: String, currency: Currency, address: String, amount: Int): List<Tx> {
         if (!depositIds.contains(id))
             throw DepositAccountException("no such id $id")
-        return depositAccountService.getLastTx(id, currency, amount).map { txService.constructTxByTxEntity(it) }
+        return depositAccountService.getLastTxToAddress(id, currency, address, amount).map { txService.constructTxByTxEntity(it) }
     }
 
     override fun onError(e: Throwable) {

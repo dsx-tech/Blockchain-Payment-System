@@ -1,6 +1,6 @@
 package dsx.bps.DBservices.core
 
-import dsx.bps.DBclasses.core.PayableEntity
+import dsx.bps.DBclasses.core.CryptoAddressEntity
 import dsx.bps.DBclasses.core.PaymentEntity
 import dsx.bps.DBclasses.core.PaymentTable
 import dsx.bps.DBclasses.core.tx.TxEntity
@@ -36,9 +36,12 @@ class PaymentService(datasource: Datasource) {
                 this.paymentId = paymentId
                 this.currency = currency
                 this.amount = amount
-                this.address = address
                 this.tag = tag
-                payable = PayableEntity.new { type = PayableType.Payment }
+                payable = CryptoAddressEntity.new {
+                    type = PayableType.Payment
+                    this.address = address
+                    this.currency = currency
+                }
             }
         }
         return newPayment
@@ -85,20 +88,22 @@ class PaymentService(datasource: Datasource) {
     }
 
     fun makePaymentFromDB(payment: PaymentEntity): Payment {
-        val pay = Payment(
-            payment.paymentId, payment.currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
-            payment.address, payment.tag
-        )
+        return transaction {
+            val pay = Payment(
+                payment.paymentId, payment.currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+                payment.payable.address, payment.tag
+            )
 
-        pay.status = payment.status
+            pay.status = payment.status
 
-        transaction {
+
             if (!payment.payable.txs.empty())
                 pay.txid = TxId(payment.payable.txs.first().hash, payment.payable.txs.first().index)
             if (payment.fee != null)
                 pay.fee = payment.fee!!
+
+            return@transaction pay
         }
-        return pay
     }
 
     fun updateStatus(status: PaymentStatus, systemId: String) {

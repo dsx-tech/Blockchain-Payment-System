@@ -6,7 +6,6 @@ import org.jetbrains.exposed.sql.Column
 
 object DepositAccountTable: IntIdTable() {
     val depositAccountId: Column<String> = varchar("depositAccountId", 100)
-    val payableId = reference("payableId", PayableTable)
 }
 
 object EnabledCurrencyTable: IntIdTable() {
@@ -14,8 +13,7 @@ object EnabledCurrencyTable: IntIdTable() {
     val depositAccountTable = reference("depositAccountTable", DepositAccountTable)
 }
 
-object AddressTable: IntIdTable() {
-    val currency = enumeration("currency", Currency::class)
-    val address: Column<String> = varchar("address", 100)
+object DepositAddressTable: IntIdTable() {
+    val cryptoAddressTable = reference("cryptoAddressTable", CryptoAddressTable)
     val depositAccountTable = reference("depositAccountTable", DepositAccountTable)
 }

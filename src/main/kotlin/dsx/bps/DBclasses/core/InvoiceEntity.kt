@@ -12,7 +12,6 @@ class InvoiceEntity(id: EntityID<Int>): IntEntity(id) {
     var invoiceId by InvoiceTable.invoiceId
     var currency by InvoiceTable.currency
     var amount by InvoiceTable.amount
-    var address by InvoiceTable.address
     var tag by InvoiceTable.tag
-    var payable by PayableEntity referencedOn InvoiceTable.payableId
+    var payable by CryptoAddressEntity referencedOn InvoiceTable.payableId
 }

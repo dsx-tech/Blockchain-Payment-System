@@ -12,7 +12,6 @@ object PaymentTable: IntIdTable() {
     val paymentId: Column<String> = varchar("paymentId", 100)
     val currency = enumeration("currency", Currency::class)
     val amount: Column<BigDecimal> = decimal("amount", 30, 15)
-    val address: Column<String> = varchar("address", 100)
     val tag: Column<String?> = varchar("tag", 100).nullable()
-    val payableId = reference("payableId", PayableTable)
+    val payableId = reference("payableId", CryptoAddressTable)
 }

@@ -1,6 +1,6 @@
 package dsx.bps.DBclasses.core.tx
 
-import dsx.bps.DBclasses.core.PayableTable
+import dsx.bps.DBclasses.core.CryptoAddressTable
 import dsx.bps.DBclasses.core.tx.TxTableConstant.tagMaxLength
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.TxStatus
@@ -17,5 +17,5 @@ object TxTable: IntIdTable() {
     val hash: Column<String> = varchar("hash", 500)
     val index: Column<Long> = long("index")
     val currency = enumeration("currency", Currency::class)
-    val payableId = reference("payableId", PayableTable).nullable()
+    val payableId = reference("payableId", CryptoAddressTable).nullable()
 }

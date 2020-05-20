@@ -2,6 +2,7 @@ package dsx.bps.DBservices.crypto
 
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.crypto.trx.ContractRetEntity
+import dsx.bps.DBclasses.crypto.trx.ContractRetTable
 import dsx.bps.DBclasses.crypto.trx.TrxTxEntity
 import dsx.bps.DBclasses.crypto.trx.TrxTxTable
 import dsx.bps.DBservices.Datasource
@@ -14,6 +15,8 @@ class TrxService(datasource: Datasource) {
         transaction(datasource.getConnection()) {
             if (!TrxTxTable.exists())
                 SchemaUtils.create(TrxTxTable)
+            if(!ContractRetTable.exists())
+                SchemaUtils.create(ContractRetTable)
         }
     }
 

@@ -3,7 +3,7 @@ package dsx.bps.core.datamodel
 import dsx.bps.exception.core.depositAccount.DepositAccountException
 import java.util.Collections
 
-class DepositAccount(val depositId: String, currencies: List<Currency>) {
+class DepositAccount(val id: String, currencies: List<Currency>) {
     val enabledCurrency = currencies
     val addresses = mutableMapOf<Currency, MutableList<String>>()
     val txids = Collections.synchronizedMap(mutableMapOf<Currency, MutableList<TxId>>())

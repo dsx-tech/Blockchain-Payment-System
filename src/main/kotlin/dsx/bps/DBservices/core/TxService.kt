@@ -62,6 +62,7 @@ class TxService(datasource: Datasource) {
             override fun paymentReference(): String? = txEntity.tag
             override fun fee(): BigDecimal = txEntity.fee
             override fun status(): TxStatus = txEntity.status
+            override fun index(): Long = txEntity.index
         }
     }
 }

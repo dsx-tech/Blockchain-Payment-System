@@ -6,6 +6,7 @@ import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.BPSConfig
 import dsx.bps.config.DatabaseConfig
+import dsx.bps.config.DepositAccountProcessorConfig
 import dsx.bps.config.InvoiceProcessorConfig
 import dsx.bps.config.PaymentProcessorConfig
 import dsx.bps.core.datamodel.*
@@ -64,9 +65,15 @@ class BlockchainPaymentSystemManager {
         }
         paymentProcessorConfig.validateRequired()
 
+        val depositAccountProcessorConfig = with(Config()) {
+            addSpec(DepositAccountProcessorConfig)
+            from.yaml.file(configFile)
+        }
+        depositAccountProcessorConfig.validateRequired()
+
         invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource, txService)
         paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource, txService)
-        depositAccountProcessor = DepositAccountProcessor(this, datasource, txService)
+        depositAccountProcessor = DepositAccountProcessor(this, depositAccountProcessorConfig, datasource, txService)
     }
 
     constructor(
@@ -125,12 +132,14 @@ class BlockchainPaymentSystemManager {
         return address
     }
 
+    fun getDepositAccount(id: String): DepositAccount? = depositAccountProcessor.getDepositAccount(id)
+
     fun getAllTx(id: String, currency: Currency): List<Tx> {
         return depositAccountProcessor.getAllTx(id, currency)
     }
 
-    fun getLastTx(id: String, currency: Currency, amount: Int): List<Tx> {
-        return depositAccountProcessor.getLastTx(id, currency, amount)
+    fun getLastTxToAddress(id: String, currency: Currency, address: String, amount: Int): List<Tx> {
+        return depositAccountProcessor.getLastTxToAddress(id, currency, address, amount)
     }
 
     fun subscribe(observer: Observer<Tx>) {
