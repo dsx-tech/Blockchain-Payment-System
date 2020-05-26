@@ -10,10 +10,10 @@ object DepositAccountTable: IntIdTable() {
 
 object EnabledCurrencyTable: IntIdTable() {
     val currency = enumeration("currency", Currency::class)
-    val depositAccountTable = reference("depositAccountTable", DepositAccountTable)
+    val depositAccountId = reference("depositAccountId", DepositAccountTable)
 }
 
 object DepositAddressTable: IntIdTable() {
-    val cryptoAddressTable = reference("cryptoAddressTable", CryptoAddressTable)
-    val depositAccountTable = reference("depositAccountTable", DepositAccountTable)
+    val cryptoAddressId = reference("cryptoAddressId", CryptoAddressTable)
+    val depositAccountId = reference("depositAccountId", DepositAccountTable)
 }

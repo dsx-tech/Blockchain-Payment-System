@@ -87,7 +87,6 @@ class InvoiceProcessor(
             .forEach { inv ->
                 recalculate(inv)
 
-                invService.addTx(inv.id, tx.txid())
                 synchronized(inv) {
                     inv.txids.add(tx.txid())
 

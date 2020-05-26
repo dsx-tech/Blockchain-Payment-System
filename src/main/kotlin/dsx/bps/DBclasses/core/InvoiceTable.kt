@@ -10,8 +10,7 @@ object InvoiceTable: IntIdTable() {
     val status = enumeration("status", InvoiceStatus::class)
     val received: Column<BigDecimal> = decimal("received", 30, 15)
     val invoiceId: Column<String> = varchar("invoiceId", 100)
-    val currency = enumeration("currency", Currency::class)
     val amount: Column<BigDecimal> = decimal("amount", 30, 15)
     val tag: Column<String?> = varchar("tag", 100).nullable()
-    val payableId = reference("payableId", CryptoAddressTable)
+    val cryptoAddressId = reference("cryptoAddressId", CryptoAddressTable)
 }

@@ -35,12 +35,14 @@ class BtcExplorer(override val coin: BtcCoin, datasource: Datasource, txServ: Tx
                     .transactions
                     .forEach {
                         val tx = coin.constructTx(it)
-                        val newTx = txService.add(
-                            tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
-                            tx.fee(), tx.hash(), tx.index(), tx.currency()
-                        )
-                        btcService.add(it.confirmations, it.address, newTx)
-                        emitter.onNext(tx)
+                        if (txService.checkCryptoAddress(tx)) {
+                            val newTx = txService.add(
+                                tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                                tx.fee(), tx.hash(), tx.index(), tx.currency()
+                            )
+                            btcService.add(it.confirmations, it.address, newTx)
+                            emitter.onNext(tx)
+                        }
                     }
             }
         }

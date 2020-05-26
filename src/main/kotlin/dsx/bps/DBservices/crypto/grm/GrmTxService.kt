@@ -1,5 +1,7 @@
 package dsx.bps.DBservices.crypto.grm
 
+import dsx.bps.DBclasses.core.CryptoAddressEntity
+import dsx.bps.DBclasses.core.CryptoAddressTable
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.core.tx.TxTable
 import dsx.bps.DBclasses.crypto.grm.GrmInMsgEntity
@@ -29,9 +31,12 @@ class GrmTxService(datasource: Datasource) {
 
     fun getGrmNewestKnownTx(): GrmTxEntity? {
         val maxIndexTxEntity = transaction {
-            TxEntity.find {
-                TxTable.currency eq Currency.GRM
-            }.maxBy { tx -> tx.index }
+            val grmTxs = mutableListOf<TxEntity>()
+            CryptoAddressEntity.find {
+                CryptoAddressTable.currency eq Currency.GRM
+            }.map { it.txs.toList() }.forEach { grmTxs.addAll(it) }
+
+            grmTxs.maxBy { tx -> tx.index}
         }
         return if (maxIndexTxEntity == null)
             null

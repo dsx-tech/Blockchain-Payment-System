@@ -67,15 +67,6 @@ class DepositAccountService(datasource: Datasource) {
         return transaction { DepositAccountEntity.find { DepositAccountTable.depositAccountId eq depositId }.first() }
     }
 
-    fun addTx(depositId: String, tx: TxId) {
-        transaction {
-            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index) }.forEach { txEntity ->
-                getByDepositId(depositId).depositAddress.map { it.cryptoAddress }
-                    .filter { it.address == txEntity.destination }.forEach { txEntity.payable = it }
-            }
-        }
-    }
-
     fun getDepositIds(): MutableList<String> {
         val depositIds = mutableListOf<String>()
         transaction {

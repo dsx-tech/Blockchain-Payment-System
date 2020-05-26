@@ -35,12 +35,14 @@ class XrpExplorer(
                     }
                     .forEach {
                         val tx = coin.constructTx(it)
-                        val newTx = txService.add(
-                            tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
-                            tx.fee(), tx.hash(), tx.index(), tx.currency()
-                        )
-                        xrpService.add(tx.fee(), it.tx.account, it.tx.sequence, it.validated, newTx)
-                        emitter.onNext(tx)
+                        if (txService.checkCryptoAddress(tx)) {
+                            val newTx = txService.add(
+                                tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                                tx.fee(), tx.hash(), tx.index(), tx.currency()
+                            )
+                            xrpService.add(tx.fee(), it.tx.account, it.tx.sequence, it.validated, newTx)
+                            emitter.onNext(tx)
+                        }
                     }
                 lastIndex = newIndex
             }

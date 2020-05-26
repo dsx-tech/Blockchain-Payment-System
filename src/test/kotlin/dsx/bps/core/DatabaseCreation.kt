@@ -18,6 +18,6 @@ class DatabaseCreation(datasource: Datasource) {
     }
 
     fun createPayments() {
-        payService.add(PaymentStatus.PENDING, "pay1", Currency.BTC, BigDecimal.ONE, "addr1", null)
+        payService.add(PaymentStatus.PENDING, "paym1", Currency.BTC, BigDecimal.ONE, "PaymAddress", null)
     }
 }

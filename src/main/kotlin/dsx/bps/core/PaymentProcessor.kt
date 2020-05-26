@@ -49,7 +49,6 @@ class PaymentProcessor(
 
         payService.updateStatus(PaymentStatus.PROCESSING, id)
         payService.updateFee(payment.fee, id)
-        payService.addTx(id, tx.txid())
         pending.remove(id)
         payment.status = PaymentStatus.PROCESSING
         processing.add(id)

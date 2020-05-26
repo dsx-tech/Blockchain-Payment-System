@@ -3,7 +3,6 @@ package dsx.bps.DBservices.core
 import dsx.bps.DBclasses.core.InvoiceEntity
 import dsx.bps.DBclasses.core.InvoiceTable
 import dsx.bps.DBclasses.core.CryptoAddressEntity
-import dsx.bps.DBclasses.core.CryptoAddressTable
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.core.tx.TxTable
 import dsx.bps.DBservices.Datasource
@@ -36,10 +35,9 @@ class InvoiceService(datasource: Datasource) {
                 this.status = status
                 this.received = received
                 this.invoiceId = invoiceId
-                this.currency = currency
                 this.amount = amount
                 this.tag = tag
-                payable = CryptoAddressEntity.new {
+                cryptoAddress = CryptoAddressEntity.new {
                     type = PayableType.Invoice
                     this.address = address
                     this.currency = currency
@@ -85,22 +83,14 @@ class InvoiceService(datasource: Datasource) {
 
     }
 
-    fun addTx(systemId: String, tx: TxId) {
-        transaction {
-            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index) }.forEach {
-                it.payable = getBySystemId(systemId).payable
-            }
-        }
-    }
-
     fun makeInvFromDB(invoice: InvoiceEntity): Invoice {
         return transaction {
             val inv = Invoice(
-                invoice.invoiceId, invoice.currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
-                invoice.payable.address, invoice.tag
+                invoice.invoiceId, invoice.cryptoAddress.currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+                invoice.cryptoAddress.address, invoice.tag
             )
             inv.received = invoice.received
-            invoice.payable.txs.forEach { inv.txids.add(TxId(it.hash, it.index)) }
+            invoice.cryptoAddress.txs.forEach { inv.txids.add(TxId(it.hash, it.index)) }
             return@transaction inv
         }
     }

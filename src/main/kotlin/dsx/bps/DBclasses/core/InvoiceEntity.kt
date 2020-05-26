@@ -10,8 +10,7 @@ class InvoiceEntity(id: EntityID<Int>): IntEntity(id) {
     var status by InvoiceTable.status
     var received by InvoiceTable.received
     var invoiceId by InvoiceTable.invoiceId
-    var currency by InvoiceTable.currency
     var amount by InvoiceTable.amount
     var tag by InvoiceTable.tag
-    var payable by CryptoAddressEntity referencedOn InvoiceTable.payableId
+    var cryptoAddress by CryptoAddressEntity referencedOn InvoiceTable.cryptoAddressId
 }

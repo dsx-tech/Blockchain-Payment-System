@@ -61,22 +61,20 @@ internal class PaymentProcessorUnitTest {
         val receivePayment = paymentProcessor.getPayment(payment.id)
         Assertions.assertEquals(payment, payService.makePaymentFromDB(payService.getBySystemId(payment.id)))
         Assertions.assertEquals(payment, receivePayment)
-        payService.deleteAll()
     }
 
     @Test
     @DisplayName("update payment with db initialisation")
     fun updatePaymentFromDB() {
         val txId = Mockito.mock(TxId::class.java)
-        Mockito.`when`(txId.hash).thenReturn("txhash1")
-        Mockito.`when`(txId.index).thenReturn(1)
+        Mockito.`when`(txId.hash).thenReturn("hash1")
+        Mockito.`when`(txId.index).thenReturn(100)
 
         val tx = Mockito.mock(Tx::class.java)
-        Mockito.`when`(tx.txid()).thenReturn(TxId("txhash1", 1))
         Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ZERO)
         Mockito.`when`(tx.currency()).thenReturn(Currency.BTC)
         Mockito.`when`(tx.amount()).thenReturn(BigDecimal.ONE)
-        Mockito.`when`(tx.destination()).thenReturn("addr1")
+        Mockito.`when`(tx.destination()).thenReturn("PaymAddress")
         Mockito.`when`(tx.paymentReference()).thenReturn(null)
         Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ZERO)
         Mockito.`when`(tx.txid()).thenReturn(txId)
@@ -85,17 +83,16 @@ internal class PaymentProcessorUnitTest {
         Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
         txService.add(tx.status(), tx.destination(), tx.paymentReference(), tx.amount(), tx.fee(),
-            "txhash1", 1, tx.currency())
-        val payment = paymentProcessor.getPayment("pay1")
+            "hash1", 100, tx.currency())
+        val payment = paymentProcessor.getPayment("paym1")
         Assertions.assertEquals(PaymentStatus.PENDING, payService.getBySystemId(payment!!.id).status)
         Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
         paymentProcessor.updatePayment(payment.id, tx)
         Assertions.assertEquals(PaymentStatus.PROCESSING, payService.getBySystemId(payment.id).status)
         Assertions.assertEquals(payment.status, PaymentStatus.PROCESSING)
-        Assertions.assertTrue(transaction { txService.getByTxId("txhash1", 1).payable ==
-                payService.getBySystemId(payment.id).payable})
-        Assertions.assertNotNull(paymentProcessor.getPayment("pay1"))
-        payService.deleteAll()
+        Assertions.assertTrue(transaction { txService.getByTxId("hash1", 100).cryptoAddress ==
+                payService.getBySystemId(payment.id).cryptoAddress})
+        Assertions.assertNotNull(paymentProcessor.getPayment("paym1"))
     }
 
     @Nested
@@ -117,11 +114,11 @@ internal class PaymentProcessorUnitTest {
             Mockito.`when`(txId.index).thenReturn(1)
 
             val tx = Mockito.mock(Tx::class.java)
-            Mockito.`when`(tx.txid()).thenReturn(TxId("hash", 1))
+            Mockito.`when`(tx.txid()).thenReturn(TxId("payhash", 1))
             Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ZERO)
             Mockito.`when`(tx.currency()).thenReturn(Currency.BTC)
             Mockito.`when`(tx.amount()).thenReturn(BigDecimal.TEN)
-            Mockito.`when`(tx.destination()).thenReturn("testaddress")
+            Mockito.`when`(tx.destination()).thenReturn("paymentTestAddress")
             Mockito.`when`(tx.paymentReference()).thenReturn("1")
             Mockito.`when`(tx.fee()).thenReturn(BigDecimal.ONE)
             Mockito.`when`(tx.txid()).thenReturn(txId)
@@ -129,16 +126,17 @@ internal class PaymentProcessorUnitTest {
 
             Mockito.`when`(manager.getTx(Currency.BTC, txId)).thenReturn(tx)
 
+            val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "paymentTestAddress", "1")
             txService.add(tx.status(), tx.destination(), tx.paymentReference(), tx.amount(), tx.fee(),
-                "hash", 1, tx.currency())
-            val payment = paymentProcessor.createPayment(Currency.BTC, BigDecimal.TEN, "testaddress", "1")
+                "payhash", 1, tx.currency())
+
             Assertions.assertEquals(PaymentStatus.PENDING, payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PENDING)
             paymentProcessor.updatePayment(payment.id, tx)
             Assertions.assertEquals(PaymentStatus.PROCESSING, payService.getBySystemId(payment.id).status)
             Assertions.assertEquals(payment.status, PaymentStatus.PROCESSING)
-            Assertions.assertTrue(transaction { txService.getByTxId("hash", 1).payable ==
-                    payService.getBySystemId(payment.id).payable})
+            Assertions.assertTrue(transaction { txService.getByTxId("payhash", 1).cryptoAddress ==
+                    payService.getBySystemId(payment.id).cryptoAddress})
         }
     }
 }

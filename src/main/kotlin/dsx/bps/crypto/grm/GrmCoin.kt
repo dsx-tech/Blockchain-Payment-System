@@ -133,10 +133,10 @@ class GrmCoin : Coin {
             } else {
                 // time limit exceeded - status REJECTED
                 object : Tx {
-                    override fun currency() = txEntity.currency
+                    override fun currency() = txService.getCurrency(txEntity)
                     override fun hash() = txEntity.hash
                     override fun amount(): BigDecimal = txEntity.amount
-                    override fun destination() = txEntity.destination
+                    override fun destination() = txService.getDestination(txEntity)
                     override fun paymentReference(): String? = txEntity.tag
                     override fun fee() = txEntity.fee
                     override fun status() = TxStatus.REJECTED
@@ -145,14 +145,14 @@ class GrmCoin : Coin {
         }
         // if grmTx has one outMsg and outMsg is not valid - status INCORRECT
         if (grmOutMsgService.getOutMsgs(grmTx.id).size == 1 &&
-                (grmTx.tx.destination != txEntity.destination ||
+                (txService.getDestination(grmTx.tx) != txService.getDestination(txEntity) ||
                         grmTx.tx.tag != txEntity.tag ||
                         grmTx.tx.amount != txEntity.amount)) {
             return object : Tx {
-                override fun currency() = grmTx.tx.currency
+                override fun currency() = txService.getCurrency(grmTx.tx)
                 override fun hash() = grmTx.tx.hash
                 override fun amount(): BigDecimal = grmTx.tx.amount
-                override fun destination() = grmTx.tx.destination
+                override fun destination() = txService.getDestination(grmTx.tx)
                 override fun paymentReference(): String? = grmTx.tx.tag
                 override fun fee() = grmTx.tx.fee
                 override fun status() = TxStatus.INCORRECT

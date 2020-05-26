@@ -34,10 +34,9 @@ class PaymentService(datasource: Datasource) {
             PaymentEntity.new {
                 this.status = status
                 this.paymentId = paymentId
-                this.currency = currency
                 this.amount = amount
                 this.tag = tag
-                payable = CryptoAddressEntity.new {
+                cryptoAddress = CryptoAddressEntity.new {
                     type = PayableType.Payment
                     this.address = address
                     this.currency = currency
@@ -79,26 +78,18 @@ class PaymentService(datasource: Datasource) {
         return paymentMap
     }
 
-    fun addTx(systemId: String, tx: TxId) {
-        transaction {
-            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index) }.forEach {
-                it.payable = getBySystemId(systemId).payable
-            }
-        }
-    }
-
     fun makePaymentFromDB(payment: PaymentEntity): Payment {
         return transaction {
             val pay = Payment(
-                payment.paymentId, payment.currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
-                payment.payable.address, payment.tag
+                payment.paymentId, payment.cryptoAddress.currency, payment.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+                payment.cryptoAddress.address, payment.tag
             )
 
             pay.status = payment.status
 
 
-            if (!payment.payable.txs.empty())
-                pay.txid = TxId(payment.payable.txs.first().hash, payment.payable.txs.first().index)
+            if (!payment.cryptoAddress.txs.empty())
+                pay.txid = TxId(payment.cryptoAddress.txs.first().hash, payment.cryptoAddress.txs.first().index)
             if (payment.fee != null)
                 pay.fee = payment.fee!!
 

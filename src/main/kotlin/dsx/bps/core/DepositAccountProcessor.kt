@@ -59,7 +59,6 @@ class DepositAccountProcessor(
         depositIds.mapNotNull { id -> depositAccounts[id] }.filter { dep -> hasAddress(dep, tx) }.forEach { dep ->
             recalculate(dep)
             synchronized(dep) {
-                depositAccountService.addTx(dep.id, tx.txid())
                 dep.addTx(tx)
             }
         }

@@ -12,5 +12,5 @@ class CryptoAddressEntity(id: EntityID<Int>): IntEntity(id) {
     var type by CryptoAddressTable.type
     var address by CryptoAddressTable.address
     var currency by CryptoAddressTable.currency
-    val txs by TxEntity optionalReferrersOn TxTable.payableId
+    val txs by TxEntity referrersOn TxTable.cryptoAddressId
 }
