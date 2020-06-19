@@ -150,8 +150,8 @@ fun Application.module() {
             } else {
                 call.respond(
                     blockchainPaymentSystemAPI.createInvoice(
-                        Currency.GRM,
-                        BigDecimal.ONE
+                        enabledCurrencies[currentCurrencyName]!!,
+                        amount
                     )
                 )
             }
