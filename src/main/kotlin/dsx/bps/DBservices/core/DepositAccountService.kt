@@ -3,36 +3,17 @@ package dsx.bps.DBservices.core
 import dsx.bps.DBclasses.core.DepositAccountEntity
 import dsx.bps.DBclasses.core.DepositAccountTable
 import dsx.bps.DBclasses.core.EnabledCurrencyEntity
-import dsx.bps.DBclasses.core.EnabledCurrencyTable
 import dsx.bps.DBclasses.core.CryptoAddressEntity
 import dsx.bps.DBclasses.core.DepositAddressEntity
-import dsx.bps.DBclasses.core.DepositAddressTable
 import dsx.bps.DBclasses.core.tx.TxEntity
-import dsx.bps.DBclasses.core.tx.TxTable
-import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.DepositAccount
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.PayableType
 import dsx.bps.core.datamodel.TxId
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import kotlin.math.max
 
-class DepositAccountService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!DepositAccountTable.exists())
-                SchemaUtils.create(DepositAccountTable)
-            if (!EnabledCurrencyTable.exists())
-                SchemaUtils.create(EnabledCurrencyTable)
-            if (!DepositAddressTable.exists())
-                SchemaUtils.create(DepositAddressTable)
-            if (!TxTable.exists())
-                SchemaUtils.create(TxTable)
-        }
-    }
+class DepositAccountService {
 
     fun add(depositId: String, enabledCurrency: List<Currency>) {
         transaction {

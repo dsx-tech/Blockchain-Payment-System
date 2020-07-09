@@ -4,23 +4,14 @@ import dsx.bps.DBclasses.core.CryptoAddressEntity
 import dsx.bps.DBclasses.core.CryptoAddressTable
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.core.tx.TxTable
-import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxStatus
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class TxService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!TxTable.exists())
-                SchemaUtils.create(TxTable)
-        }
-    }
+class TxService {
 
     fun add(
         status: TxStatus, destination: String,

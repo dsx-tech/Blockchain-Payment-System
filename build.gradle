@@ -23,10 +23,13 @@ dependencies {
     testCompile "org.mockito:mockito-core:3.1.0"
     testCompile "org.mockito:mockito-junit-jupiter:3.1.0"
     testImplementation 'org.mockito:mockito-inline:3.1.0'
+    testCompile "org.testcontainers:testcontainers:1.12.5"
+    testCompile "org.testcontainers:junit-jupiter:1.12.5"
+    testImplementation "org.testcontainers:junit-jupiter:1.12.5"
+    testCompile "org.testcontainers:postgresql:1.14.3"
 
-    compile "com.h2database:h2:1.4.200"
     compile "org.jetbrains.exposed:exposed:0.17.7"
-    compile "mysql:mysql-connector-java:8.0.18"
+    compile "org.postgresql:postgresql:42.2.2"
     compile 'com.zaxxer:HikariCP:2.7.8'
 }
 

@@ -42,8 +42,8 @@ class BlockchainPaymentSystemManager {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        val txService = TxService(datasource)
-        coinsManager = CoinsManager(configFile, datasource, txService)
+        val txService = TxService()
+        coinsManager = CoinsManager(configFile, txService)
 
         val bpsConfig = with(Config()) {
             addSpec(BPSConfig)
@@ -71,9 +71,9 @@ class BlockchainPaymentSystemManager {
         }
         depositAccountProcessorConfig.validateRequired()
 
-        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, datasource, txService)
-        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, datasource, txService)
-        depositAccountProcessor = DepositAccountProcessor(this, depositAccountProcessorConfig, datasource, txService)
+        invoiceProcessor = InvoiceProcessor(this, invoiceProcessorConfig, txService)
+        paymentProcessor = PaymentProcessor(this, paymentProcessorConfig, txService)
+        depositAccountProcessor = DepositAccountProcessor(this, depositAccountProcessorConfig, txService)
     }
 
     constructor(

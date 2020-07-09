@@ -2,19 +2,9 @@ package dsx.bps.DBservices.crypto
 
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.crypto.btc.BtcTxEntity
-import dsx.bps.DBclasses.crypto.btc.BtcTxTable
-import dsx.bps.DBservices.Datasource
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class BtcService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!BtcTxTable.exists())
-                SchemaUtils.create(BtcTxTable)
-        }
-    }
+class BtcService {
 
     fun add(
         confirmations: Int, address: String,

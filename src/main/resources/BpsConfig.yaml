@@ -11,8 +11,8 @@ depositAccountProcessor:
   frequency: 5000
 
 database:
-  connectionURL: "jdbc:h2:~/db"
-  driver: "org.h2.Driver"
+  connectionURL: "jdbc:postgresql://localhost:12346/db"
+  driver: "org.postgresql.Driver"
   maximumPoolSize: 5
 
 # Enabled currencies

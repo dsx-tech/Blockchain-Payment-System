@@ -15,7 +15,6 @@ import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.btc.datamodel.BtcTx
 import dsx.bps.crypto.btc.datamodel.BtcTxDetail
 import dsx.bps.crypto.btc.datamodel.BtcTxSinceBlock
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -42,12 +41,11 @@ internal class BtcClientUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        payService = PaymentService(datasource)
-        txService = TxService(datasource)
+        payService = PaymentService()
+        txService = TxService()
         btcCoin = BtcCoin(
             btcRpc, btcExplorer,
-            configPath,
-            datasource, txService
+            configPath, txService
         )
     }
 

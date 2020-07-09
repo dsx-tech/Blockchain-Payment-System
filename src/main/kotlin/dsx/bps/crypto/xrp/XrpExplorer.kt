@@ -8,13 +8,13 @@ import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
 class XrpExplorer(
-        override val coin: XrpCoin, datasource: Datasource,
-        txServ: TxService, frequency: Long
+        override val coin: XrpCoin,
+    txServ: TxService, frequency: Long
 ) : Explorer(frequency) {
 
     override val currency: Currency = coin.currency
 
-    private val xrpService = XrpService(datasource)
+    private val xrpService = XrpService()
     private val txService = txServ
 
     init {

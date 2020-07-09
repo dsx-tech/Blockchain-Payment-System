@@ -2,23 +2,10 @@ package dsx.bps.DBservices.crypto
 
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.crypto.trx.ContractRetEntity
-import dsx.bps.DBclasses.crypto.trx.ContractRetTable
 import dsx.bps.DBclasses.crypto.trx.TrxTxEntity
-import dsx.bps.DBclasses.crypto.trx.TrxTxTable
-import dsx.bps.DBservices.Datasource
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class TrxService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!TrxTxTable.exists())
-                SchemaUtils.create(TrxTxTable)
-            if(!ContractRetTable.exists())
-                SchemaUtils.create(ContractRetTable)
-        }
-    }
+class TrxService {
 
     fun add(
         address: String, contractRet: List<String>,

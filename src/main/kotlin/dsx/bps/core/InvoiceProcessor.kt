@@ -15,10 +15,10 @@ import kotlin.concurrent.timer
 
 class InvoiceProcessor(
     private val manager: BlockchainPaymentSystemManager,
-    config: Config, datasource: Datasource, txServ: TxService
+    config: Config, txServ: TxService
 ) : Observer<Tx> {
 
-    private val invService = InvoiceService(datasource)
+    private val invService = InvoiceService()
     private val txService = txServ
     private val unpaid = invService.getUnpaid()
     private val invoices = invService.getInvoices()

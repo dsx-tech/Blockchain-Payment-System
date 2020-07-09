@@ -48,9 +48,9 @@ internal class TrxClientUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        payService = PaymentService(datasource)
+        payService = PaymentService()
         trxClient = TrxCoin(trxRpc, trxBlockchainListener,
-            configPath, datasource, TxService(datasource)
+            configPath, TxService()
         )
     }
 

@@ -12,25 +12,29 @@ import dsx.bps.core.datamodel.*
 import dsx.bps.exception.core.payment.PaymentException
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
 import java.io.File
 import java.math.BigDecimal
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class PaymentProcessorUnitTest {
 
     private val manager = Mockito.mock(BlockchainPaymentSystemManager::class.java)
-    private val paymentProcessor: PaymentProcessor
+    private lateinit var paymentProcessor: PaymentProcessor
     private val datasource = Datasource()
-    private val payService: PaymentService
-    private val txService: TxService
-    private val testConfig: Config
+    private lateinit var payService: PaymentService
+    private lateinit var txService: TxService
+    private lateinit var testConfig: Config
 
-    init {
+    @BeforeAll
+    fun setUp() {
         val initConfig = Config()
         val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
         val configFile = File(configPath)
@@ -47,10 +51,10 @@ internal class PaymentProcessorUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        DatabaseCreation(datasource).createPayments()
-        payService = PaymentService(datasource)
-        txService = TxService(datasource)
-        paymentProcessor = PaymentProcessor(manager, testConfig, datasource, txService)
+        DatabaseCreation().createPayments()
+        payService = PaymentService()
+        txService = TxService()
+        paymentProcessor = PaymentProcessor(manager, testConfig, txService)
     }
 
     @ParameterizedTest

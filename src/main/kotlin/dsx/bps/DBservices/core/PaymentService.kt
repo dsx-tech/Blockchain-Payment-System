@@ -3,26 +3,12 @@ package dsx.bps.DBservices.core
 import dsx.bps.DBclasses.core.CryptoAddressEntity
 import dsx.bps.DBclasses.core.PaymentEntity
 import dsx.bps.DBclasses.core.PaymentTable
-import dsx.bps.DBclasses.core.tx.TxEntity
-import dsx.bps.DBclasses.core.tx.TxTable
-import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.*
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteAll
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class PaymentService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!PaymentTable.exists())
-                SchemaUtils.create(PaymentTable)
-            if (!TxTable.exists())
-                SchemaUtils.create(TxTable)
-        }
-    }
+class PaymentService {
 
     fun add(
         status: PaymentStatus,

@@ -50,12 +50,12 @@ class GrmCoin : Coin {
     override val connector: GrmConnector
     override val explorer: GrmExplorer
 
-    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
+    constructor(conf: Config, txServ: TxService) {
         config = conf
-        grmInMsgService = GrmInMsgService(datasource)
-        grmOutMsgService = GrmOutMsgService(datasource)
-        grmQueryInfoService = GrmQueryInfoService(datasource)
-        grmTxService = GrmTxService(datasource)
+        grmInMsgService = GrmInMsgService()
+        grmOutMsgService = GrmOutMsgService()
+        grmQueryInfoService = GrmQueryInfoService()
+        grmTxService = GrmTxService()
         txService = txServ
 
         accountAddress = config[GrmConfig.Coin.accountAddress]

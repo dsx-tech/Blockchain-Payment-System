@@ -12,25 +12,29 @@ import dsx.bps.core.datamodel.*
 import io.reactivex.disposables.Disposable
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.Mockito
 import java.io.File
 import java.math.BigDecimal
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 internal class InvoiceProcessorUnitTest {
 
     private val manager: BlockchainPaymentSystemManager = Mockito.mock(BlockchainPaymentSystemManager::class.java)
-    private val invoiceProcessor: InvoiceProcessor
+    private lateinit var invoiceProcessor: InvoiceProcessor
     private val datasource = Datasource()
-    private val invService: InvoiceService
-    private val txService: TxService
-    private val testConfig: Config
+    private lateinit var invService: InvoiceService
+    private lateinit var txService: TxService
+    private lateinit var testConfig: Config
 
-    init {
+    @BeforeAll
+    fun setUp() {
         val initConfig = Config()
         val configPath = TestUtils.getResourcePath("TestBpsConfig.yaml")
         val configFile = File(configPath)
@@ -47,10 +51,10 @@ internal class InvoiceProcessorUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        txService = TxService(datasource)
-        DatabaseCreation(datasource).createInvoices()
-        invoiceProcessor = InvoiceProcessor(manager, testConfig, datasource, txService)
-        invService = InvoiceService(datasource)
+        txService = TxService()
+        DatabaseCreation().createInvoices()
+        invoiceProcessor = InvoiceProcessor(manager, testConfig, txService)
+        invService = InvoiceService()
     }
 
     @ParameterizedTest

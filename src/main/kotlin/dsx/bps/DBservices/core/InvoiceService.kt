@@ -3,26 +3,12 @@ package dsx.bps.DBservices.core
 import dsx.bps.DBclasses.core.InvoiceEntity
 import dsx.bps.DBclasses.core.InvoiceTable
 import dsx.bps.DBclasses.core.CryptoAddressEntity
-import dsx.bps.DBclasses.core.tx.TxEntity
-import dsx.bps.DBclasses.core.tx.TxTable
-import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.*
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SizedIterable
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class InvoiceService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!InvoiceTable.exists())
-                SchemaUtils.create(InvoiceTable)
-            if (!TxTable.exists())
-                SchemaUtils.create(TxTable)
-        }
-    }
+class InvoiceService {
 
     fun add(
         status: InvoiceStatus, received: BigDecimal,

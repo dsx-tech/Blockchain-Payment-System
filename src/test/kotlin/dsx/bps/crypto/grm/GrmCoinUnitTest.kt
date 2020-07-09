@@ -48,12 +48,12 @@ internal class GrmCoinUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        payService = PaymentService(datasource)
-        grmInMsgService = GrmInMsgService(datasource)
-        grmOutMsgService = GrmOutMsgService(datasource)
-        grmQueryInfoService = GrmQueryInfoService(datasource)
-        grmTxService = GrmTxService(datasource)
-        txService = TxService(datasource)
+        payService = PaymentService()
+        grmInMsgService = GrmInMsgService()
+        grmOutMsgService = GrmOutMsgService()
+        grmQueryInfoService = GrmQueryInfoService()
+        grmTxService = GrmTxService()
+        txService = TxService()
         grmCoin = GrmCoin(
                 grmConnector, grmExplorer, configPath, grmInMsgService,
                 grmOutMsgService, grmQueryInfoService, grmTxService, txService

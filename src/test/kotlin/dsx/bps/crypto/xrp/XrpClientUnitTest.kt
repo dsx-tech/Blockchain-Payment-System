@@ -46,10 +46,10 @@ internal class XrpClientUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        payService = PaymentService(datasource)
+        payService = PaymentService()
         xrpClient = XrpCoin(
             xrpRpc, xrpBlockchainListener,
-            configPath, datasource, TxService(datasource)
+            configPath, TxService()
         )
     }
 

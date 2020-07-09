@@ -16,10 +16,10 @@ import kotlin.concurrent.timer
 
 class DepositAccountProcessor(
     private val manager: BlockchainPaymentSystemManager,
-    config: Config, datasource: Datasource, txServ: TxService
+    config: Config, txServ: TxService
 ): Observer<Tx> {
 
-    private val depositAccountService = DepositAccountService(datasource)
+    private val depositAccountService = DepositAccountService()
     private val txService = txServ
     private val depositAccounts = depositAccountService.getDepositAccounts()
     private val depositIds = depositAccountService.getDepositIds()

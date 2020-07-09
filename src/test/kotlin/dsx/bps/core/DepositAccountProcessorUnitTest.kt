@@ -48,9 +48,9 @@ internal class DepositAccountProcessorUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        txService = TxService(datasource)
-        depositAccountProcessor = DepositAccountProcessor(manager, testConfig, datasource, txService)
-        depAccService = DepositAccountService(datasource)
+        txService = TxService()
+        depositAccountProcessor = DepositAccountProcessor(manager, testConfig, txService)
+        depAccService = DepositAccountService()
     }
 
     @Test
