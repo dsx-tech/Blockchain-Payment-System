@@ -1,8 +1,7 @@
 package dsx.bps.DBclasses.core.tx
 
 import dsx.bps.DBclasses.core.CryptoAddressTable
-import dsx.bps.DBclasses.core.tx.TxTableConstant.tagMaxLength
-import dsx.bps.core.datamodel.Currency
+import dsx.bps.DBclasses.core.TableConstants.tagMaxLength
 import dsx.bps.core.datamodel.TxStatus
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column

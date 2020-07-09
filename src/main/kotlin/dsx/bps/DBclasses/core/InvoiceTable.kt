@@ -1,6 +1,5 @@
 package dsx.bps.DBclasses.core
 
-import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.InvoiceStatus
 import org.jetbrains.exposed.dao.IntIdTable
 import org.jetbrains.exposed.sql.Column
@@ -11,6 +10,6 @@ object InvoiceTable: IntIdTable() {
     val received: Column<BigDecimal> = decimal("received", 30, 15)
     val invoiceId: Column<String> = varchar("invoiceId", 100)
     val amount: Column<BigDecimal> = decimal("amount", 30, 15)
-    val tag: Column<String?> = varchar("tag", 100).nullable()
+    val tag: Column<String?> = varchar("tag", TableConstants.tagMaxLength).nullable()
     val cryptoAddressId = reference("cryptoAddressId", CryptoAddressTable)
 }

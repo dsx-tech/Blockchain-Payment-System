@@ -20,14 +20,12 @@ class BlockchainPaymentSystemAPI {
         manager = BlockchainPaymentSystemManager(confPath)
     }
 
-    fun sendPayment(currency: Currency, amount: Number, address: String, tag: String? = null): String {
-        val am = BigDecimal(amount.toString())
-        return manager.sendPayment(currency, am, address, tag)
+    fun sendPayment(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): String {
+        return manager.sendPayment(currency, amount, address, tag)
     }
 
-    fun createInvoice(currency: Currency, amount: Number): String {
-        val am = BigDecimal(amount.toString())
-        return manager.createInvoice(currency, am)
+    fun createInvoice(currency: Currency, amount: BigDecimal): String {
+        return manager.createInvoice(currency, amount)
     }
 
     fun getPayment(id: String): Payment? = manager.getPayment(id)
@@ -57,5 +55,4 @@ class BlockchainPaymentSystemAPI {
     fun getLastTxToAddress(id: String, currency: Currency, address: String, amount: Int): List<Tx> {
         return manager.getLastTxToAddress(id, currency, address, amount)
     }
-
 }

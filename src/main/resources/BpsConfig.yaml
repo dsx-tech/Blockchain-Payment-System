@@ -1,27 +1,35 @@
+# IP and port for BPS REST API
+RESTAPI:
+  host: 0.0.0.0
+  port: 8080
+
+# Number of threads for processing invoices.
 BPS:
   threadsForInvoiceObserver: 2
 
+# Frequency of updating the status of invoices in milliseconds.
 invoiceProcessor:
   frequency: 5000
 
+# Frequency of updating the status of payments in milliseconds.
 paymentProcessor:
   frequency: 3000
 
+# Frequency of updating the status of deposit accounts in milliseconds.
 depositAccountProcessor:
   frequency: 5000
 
+# Parameters for the configuration of working with the database.
 database:
   connectionURL: "jdbc:postgresql://localhost:12346/db"
   driver: "org.postgresql.Driver"
   maximumPoolSize: 5
 
 # Enabled currencies
-# Supported сurrencies: BTC, XRP, TRX
+# Supported сurrencies: BTC, XRP, TRX, GRM
+# Set the necessary cryptocurrencies to work with them.
 enabledCurrencies:
   coins:
-    - BTC
-    - XRP
-    - TRX
     - GRM
 
 # Example values
@@ -36,6 +44,7 @@ BTC:
   explorer:
     frequency: 5000
 
+# Example values
 TRX:
   coin:
     # Base58Checksum representation of account
@@ -49,6 +58,7 @@ TRX:
   explorer:
     frequency: 3000
 
+# Example values
 XRP:
   coin:
     account: "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh"
@@ -60,6 +70,7 @@ XRP:
   explorer:
     frequency: 5000
 
+# Example values
 GRM:
   coin:
     accountAddress: "kQCBFvmeIOjrZlSoxIVys2nE7nQUxUPM370tbmyC_lzlaIlk"
@@ -70,8 +81,11 @@ GRM:
     # lengthTagInBytes should be no more than 50
     lengthTagInBytes: 20
   connection:
-    pathToTonClientConfig: "src/main/resources/TonClientConfig.json"
-    keyStorePath: "src/main/resources/TonKeyStore/"
-    logVerbosityLevel: 4
+    # absolute path
+    pathToTonClientConfig: "path_to_client_config"
+    # absolute path
+    keyStorePath: "path_to_keystore"
+    # logVerbosityLevel in 1..5
+    logVerbosityLevel: 1
   explorer:
     frequency: 5000
