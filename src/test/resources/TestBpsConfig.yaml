@@ -18,7 +18,7 @@ depositAccountProcessor:
 database:
   connectionURL: "jdbc:tc:postgresql:9.6.8:///db?TC_INITSCRIPT=file:src/test/resources/init.sql"
   driver: "org.testcontainers.jdbc.ContainerDatabaseDriver"
-  maximumPoolSize: 5
+  maximumPoolSize: 1
 
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX, GRM
