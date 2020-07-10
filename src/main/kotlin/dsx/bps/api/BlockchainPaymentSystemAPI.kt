@@ -47,7 +47,6 @@ class BlockchainPaymentSystemAPI {
 
     fun getDepositAccount(id: String): DepositAccount? = manager.getDepositAccount(id)
 
-
     fun getAllTx(id: String, currency: Currency): List<Tx> {
         return manager.getAllTx(id, currency)
     }
