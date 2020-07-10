@@ -23,7 +23,7 @@ depositAccountProcessor:
 database:
   connectionURL: "jdbc:postgresql://localhost:12346/db"
   driver: "org.postgresql.Driver"
-  maximumPoolSize: 5
+  maximumPoolSize: 1
 
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX, GRM
