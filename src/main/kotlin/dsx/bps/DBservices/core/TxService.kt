@@ -1,24 +1,17 @@
 package dsx.bps.DBservices.core
 
+import dsx.bps.DBclasses.core.CryptoAddressEntity
+import dsx.bps.DBclasses.core.CryptoAddressTable
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.core.tx.TxTable
-import dsx.bps.DBservices.Datasource
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxStatus
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class TxService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!TxTable.exists())
-                SchemaUtils.create(TxTable)
-        }
-    }
+class TxService {
 
     fun add(
         status: TxStatus, destination: String,
@@ -29,16 +22,24 @@ class TxService(datasource: Datasource) {
         val newTx = transaction {
             TxEntity.new {
                 this.status = status
-                this.destination = destination
                 this.tag = tag
                 this.amount = amount
                 this.fee = fee
                 this.hash = hash
                 this.index = index
-                this.currency = currency
+                cryptoAddress = CryptoAddressEntity.find {
+                    CryptoAddressTable.currency eq currency and (CryptoAddressTable.address eq destination)
+                }.first()
             }
         }
         return newTx
+    }
+
+    fun checkCryptoAddress(tx: Tx): Boolean {
+        return transaction {
+            !CryptoAddressEntity.find {
+                CryptoAddressTable.currency eq tx.currency() and (CryptoAddressTable.address eq tx.destination()) }.empty()
+        }
     }
 
     fun getById(id: Int): TxEntity? {
@@ -49,19 +50,28 @@ class TxService(datasource: Datasource) {
         return transaction { TxEntity.find { TxTable.hash eq hash and (TxTable.index eq index) }.first() }
     }
 
+    fun getCurrency(txEntity: TxEntity): Currency {
+        return transaction { txEntity.cryptoAddress.currency }
+    }
+
+    fun getDestination(txEntity: TxEntity): String {
+        return transaction { txEntity.cryptoAddress.address }
+    }
+
     fun updateStatus(status: TxStatus, hash: String, index: Long) {
         return transaction { getByTxId(hash, index).status = status }
     }
 
     fun constructTxByTxEntity(txEntity: TxEntity): Tx {
         return object : Tx {
-            override fun currency(): Currency = txEntity.currency
+            override fun currency(): Currency = getCurrency(txEntity)
             override fun hash(): String = txEntity.hash
             override fun amount(): BigDecimal = txEntity.amount
-            override fun destination(): String = txEntity.destination
+            override fun destination(): String = getDestination(txEntity)
             override fun paymentReference(): String? = txEntity.tag
             override fun fee(): BigDecimal = txEntity.fee
             override fun status(): TxStatus = txEntity.status
+            override fun index(): Long = txEntity.index
         }
     }
 }

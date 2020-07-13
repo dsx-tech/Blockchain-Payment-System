@@ -15,11 +15,15 @@ invoiceProcessor:
 paymentProcessor:
   frequency: 3000
 
+# Frequency of updating the status of deposit accounts in milliseconds.
+depositAccountProcessor:
+  frequency: 5000
+
 # Parameters for the configuration of working with the database.
 database:
-  connectionURL: "jdbc:h2:~/db"
-  driver: "org.h2.Driver"
-  maximumPoolSize: 5
+  connectionURL: "jdbc:postgresql://localhost:12346/db"
+  driver: "org.postgresql.Driver"
+  maximumPoolSize: 1
 
 # Enabled currencies
 # Supported сurrencies: BTC, XRP, TRX, GRM

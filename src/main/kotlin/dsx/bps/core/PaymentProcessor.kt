@@ -14,13 +14,13 @@ import kotlin.concurrent.timer
 
 class PaymentProcessor(
     private val manager: BlockchainPaymentSystemManager,
-    config: Config, datasource: Datasource, txServ: TxService
+    config: Config, txServ: TxService
 ) {
 
     var frequency: Long = config[PaymentProcessorConfig.frequency]
 
     private val txService = txServ
-    private val payService = PaymentService(datasource)
+    private val payService = PaymentService()
     private val pending = payService.getStatusedPayments(PaymentStatus.PENDING)
     private val processing = payService.getStatusedPayments(PaymentStatus.PROCESSING)
     private val payments = payService.getPayments()
@@ -49,7 +49,6 @@ class PaymentProcessor(
 
         payService.updateStatus(PaymentStatus.PROCESSING, id)
         payService.updateFee(payment.fee, id)
-        payService.addTx(id, tx.txid())
         pending.remove(id)
         payment.status = PaymentStatus.PROCESSING
         processing.add(id)

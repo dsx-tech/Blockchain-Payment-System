@@ -45,8 +45,8 @@ The system is started using the Gradle command.
 To run BPS unit tests, you must run command ``gradle test``
 
 ## Payments and Invoices
-BPS operates with two
- entities - Payment and Invoice.
+BPS operates with three
+ entities - Payment, Invoice and DepositAccounts.
 
 Payment - an entity is responsible for the withdrawal of cryptocurrency funds from the BPS account. 
 
@@ -79,10 +79,18 @@ Invoice - an entity is responsible for depositing cryptocurrency funds to the BP
       "tag": "TEST"
     }
     ```
-  
+
+## Deposit accounts
+Deposit account - an entity, that has multiple addresses, to which funds are constantly received.
+### BPS API
+- ```createNewAccount``` - receives account id, list of currencies you want to use and creates account
+- ```createNewAddress``` - receives account id, address currency and return created address
+- ```getDepositAccount``` - receives account id and return deposit account
+- ```getAllTx``` - receives account id, currency and return all transactions to account addresses
+- ```getLastTxToAddress``` - receives account id, currency, address, amount of transactions and return last transactions to address
+
 ### Detailed description of the system
 Coursework with a detailed description of the system
 - [Coursework by Dmitry Pogrebnoy (ru)](http://se.math.spbu.ru/SE/YearlyProjects/vesna-2020/pi/Pogrebnoy-report.pdf)
 - Coursework by Artyom Chemezov - awaiting publication
-- Coursework by Artyom Lunev - awaiting publication
-- [Coursework by Sergey Skaredov (ru)](http://se.math.spbu.ru/SE/YearlyProjects/vesna-2020/pi/Pogrebnoy-report.pdf)
+- [Coursework by Sergey Skaredov (ru)](http://se.math.spbu.ru/SE/YearlyProjects/spring-2019/371/Skaredov-report.pdf)

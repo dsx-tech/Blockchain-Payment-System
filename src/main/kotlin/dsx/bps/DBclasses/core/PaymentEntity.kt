@@ -10,9 +10,7 @@ class PaymentEntity(id: EntityID<Int>): IntEntity(id) {
     var status by PaymentTable.status
     var fee by PaymentTable.fee
     var paymentId by PaymentTable.paymentId
-    var currency by PaymentTable.currency
     var amount by PaymentTable.amount
-    var address by PaymentTable.address
     var tag by PaymentTable.tag
-    var payable by PayableEntity referencedOn PaymentTable.payableId
+    var cryptoAddress by CryptoAddressEntity referencedOn PaymentTable.cryptoAddressId
 }

@@ -7,11 +7,11 @@ import dsx.bps.core.datamodel.Currency
 import dsx.bps.crypto.common.Explorer
 import kotlin.concurrent.timer
 
-class TrxExplorer(override val coin: TrxCoin, datasource: Datasource, txServ: TxService, frequency: Long): Explorer(frequency) {
+class TrxExplorer(override val coin: TrxCoin, txServ: TxService, frequency: Long): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
 
-    private val trxService = TrxService(datasource)
+    private val trxService = TrxService()
     private val txService = txServ
 
     init {
@@ -30,13 +30,15 @@ class TrxExplorer(override val coin: TrxCoin, datasource: Datasource, txServ: Tx
                     new.transactions
                         .forEach {
                             val tx = coin.constructTx(it)
-                            val newTx = txService.add(
-                                tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
-                                tx.fee(), tx.hash(), tx.index(), tx.currency()
-                            )
-                            trxService.add(it.rawData.contract.first().parameter.value.ownerAddress,
-                                it.ret.map { trxTxRet -> trxTxRet.contractRet },  newTx)
-                            emitter.onNext(tx)
+                            if (txService.checkCryptoAddress(tx)) {
+                                val newTx = txService.add(
+                                    tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
+                                    tx.fee(), tx.hash(), tx.index(), tx.currency()
+                                )
+                                trxService.add(it.rawData.contract.first().parameter.value.ownerAddress,
+                                    it.ret.map { trxTxRet -> trxTxRet.contractRet },  newTx)
+                                emitter.onNext(tx)
+                            }
                         }
                     viewed.add(new.hash)
                     new = coin.getBlockById(new.blockHeader.rawData.parentHash)

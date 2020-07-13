@@ -2,27 +2,13 @@ package dsx.bps.DBservices.core
 
 import dsx.bps.DBclasses.core.InvoiceEntity
 import dsx.bps.DBclasses.core.InvoiceTable
-import dsx.bps.DBclasses.core.PayableEntity
-import dsx.bps.DBclasses.core.tx.TxEntity
-import dsx.bps.DBclasses.core.tx.TxTable
-import dsx.bps.DBservices.Datasource
+import dsx.bps.DBclasses.core.CryptoAddressEntity
 import dsx.bps.core.datamodel.*
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.SizedIterable
-import org.jetbrains.exposed.sql.and
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class InvoiceService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!InvoiceTable.exists())
-                SchemaUtils.create(InvoiceTable)
-            if (!TxTable.exists())
-                SchemaUtils.create(TxTable)
-        }
-    }
+class InvoiceService {
 
     fun add(
         status: InvoiceStatus, received: BigDecimal,
@@ -35,11 +21,13 @@ class InvoiceService(datasource: Datasource) {
                 this.status = status
                 this.received = received
                 this.invoiceId = invoiceId
-                this.currency = currency
                 this.amount = amount
-                this.address = address
                 this.tag = tag
-                payable = PayableEntity.new { type = PayableType.Invoice }
+                cryptoAddress = CryptoAddressEntity.new {
+                    type = PayableType.Invoice
+                    this.address = address
+                    this.currency = currency
+                }
             }
         }
 
@@ -81,22 +69,16 @@ class InvoiceService(datasource: Datasource) {
 
     }
 
-    fun addTx(systemId: String, tx: TxId) {
-        transaction {
-            TxEntity.find { TxTable.hash eq tx.hash and (TxTable.index eq tx.index) }.forEach {
-                it.payable = getBySystemId(systemId).payable
-            }
-        }
-    }
-
     fun makeInvFromDB(invoice: InvoiceEntity): Invoice {
-        val inv = Invoice(
-            invoice.invoiceId, invoice.currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
-            invoice.address, invoice.tag
-        )
-        inv.received = invoice.received
-        transaction { invoice.payable.txs.forEach { inv.txids.add(TxId(it.hash, it.index)) } }
-        return inv
+        return transaction {
+            val inv = Invoice(
+                invoice.invoiceId, invoice.cryptoAddress.currency, invoice.amount.stripTrailingZeros().add(BigDecimal.ZERO),
+                invoice.cryptoAddress.address, invoice.tag
+            )
+            inv.received = invoice.received
+            invoice.cryptoAddress.txs.forEach { inv.txids.add(TxId(it.hash, it.index)) }
+            return@transaction inv
+        }
     }
 
     fun updateStatus(status: InvoiceStatus, systemId: String) {

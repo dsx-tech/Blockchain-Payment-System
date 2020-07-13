@@ -4,7 +4,6 @@ import com.uchuhimo.konf.Config
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import dsx.bps.config.DatabaseConfig
-import dsx.bps.exception.DBservices.BpsDatabaseException
 import org.jetbrains.exposed.sql.Database
 
 class Datasource() {
@@ -18,10 +17,5 @@ class Datasource() {
         config.validate()
         conn = Database.connect(HikariDataSource(config))
         conn!!.useNestedTransactions = true
-    }
-
-    fun getConnection(): Database {
-        return conn
-            ?: throw BpsDatabaseException("connection was not initialized")
     }
 }

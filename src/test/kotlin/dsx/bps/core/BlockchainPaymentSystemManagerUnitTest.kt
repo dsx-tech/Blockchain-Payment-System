@@ -14,11 +14,12 @@ internal class BlockchainPaymentSystemManagerUnitTest {
     private val coinsManager: CoinsManager = Mockito.mock(CoinsManager::class.java)
     private val invoiceProcessor = Mockito.mock(InvoiceProcessor::class.java)
     private val paymentProcessor = Mockito.mock(PaymentProcessor::class.java)
+    private val depositAccountProcessor = Mockito.mock(DepositAccountProcessor::class.java)
     private val bpsManager: BlockchainPaymentSystemManager
 
     init {
         Mockito.`when`(coinsManager.getAllEmitters()).thenReturn(PublishSubject.create())
-        bpsManager = BlockchainPaymentSystemManager(coinsManager, invoiceProcessor, paymentProcessor)
+        bpsManager = BlockchainPaymentSystemManager(coinsManager, invoiceProcessor, paymentProcessor, depositAccountProcessor)
     }
 
     @Test

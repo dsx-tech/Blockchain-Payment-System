@@ -3,10 +3,13 @@ package dsx.bps.crypto.xrp
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.core.PaymentService
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.XrpConfig
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.xrp.datamodel.*
@@ -22,6 +25,7 @@ internal class XrpClientUnitTest {
     private val xrpRpc = Mockito.mock(XrpRpc::class.java)
     private val xrpBlockchainListener = Mockito.mock(XrpExplorer::class.java)
     private val datasource = Datasource()
+    private val payService: PaymentService
     private val xrpClient: XrpCoin
     private val testConfig: Config
 
@@ -42,9 +46,10 @@ internal class XrpClientUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
+        payService = PaymentService()
         xrpClient = XrpCoin(
             xrpRpc, xrpBlockchainListener,
-            configPath, datasource, TxService(datasource)
+            configPath, TxService()
         )
     }
 
@@ -116,6 +121,9 @@ internal class XrpClientUnitTest {
         Mockito.`when`(xrpTx.destination).thenReturn("destination")
 
         Mockito.`when`(xrpRpc.submit("signedtx")).thenReturn(xrpTx)
+
+        payService.add(PaymentStatus.PENDING, "paymentId1", Currency.XRP,
+            BigDecimal.TEN, "destination", "tag")
 
         xrpClient.sendPayment(BigDecimal.TEN, "testaddress", "1")
     }

@@ -3,10 +3,13 @@ package dsx.bps.crypto.trx
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.core.PaymentService
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.TestUtils.Companion.getResourcePath
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.TrxConfig
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.trx.datamodel.*
@@ -24,6 +27,7 @@ internal class TrxClientUnitTest {
     private val trxRpc = Mockito.mock(TrxRpc::class.java)
     private val trxBlockchainListener = Mockito.mock(TrxExplorer::class.java)
     private val datasource = Datasource()
+    private val payService: PaymentService
     private val trxClient: TrxCoin
     private val testConfig: Config
 
@@ -44,8 +48,9 @@ internal class TrxClientUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
+        payService = PaymentService()
         trxClient = TrxCoin(trxRpc, trxBlockchainListener,
-            configPath, datasource, TxService(datasource)
+            configPath, TxService()
         )
     }
 
@@ -106,7 +111,7 @@ internal class TrxClientUnitTest {
             val trxBroadcastTxResult = Mockito.mock(TrxBroadcastTxResult::class.java)
             Mockito.`when`(trxBroadcastTxResult.success).thenReturn(true)
             Mockito.`when`(trxRpc.broadcastTransaction(trxTx)).thenReturn(trxBroadcastTxResult)
-
+            payService.add(PaymentStatus.PENDING, "payaddr", Currency.TRX, BigDecimal.TEN, "testaddress", "1")
             trxClient.sendPayment(BigDecimal.TEN, "testaddress", "1")
         }
 

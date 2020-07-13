@@ -161,34 +161,37 @@ class GrmExplorer(
             // if tx process internal message - save tx in db and emit it
             //save tx
             val tx = coin.constructDepositTx(grmTx)
-            val txEntity = txService.add(
+            if (txService.checkCryptoAddress(tx)) {
+                val txEntity = txService.add(
                     tx.status(), tx.destination(), tx.paymentReference(), tx.amount(),
                     tx.fee(), tx.txid().hash, tx.txid().index, tx.currency()
-            )
-            val grmInMsg = grmTx.inMsg
-            //save inMsg
-            val inMsgEntity = grmInMsgService.add(
+                )
+                val grmInMsg = grmTx.inMsg
+                //save inMsg
+                val inMsgEntity = grmInMsgService.add(
                     grmInMsg.source, grmInMsg.destination, grmInMsg.value,
                     grmInMsg.fwdFee, grmInMsg.ihrFee, grmInMsg.createdLt,
                     grmInMsg.bodyHash,
                     if (grmTx.inMsg.msgText.length <= inMsgTextMaxLength)
                         grmTx.inMsg.msgText else msgTextOversizeValue
-            )
-            //save grmTx
-            val grmEntity = grmTxService.add(grmTx.utime, inMsgEntity, txEntity)
-            //save outMsgs
-            for (outMsg in grmTx.outMsg) {
-                grmOutMsgService.add(
+                )
+                //save grmTx
+                val grmEntity = grmTxService.add(grmTx.utime, inMsgEntity, txEntity)
+                //save outMsgs
+                for (outMsg in grmTx.outMsg) {
+                    grmOutMsgService.add(
                         outMsg.source, outMsg.destination, outMsg.value,
                         outMsg.fwdFee, outMsg.ihrFee, outMsg.createdLt,
                         outMsg.bodyHash,
                         if (outMsg.msgText.length <= outMsgTextMaxLength)
                             outMsg.msgText else msgTextOversizeValue,
                         grmEntity
-                )
+                    )
+                }
+                if (grmTx.inMsg.msgText.length <= inMsgTextMaxLength)
+                    emitter.onNext(tx)
             }
-            if (grmTx.inMsg.msgText.length <= inMsgTextMaxLength)
-                emitter.onNext(tx)
+
         }
     }
 }

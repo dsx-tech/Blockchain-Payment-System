@@ -22,7 +22,7 @@ class CoinsManager {
 
     private val enabledCoins: Map<Currency, Coin>
 
-    constructor(configFile: File, datasource: Datasource, txServ: TxService) {
+    constructor(configFile: File, txServ: TxService) {
         val enabledCurrenciesConfig = with(Config()) {
             addSpec(EnabledCurrenciesConfig)
             from.yaml.file(configFile)
@@ -37,10 +37,10 @@ class CoinsManager {
             }
             coinConfig.validateRequired()
             mutableCoinsMap[enabledCurrency] = when (enabledCurrency) {
-                Currency.BTC -> BtcCoin(coinConfig, datasource, txServ)
-                Currency.TRX -> TrxCoin(coinConfig, datasource, txServ)
-                Currency.XRP -> XrpCoin(coinConfig, datasource, txServ)
-                Currency.GRM -> GrmCoin(coinConfig, datasource, txServ)
+                Currency.BTC -> BtcCoin(coinConfig, txServ)
+                Currency.TRX -> TrxCoin(coinConfig, txServ)
+                Currency.XRP -> XrpCoin(coinConfig, txServ)
+                Currency.GRM -> GrmCoin(coinConfig, txServ)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()
