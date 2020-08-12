@@ -34,9 +34,9 @@ class TrxCoin: Coin {
 
     private val confirmations: Int
 
-    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
+    constructor(conf: Config, txServ: TxService) {
         config = conf
-        trxService = TrxService(datasource)
+        trxService = TrxService()
         txService = txServ
 
         account = config[TrxConfig.Coin.account]
@@ -51,11 +51,11 @@ class TrxCoin: Coin {
         confirmations = config[TrxConfig.Coin.confirmations]
 
         val frequency = config[TrxConfig.Explorer.frequency]
-        explorer = TrxExplorer(this,datasource, txServ, frequency)
+        explorer = TrxExplorer(this, txServ, frequency)
     }
 
-    constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String, datasource: Datasource, txServ: TxService) {
-        trxService = TrxService(datasource)
+    constructor(trxRpc: TrxRpc, trxExplorer: TrxExplorer, configPath: String, txServ: TxService) {
+        trxService = TrxService()
         txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {

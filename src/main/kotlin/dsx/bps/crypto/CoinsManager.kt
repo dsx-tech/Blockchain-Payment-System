@@ -24,7 +24,7 @@ class CoinsManager {
 
     private val enabledCoins: Map<Currency, Coin>
 
-    constructor(configFile: File, datasource: Datasource, txServ: TxService) {
+    constructor(configFile: File, txServ: TxService) {
         val enabledCurrenciesConfig = with(Config()) {
             addSpec(EnabledCurrenciesConfig)
             from.yaml.file(configFile)

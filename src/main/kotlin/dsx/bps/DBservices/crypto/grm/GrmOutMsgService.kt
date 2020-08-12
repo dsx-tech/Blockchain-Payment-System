@@ -3,20 +3,10 @@ package dsx.bps.DBservices.crypto.grm
 import dsx.bps.DBclasses.crypto.grm.GrmOutMsgEntity
 import dsx.bps.DBclasses.crypto.grm.GrmOutMsgTable
 import dsx.bps.DBclasses.crypto.grm.GrmTxEntity
-import dsx.bps.DBservices.Datasource
 import org.jetbrains.exposed.dao.EntityID
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class GrmOutMsgService(datasource: Datasource) {
-
-    init {
-        transaction(datasource.getConnection()) {
-            if (!GrmOutMsgTable.exists())
-                SchemaUtils.create(GrmOutMsgTable)
-        }
-    }
+class GrmOutMsgService {
 
     fun add(source: String, destination: String,
             value: Long, fwdFee: Long,

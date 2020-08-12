@@ -3,6 +3,7 @@ package dsx.bps.crypto.grm
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
 import dsx.bps.DBservices.Datasource
+import dsx.bps.DBservices.core.PaymentService
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.DBservices.crypto.grm.GrmInMsgService
 import dsx.bps.DBservices.crypto.grm.GrmOutMsgService
@@ -11,6 +12,8 @@ import dsx.bps.DBservices.crypto.grm.GrmTxService
 import dsx.bps.TestUtils
 import dsx.bps.config.DatabaseConfig
 import dsx.bps.config.currencies.GrmConfig
+import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.PaymentStatus
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.core.datamodel.TxStatus
 import dsx.bps.crypto.grm.datamodel.*
@@ -26,6 +29,7 @@ internal class GrmCoinUnitTest {
     private val grmConnector = Mockito.mock(GrmConnector::class.java)
     private val grmExplorer = Mockito.mock(GrmExplorer::class.java)
     private val datasource = Datasource()
+    private val payService: PaymentService
     private val grmInMsgService: GrmInMsgService
     private val grmOutMsgService: GrmOutMsgService
     private val grmQueryInfoService: GrmQueryInfoService
@@ -43,11 +47,12 @@ internal class GrmCoinUnitTest {
         databaseConfig.validateRequired()
 
         datasource.initConnection(databaseConfig)
-        grmInMsgService = GrmInMsgService(datasource)
-        grmOutMsgService = GrmOutMsgService(datasource)
-        grmQueryInfoService = GrmQueryInfoService(datasource)
-        grmTxService = GrmTxService(datasource)
-        txService = TxService(datasource)
+        payService = PaymentService()
+        grmInMsgService = GrmInMsgService()
+        grmOutMsgService = GrmOutMsgService()
+        grmQueryInfoService = GrmQueryInfoService()
+        grmTxService = GrmTxService()
+        txService = TxService()
         grmCoin = GrmCoin(
                 grmConnector, grmExplorer, configPath, grmInMsgService,
                 grmOutMsgService, grmQueryInfoService, grmTxService, txService
@@ -107,6 +112,9 @@ internal class GrmCoinUnitTest {
                 grmConnector.getQueryEstimateFees(
                         1, true)
         ).thenReturn(grmQueryFees)
+
+        payService.add(PaymentStatus.PENDING, "payId1", Currency.GRM,
+            BigDecimal.ONE, "address", "tag")
 
         val resultTx = grmCoin.sendPayment(BigDecimal.TEN, "address", "tag")
         Assertions.assertEquals(resultTx.currency(), grmCoin.currency)

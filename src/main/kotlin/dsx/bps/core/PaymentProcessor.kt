@@ -14,13 +14,13 @@ import kotlin.concurrent.timer
 
 class PaymentProcessor(
     private val manager: BlockchainPaymentSystemManager,
-    config: Config, datasource: Datasource, txServ: TxService
+    config: Config, txServ: TxService
 ) {
 
     var frequency: Long = config[PaymentProcessorConfig.frequency]
 
     private val txService = txServ
-    private val payService = PaymentService(datasource)
+    private val payService = PaymentService()
     private val pending = payService.getStatusedPayments(PaymentStatus.PENDING)
     private val processing = payService.getStatusedPayments(PaymentStatus.PROCESSING)
     private val payments = payService.getPayments()
@@ -30,29 +30,28 @@ class PaymentProcessor(
     }
 
     fun createPayment(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): Payment {
-            val id = UUID.randomUUID().toString().replace("-", "")
-            val pay = Payment(id, currency, amount, address, tag)
-            payService.add(PaymentStatus.PENDING, id, currency, amount, address, tag)
-            payments[pay.id] = pay
-            pending.add(pay.id)
+        val id = UUID.randomUUID().toString().replace("-", "")
+        val pay = Payment(id, currency, amount, address, tag)
+        payService.add(PaymentStatus.PENDING, id, currency, amount, address, tag)
+        payments[pay.id] = pay
+        pending.add(pay.id)
 
-            return pay
+        return pay
     }
 
     fun updatePayment(id: String, tx: Tx) {
-            if (!pending.contains(id)) throw PaymentException("There is no pending payment with id = $id")
-            val payment = payments[id]
-                ?: throw PaymentException("There is no payment with id = $id")
+        if (!pending.contains(id)) throw PaymentException("There is no pending payment with id = $id")
+        val payment = payments[id]
+                      ?: throw PaymentException("There is no payment with id = $id")
 
-            payment.txid = tx.txid()
-            payment.fee = tx.fee()
+        payment.txid = tx.txid()
+        payment.fee = tx.fee()
 
-            payService.updateStatus(PaymentStatus.PROCESSING, id)
-            payService.updateFee(payment.fee, id)
-            payService.addTx(id, tx.txid())
-            pending.remove(id)
-            payment.status = PaymentStatus.PROCESSING
-            processing.add(id)
+        payService.updateStatus(PaymentStatus.PROCESSING, id)
+        payService.updateFee(payment.fee, id)
+        pending.remove(id)
+        payment.status = PaymentStatus.PROCESSING
+        processing.add(id)
     }
 
     fun getPayment(id: String): Payment? = payments[id]
@@ -95,5 +94,4 @@ class PaymentProcessor(
         pay.amount.compareTo(tx.amount()) == 0 &&
         pay.address == tx.destination() &&
                 pay.tag == tx.paymentReference()
-
 }

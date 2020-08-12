@@ -1,20 +1,9 @@
 package dsx.bps.DBservices.crypto.grm
 
 import dsx.bps.DBclasses.crypto.grm.GrmInMsgEntity
-import dsx.bps.DBclasses.crypto.grm.GrmInMsgTable
-import dsx.bps.DBservices.Datasource
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class GrmInMsgService(datasource: Datasource) {
-
-    init {
-        transaction(datasource.getConnection()) {
-            if (!GrmInMsgTable.exists())
-                SchemaUtils.create(GrmInMsgTable)
-        }
-    }
+class GrmInMsgService {
 
     fun add(source: String, destination: String,
             value: Long, fwdFee: Long,

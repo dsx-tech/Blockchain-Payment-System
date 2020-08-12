@@ -30,9 +30,9 @@ class XrpCoin: Coin {
     override val connector: XrpRpc
     override val explorer: XrpExplorer
 
-    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
+    constructor(conf: Config, txServ: TxService) {
         config = conf
-        xrpService = XrpService(datasource)
+        xrpService = XrpService()
         txService = txServ
 
         account = config[XrpConfig.Coin.account]
@@ -45,14 +45,14 @@ class XrpCoin: Coin {
         connector = XrpRpc(url)
 
         val frequency = config[XrpConfig.Explorer.frequency]
-        explorer = XrpExplorer(this, datasource, txServ, frequency)
+        explorer = XrpExplorer(this, txServ, frequency)
     }
 
     constructor(
         xrpRpc: XrpRpc, xrpExplorer: XrpExplorer, configPath: String,
-        datasource: Datasource, txServ: TxService
+        txServ: TxService
     ) {
-        xrpService = XrpService(datasource)
+        xrpService = XrpService()
         txService = txServ
         val configFile = File(configPath)
         config = with(Config()) {

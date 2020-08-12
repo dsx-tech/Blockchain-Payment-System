@@ -2,20 +2,10 @@ package dsx.bps.DBservices.crypto
 
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.crypto.xrp.XrpTxEntity
-import dsx.bps.DBclasses.crypto.xrp.XrpTxTable
-import dsx.bps.DBservices.Datasource
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigDecimal
 
-class XrpService(datasource: Datasource) {
-    init {
-        transaction(datasource.getConnection()) {
-            if (!XrpTxTable.exists())
-                SchemaUtils.create(XrpTxTable)
-        }
-    }
+class XrpService {
 
     fun add(
         fee: BigDecimal, account: String,

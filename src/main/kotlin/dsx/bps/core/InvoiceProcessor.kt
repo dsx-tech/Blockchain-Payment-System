@@ -16,10 +16,10 @@ import kotlin.concurrent.timer
 
 class InvoiceProcessor(
     private val manager: BlockchainPaymentSystemManager,
-    config: Config, datasource: Datasource, txServ: TxService
+    config: Config, txServ: TxService
 ) : Observer<Tx> {
 
-    private val invService = InvoiceService(datasource)
+    private val invService = InvoiceService()
     private val txService = txServ
     private val unpaid: ConcurrentLinkedQueue<String> = ConcurrentLinkedQueue(invService.getUnpaid())
     private val invoices = invService.getInvoices()
@@ -84,12 +84,13 @@ class InvoiceProcessor(
     override fun onNext(tx: Tx) {
         if (unpaid.isEmpty())
             return
+
         unpaid
             .mapNotNull { id -> invoices[id] }
             .filter { inv -> match(inv, tx) }
             .forEach { inv ->
                 recalculate(inv)
-                invService.addTx(inv.id, tx.txid())
+
                 synchronized(inv) {
                     inv.txids.add(tx.txid())
 
