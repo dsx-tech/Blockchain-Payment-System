@@ -1,7 +1,6 @@
 package dsx.bps.crypto.eth
 
 import com.uchuhimo.konf.Config
-import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.DBservices.crypto.EthService
 import dsx.bps.config.currencies.EthConfig
@@ -29,8 +28,8 @@ abstract class EthManager: Coin {
     internal val txService: TxService
 
 
-    constructor(conf: Config, datasource: Datasource, txServ: TxService) {
-        ethService = EthService(datasource)
+    constructor(conf: Config, txServ: TxService) {
+        ethService = EthService()
         txService = txServ
 
         config = conf

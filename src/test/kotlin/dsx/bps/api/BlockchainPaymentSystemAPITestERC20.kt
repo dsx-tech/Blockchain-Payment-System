@@ -72,6 +72,7 @@ internal class BlockchainPaymentSystemAPITestERC20 {
         }
     }
 
+    @Disabled
     @Order(2)
     @Test
     fun sendPayments() {
@@ -124,6 +125,7 @@ internal class BlockchainPaymentSystemAPITestERC20 {
         }
     }
 
+    @Disabled
     @Order(3)
     @Test
     fun createInvoice() {

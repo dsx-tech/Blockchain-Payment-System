@@ -1,7 +1,6 @@
 package dsx.bps.crypto.eth.erc20
 
 import com.uchuhimo.konf.Config
-import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.currencies.EthConfig
 import dsx.bps.core.datamodel.Currency
@@ -17,8 +16,8 @@ import org.web3j.utils.Convert
 import java.math.BigDecimal
 import java.math.BigInteger
 
-class Erc20Coin(token: Currency, conf: Config, datasource: Datasource, txServ: TxService) :
-    EthManager(conf, datasource, txServ) {
+class Erc20Coin(token: Currency, conf: Config, txServ: TxService) :
+    EthManager(conf, txServ) {
     override val currency : Currency = token
     override val connector: Erc20Rpc
     override  val explorer: Erc20Explorer
@@ -39,7 +38,7 @@ class Erc20Coin(token: Currency, conf: Config, datasource: Datasource, txServ: T
         } else {
             contract = ct
         }
-        explorer = Erc20Explorer(this, connector.token, frequency, datasource, txService)
+        explorer = Erc20Explorer(this, connector.token, frequency, txService)
     }
 
     fun getTransactionByHash(hash: String) = connector.ethRpc.getTransactionByHash(hash)

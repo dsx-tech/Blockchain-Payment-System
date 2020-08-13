@@ -122,6 +122,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         }
     }
 
+    @Disabled
     @Order(3)
     @Test
     fun createInvoice() {
@@ -151,6 +152,7 @@ internal class BlockchainPaymentSystemAPITestETH {
         println("ALICE bal. is ${aliceAPI.getBalance(Currency.ETH)}")
     }
 
+    @Disabled
     @Order(4)
     @Test
     fun createInvoiceWithTwoPayments() {

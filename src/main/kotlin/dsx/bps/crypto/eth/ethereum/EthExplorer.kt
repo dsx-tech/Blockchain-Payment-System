@@ -1,6 +1,5 @@
 package dsx.bps.crypto.eth.ethereum
 
-import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.DBservices.crypto.EthService
 import dsx.bps.core.datamodel.Currency
@@ -12,11 +11,11 @@ import java.math.BigInteger
 import java.util.*
 import kotlin.concurrent.timer
 
-class EthExplorer(override val coin: EthCoin, frequency: Long, datasource: Datasource,
+class EthExplorer(override val coin: EthCoin, frequency: Long,
                   private val txService: TxService): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
-    private val ethService = EthService(datasource)
+    private val ethService = EthService()
     private var router: Router
     private lateinit var last: EthBlock.Block
 

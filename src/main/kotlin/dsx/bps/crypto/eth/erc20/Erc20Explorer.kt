@@ -1,6 +1,5 @@
 package dsx.bps.crypto.eth.erc20
 
-import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.DBservices.crypto.EthService
 import dsx.bps.core.datamodel.Currency
@@ -10,11 +9,11 @@ import dsx.bps.crypto.eth.erc20.datamodel.ERC20
 import org.web3j.protocol.core.DefaultBlockParameterName
 import org.web3j.protocol.core.methods.request.EthFilter
 
-class Erc20Explorer (override val coin: Erc20Coin, private val token: ERC20, frequency: Long, datasource: Datasource,
+class Erc20Explorer (override val coin: Erc20Coin, private val token: ERC20, frequency: Long,
                      private val txService: TxService): Explorer(frequency) {
 
     override val currency: Currency = coin.currency
-    private val ethService = EthService(datasource)
+    private val ethService = EthService()
     private val router: Router
 
     init {

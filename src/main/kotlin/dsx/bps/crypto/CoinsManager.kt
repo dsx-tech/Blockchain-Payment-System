@@ -2,7 +2,6 @@ package dsx.bps.crypto
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.currencies.EnabledCurrenciesConfig
 import dsx.bps.core.datamodel.Currency
@@ -39,12 +38,12 @@ class CoinsManager {
             }
             coinConfig.validateRequired()
             mutableCoinsMap[enabledCurrency] = when (enabledCurrency) {
-                Currency.BTC -> BtcCoin(coinConfig, datasource, txServ)
-                Currency.TRX -> TrxCoin(coinConfig, datasource, txServ)
-                Currency.XRP -> XrpCoin(coinConfig, datasource, txServ)
-                Currency.ETH -> EthCoin(coinConfig, datasource, txServ)
-                Currency.GRM -> GrmCoin(coinConfig, datasource, txServ)
-                Currency.USDT, Currency.BNB -> Erc20Coin(enabledCurrency, coinConfig, datasource, txServ)
+                Currency.BTC -> BtcCoin(coinConfig, txServ)
+                Currency.TRX -> TrxCoin(coinConfig, txServ)
+                Currency.XRP -> XrpCoin(coinConfig, txServ)
+                Currency.ETH -> EthCoin(coinConfig, txServ)
+                Currency.GRM -> GrmCoin(coinConfig, txServ)
+                Currency.USDT, Currency.BNB -> Erc20Coin(enabledCurrency, coinConfig, txServ)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()

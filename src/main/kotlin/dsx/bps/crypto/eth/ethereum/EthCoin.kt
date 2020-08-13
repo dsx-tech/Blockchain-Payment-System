@@ -1,7 +1,6 @@
 package dsx.bps.crypto.eth.ethereum
 
 import com.uchuhimo.konf.Config
-import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.core.datamodel.Currency
 import dsx.bps.core.datamodel.Tx
@@ -14,14 +13,14 @@ import org.web3j.protocol.core.methods.response.Transaction
 import org.web3j.utils.Convert
 import java.math.BigDecimal
 
-class EthCoin(conf: Config, datasource: Datasource, txServ: TxService) : EthManager(conf, datasource, txServ) {
+class EthCoin(conf: Config, txServ: TxService) : EthManager(conf, txServ) {
     override val currency = Currency.ETH
     override val explorer: EthExplorer
     override val connector = commonConnector
     val accounts = mutableListOf<EthAccount>()
 
     init {
-        explorer = EthExplorer(this, frequency, datasource, txService)
+        explorer = EthExplorer(this, frequency, txService)
     }
 
 

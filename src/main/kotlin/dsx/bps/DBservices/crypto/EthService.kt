@@ -6,7 +6,6 @@ import dsx.bps.DBclasses.crypto.erc20.Erc20ContractTable
 import dsx.bps.DBclasses.crypto.eth.EthAccountTable
 import dsx.bps.DBclasses.crypto.eth.EthTxEntity
 import dsx.bps.DBclasses.crypto.eth.EthTxTable
-import dsx.bps.DBservices.Datasource
 import dsx.bps.crypto.eth.erc20.datamodel.Erc20Contract
 import dsx.bps.crypto.eth.erc20.datamodel.Erc20Tx
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -14,9 +13,10 @@ import org.jetbrains.exposed.sql.exists
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.math.BigInteger
 
-class EthService(datasource: Datasource) {
+class EthService {
+
     init {
-        transaction(datasource.getConnection()) {
+        transaction() {
             if (!EthTxTable.exists())
                 SchemaUtils.create(EthTxTable)
             if (!EthAccountTable.exists())
@@ -57,8 +57,8 @@ class EthService(datasource: Datasource) {
 
     fun getTokensTransfer(txHash: String, owner: String, contractAddress: String): Erc20Tx {
         val txList = transaction { TxEntity.all().filter { it.hash == txHash } }
-        val tx = txList.find { it.destination !=  owner && it.destination != contractAddress}
-        return  Erc20Tx(txHash, tx!!.destination, tx.amount)
+        val tx = txList.find { it.cryptoAddress.address !=  owner && it.cryptoAddress.address != contractAddress}
+        return  Erc20Tx(txHash, tx!!.cryptoAddress.address, tx.amount)
     }
 
     fun getContractByAddress(contractAddress: String): Erc20Contract? {
@@ -72,7 +72,7 @@ class EthService(datasource: Datasource) {
     }
 
     fun isNewTransaction(txHash: String, destination: String): Boolean {
-        return transaction { TxEntity.all().filter { it.hash == txHash && it.destination == destination } }.isEmpty()
+        return transaction { TxEntity.all().filter { it.hash == txHash && it.cryptoAddress.address == destination } }.isEmpty()
     }
 
     fun delete() {
