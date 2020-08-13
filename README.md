@@ -10,7 +10,7 @@ Blockchain Payment System is an open source payment system
 - Ripple (XRP)
 - TRON (TRX)
 - Ethereum (ETH)
-- Tether (USDT)
+- ERC-20
 
 
 ## Requirements
@@ -120,4 +120,5 @@ Deposit account - an entity, that has multiple addresses, to which funds are con
 Coursework with a detailed description of the system
 - [Coursework by Dmitry Pogrebnoy (ru)](http://se.math.spbu.ru/SE/YearlyProjects/vesna-2020/pi/Pogrebnoy-report.pdf)
 - Coursework by Artyom Chemezov - awaiting publication
+- [Coursework by Sergey Andreev (ru)](https://oops.math.spbu.ru/SE/YearlyProjects/vesna-2020/YearlyProjects/vesna-2020/mo-3rd-course/S.Andreev-report.pdf)
 - [Coursework by Sergey Skaredov (ru)](http://se.math.spbu.ru/SE/YearlyProjects/spring-2019/371/Skaredov-report.pdf)
