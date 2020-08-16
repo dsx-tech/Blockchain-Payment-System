@@ -2,7 +2,6 @@ package dsx.bps.crypto
 
 import com.uchuhimo.konf.Config
 import com.uchuhimo.konf.source.yaml
-import dsx.bps.DBservices.Datasource
 import dsx.bps.DBservices.core.TxService
 import dsx.bps.config.currencies.EnabledCurrenciesConfig
 import dsx.bps.core.datamodel.Currency
@@ -10,6 +9,8 @@ import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxId
 import dsx.bps.crypto.btc.BtcCoin
 import dsx.bps.crypto.common.Coin
+import dsx.bps.crypto.eth.erc20.Erc20Coin
+import dsx.bps.crypto.eth.ethereum.EthCoin
 import dsx.bps.crypto.grm.GrmCoin
 import dsx.bps.crypto.trx.TrxCoin
 import dsx.bps.crypto.xrp.XrpCoin
@@ -40,7 +41,9 @@ class CoinsManager {
                 Currency.BTC -> BtcCoin(coinConfig, txServ)
                 Currency.TRX -> TrxCoin(coinConfig, txServ)
                 Currency.XRP -> XrpCoin(coinConfig, txServ)
+                Currency.ETH -> EthCoin(coinConfig, txServ)
                 Currency.GRM -> GrmCoin(coinConfig, txServ)
+                Currency.USDT, Currency.BNB -> Erc20Coin(enabledCurrency, coinConfig, txServ)
             }
         }
         enabledCoins = mutableCoinsMap.toMap()
@@ -87,5 +90,15 @@ class CoinsManager {
 
     fun getAllEmitters(): Observable<Tx> {
         return Observable.merge(enabledCoins.values.map { it.getTxEmitter() })
+    }
+
+    @Deprecated("only for tests")
+    fun kill(currency: Currency){
+        getCoin(currency).kill()
+    }
+
+    @Deprecated("only for tests")
+    fun clearDb(currency: Currency){
+        getCoin(currency).clearDb()
     }
 }

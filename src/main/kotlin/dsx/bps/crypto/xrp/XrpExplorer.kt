@@ -31,7 +31,7 @@ class XrpExplorer(
                     .transactions
                     .filter {
                         it.tx.type == "Payment" &&
-                        it.tx.amount?.currency == currency.name
+                                it.tx.amount?.currency == currency.name
                     }
                     .forEach {
                         val tx = coin.constructTx(it)

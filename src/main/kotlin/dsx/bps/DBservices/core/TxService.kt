@@ -5,6 +5,7 @@ import dsx.bps.DBclasses.core.CryptoAddressTable
 import dsx.bps.DBclasses.core.tx.TxEntity
 import dsx.bps.DBclasses.core.tx.TxTable
 import dsx.bps.core.datamodel.Currency
+import dsx.bps.core.datamodel.PayableType
 import dsx.bps.core.datamodel.Tx
 import dsx.bps.core.datamodel.TxStatus
 import org.jetbrains.exposed.sql.and
@@ -27,9 +28,23 @@ class TxService {
                 this.fee = fee
                 this.hash = hash
                 this.index = index
-                cryptoAddress = CryptoAddressEntity.find {
+                /*cryptoAddress = CryptoAddressEntity.find {
                     CryptoAddressTable.currency eq currency and (CryptoAddressTable.address eq destination)
-                }.first()
+                }.first() */
+                val addresses = transaction { CryptoAddressEntity.all().filter { it.currency == currency
+                        && it.address == destination }}
+                if (addresses.count() == 0)
+                {
+                    this.cryptoAddress = CryptoAddressEntity.new {
+                        type = PayableType.Payment
+                        this.address = destination
+                        this.currency = currency
+                    }
+                }
+                else
+                {
+                    this.cryptoAddress = addresses.first()
+                }
             }
         }
         return newTx

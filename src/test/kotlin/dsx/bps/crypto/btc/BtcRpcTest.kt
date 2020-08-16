@@ -1,23 +1,49 @@
 package dsx.bps.crypto.btc
 
+import dsx.bps.crypto.eth.KGenericContainer
+import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Disabled
-import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.testcontainers.containers.wait.strategy.Wait.forLogMessage
+import org.testcontainers.junit.jupiter.Container
+import org.testcontainers.junit.jupiter.Testcontainers
 import java.math.BigDecimal
 import kotlin.math.roundToInt
 
-@Disabled
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation::class)
+@Testcontainers
 internal class BtcRpcTest {
 
-    private val url = "http://bob:password@127.0.0.1:18444/"
-    private val rpc = BtcRpc(url)
+    private lateinit var url: String
+    private lateinit var rpc : BtcRpc
     private val alice = "2N2PDfbH7zRjB1G7MuiVSYYfykME28wKFw6"
 
+    companion object {
+        @Container
+        @JvmStatic
+        val container: KGenericContainer = KGenericContainer("siandreev/bitcoind-regtest:alice-bob-regtest")
+            .withExposedPorts(18443, 18444)
+            .waitingFor(
+                forLogMessage(".*The node is ready!.*", 1)
+            )
+    }
+
+    @BeforeAll
+    fun setUp() {
+        val address = container.containerIpAddress
+        val port = container.firstMappedPort
+        url = "http://alice:password@$address:$port/"
+        rpc = BtcRpc(url)
+        Thread.sleep(4000)
+    }
+
+    @Order(1)
     @Test
     fun getBalance() {
         assertDoesNotThrow {
             val r = rpc.getBalance()
-            println("btc getbalance: $r")
+            assertEquals(5050.0.toBigDecimal(), r)
         }
     }
 
@@ -129,11 +155,10 @@ internal class BtcRpcTest {
     }
 
     @Test
-    fun generate() {
+    fun generatetoaddress() {
         assertDoesNotThrow {
-            val r = rpc.generate(1)
+            val r = rpc.generatetoaddress(1, alice)
             println("btc generate: {n:1}: $r")
         }
-
     }
 }

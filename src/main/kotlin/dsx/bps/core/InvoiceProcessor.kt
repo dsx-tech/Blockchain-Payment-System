@@ -11,6 +11,7 @@ import io.reactivex.Observer
 import io.reactivex.disposables.Disposable
 import java.math.BigDecimal
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import kotlin.concurrent.timer
 
 class InvoiceProcessor(
@@ -20,7 +21,7 @@ class InvoiceProcessor(
 
     private val invService = InvoiceService()
     private val txService = txServ
-    private val unpaid = invService.getUnpaid()
+    private val unpaid: ConcurrentLinkedQueue<String> = ConcurrentLinkedQueue(invService.getUnpaid())
     private val invoices = invService.getInvoices()
 
     var frequency: Long = config[InvoiceProcessorConfig.frequency]
@@ -31,12 +32,15 @@ class InvoiceProcessor(
     }
 
     fun createInvoice(currency: Currency, amount: BigDecimal, address: String, tag: String? = null): Invoice {
-        val id = UUID.randomUUID().toString().replace("-", "")
-        val inv = Invoice(id, currency, amount, address, tag)
-        invService.add(InvoiceStatus.UNPAID, BigDecimal.ZERO, id, currency, amount, address, tag)
-        invoices[inv.id] = inv
-        unpaid.add(inv.id)
-        return inv
+        synchronized(unpaid)
+        {
+            val id = UUID.randomUUID().toString().replace("-", "")
+            val inv = Invoice(id, currency, amount, address, tag)
+            invService.add(InvoiceStatus.UNPAID, BigDecimal.ZERO, id, currency, amount, address, tag)
+            invoices[inv.id] = inv
+            unpaid.add(inv.id)
+            return inv
+        }
     }
 
     fun getInvoice(id: String): Invoice? = invoices[id]

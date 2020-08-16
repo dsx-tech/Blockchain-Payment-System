@@ -54,4 +54,14 @@ class BlockchainPaymentSystemAPI {
     fun getLastTxToAddress(id: String, currency: Currency, address: String, amount: Int): List<Tx> {
         return manager.getLastTxToAddress(id, currency, address, amount)
     }
+
+    @Deprecated("only for tests")
+    fun kill(currency: Currency){
+        manager.kill(currency)
+    }
+
+    @Deprecated("only for tests")
+    fun clearDb(currency: Currency){
+        manager.clearDb(currency)
+    }
 }

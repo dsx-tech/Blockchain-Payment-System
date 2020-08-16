@@ -9,6 +9,9 @@ Blockchain Payment System is an open source payment system
 - TON Gram (GRM)
 - Ripple (XRP)
 - TRON (TRX)
+- Ethereum (ETH)
+- ERC-20
+
 
 ## Requirements
 
@@ -22,7 +25,6 @@ To work with the TON Gram cryptocurrency,
   
 A docker image for build the ton-nativelib on Linux 18.04 is located at
 ```./src/main/resources/DockerImages.ton-nativelib-image```
-
 ## How to run
 #### Сonfiguring
 Before starting a BPS, it is necessary
@@ -42,7 +44,32 @@ The system is started using the Gradle command.
 ```gradle run```
 
 #### Testing
+Docker is required to run unit tests.
 To run BPS unit tests, you must run command ``gradle test``
+
+###### Expand the network manually
+
+- BTC:
+You can use a container https://hub.docker.com/repository/docker/siandreev/bitcoind-regtest
+
+To do this, run ``docker run -p 18443:18443 -p 18444:18444 siandreev/bitcoind-regtest:alice-bob-regtest``
+
+You can interact with the network through the JSON-RPC using curl
+
+Find out the balance of Alice: ``curl --user alice:password --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "get
+               balance", "params": [] }'  -H 'content-type: text/plain;' http://127.0.0.1:18443/``
+               
+Send 10 BTC to Bob: ``curl --user alice:password --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "sendtoaddress", "params": ["2NETNm86ug9drkCJ7N4U5crA9B9681HidzX", 10] }'  -H 'content-type: text/plain;' http://127.0.0.1:18443/``
+
+- ETH: You can use a container https://hub.docker.com/repository/docker/siandreev/ethereum-rpc-test with "PoA-mining" tag
+
+To do this, run ``docker run -p 8541:8541 -p 8542:8542 siandreev/ethereum-rpc-test:PoA-mining``
+
+You can interact with the network using geth: run ``geth attach http://localhost:8541`` to connect to the node
+
+Find out the balance of Alice: ``eth.getBalance("0x073cfa4b6635b1a1b96f6363a9e499a8076b6107")``
+
+Send 10 ETH to Bob: ``eth.sendTransaction({from: "0x073cfa4b6635b1a1b96f6363a9e499a8076b6107",to: "0x0ce59225bcd447feaed698ed754d309feba5fc63",value: web3.toWei(10, "ether")});``
 
 ## Payments and Invoices
 BPS operates with three
@@ -93,4 +120,5 @@ Deposit account - an entity, that has multiple addresses, to which funds are con
 Coursework with a detailed description of the system
 - [Coursework by Dmitry Pogrebnoy (ru)](http://se.math.spbu.ru/SE/YearlyProjects/vesna-2020/pi/Pogrebnoy-report.pdf)
 - Coursework by Artyom Chemezov - awaiting publication
+- [Coursework by Sergey Andreev (ru)](https://oops.math.spbu.ru/SE/YearlyProjects/vesna-2020/YearlyProjects/vesna-2020/mo-3rd-course/S.Andreev-report.pdf)
 - [Coursework by Sergey Skaredov (ru)](http://se.math.spbu.ru/SE/YearlyProjects/spring-2019/371/Skaredov-report.pdf)
